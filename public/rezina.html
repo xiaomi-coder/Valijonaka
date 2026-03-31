@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroPlast ERP — Rezina Dilerlik</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--primary:#1a6b3c;--primary-dark:#134d2c;--primary-light:#e8f5ee;--accent:#f0a500;--accent-light:#fff8e6;--bg:#f2f5f2;--surface:#fff;--sidebar-bg:#111c14;--sidebar-text:rgba(255,255,255,0.7);--text:#1a1f1a;--text-muted:#6b7c6b;--border:#e0e8e0;--danger:#c0392b;--danger-light:#fdf0ef;--warning:#e67e22;--warning-light:#fef5ec;--info:#2471a3;--info-light:#eaf3fb;--success:#1a6b3c;--success-light:#e8f5ee;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+  .sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+  .sidebar-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .brand-logo{display:flex;align-items:center;gap:10px;}
+  .brand-logo .icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .brand-name{color:#fff;font-size:14px;font-weight:700;}
+  .brand-name span{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);}
+  .nav-section{padding:12px 10px 6px;}
+  .nav-label{font-size:9px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--sidebar-text);cursor:pointer;transition:all .18s;font-size:13px;font-weight:500;margin-bottom:2px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:var(--primary);color:#fff;}
+  .nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,0.07);}
+  .user-info{display:flex;align-items:center;gap:8px;padding:8px 10px;}
+  .user-avatar{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-details .name{color:#fff;font-size:12px;font-weight:600;}
+  .user-details .role{color:rgba(255,255,255,0.4);font-size:10px;}
+  .logout-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:15px;}
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-size:16px;font-weight:700;flex:1;}
+  .topbar-title span{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px;}
+  .topbar-date{font-size:12px;color:var(--text-muted);background:var(--bg);padding:5px 10px;border-radius:8px;}
+  .content{padding:24px;flex:1;}
+  .tabs{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:20px;}
+  .tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);transition:all .18s;border:none;background:transparent;font-family:'Onest',sans-serif;}
+  .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+  .page{display:none;}
+  .page.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:16px;position:relative;transition:transform .18s;}
+  .stat-card:hover{transform:translateY(-2px);}
+  .stat-card .lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .stat-card .val{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .stat-card .sub{font-size:11px;color:var(--text-muted);}
+  .stat-card.g{border-left:4px solid var(--primary);}.stat-card.g .val{color:var(--primary);}
+  .stat-card.a{border-left:4px solid var(--accent);}.stat-card.a .val{color:var(--accent);}
+  .stat-card.r{border-left:4px solid var(--danger);}.stat-card.r .val{color:var(--danger);}
+  .stat-card.b{border-left:4px solid var(--info);}.stat-card.b .val{color:var(--info);}
+  .stat-card .ico{position:absolute;top:12px;right:12px;font-size:22px;opacity:.15;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:hover{background:#f8faf8;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:10px 12px;vertical-align:middle;}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge.green{background:var(--success-light);color:var(--success);}
+  .badge.amber{background:var(--accent-light);color:var(--accent);}
+  .badge.red{background:var(--danger-light);color:var(--danger);}
+  .badge.blue{background:var(--info-light);color:var(--info);}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,107,60,0.08);}
+  .form-group input[readonly]{background:var(--bg);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .btn{padding:9px 18px;border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all .18s;}
+  .btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}.btn-secondary:hover{background:var(--border);}
+  .btn-danger{background:var(--danger-light);color:var(--danger);}.btn-danger:hover{background:#f5c6c2;}
+  .btn-sm{padding:5px 12px;font-size:12px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:mUp .25s ease;}
+  @keyframes mUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:var(--bg);}
+  .modal-body{padding:22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+  .prog-wrap{margin-bottom:10px;}
+  .prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .prog-bg{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:99px;transition:width 1s;}
+  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .alert.info{background:var(--info-light);color:var(--info);border:1px solid #a9d2f1;}
+  .alert.success{background:var(--success-light);color:var(--success);border:1px solid #9fcfb3;}
+  .foyda-box{background:var(--primary-light);border:1px solid #9fcfb3;border-radius:10px;padding:14px;margin-top:12px;}
+  .foyda-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}
+  .foyda-row.total{font-size:17px;font-weight:700;border-top:1px solid #9fcfb3;margin-top:6px;padding-top:10px;color:var(--primary);}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+<aside class="sidebar"></aside>
+<script src="sidebar.js"></script>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Rezina dilerlik <span>/ Alohida biznes moduli</span></div>
+    <div class="topbar-date" id="todayDate"></div>
+  </header>
+  <div class="content">
+    <div class="alert info">🔵 Bu modul asosiy ishlab chiqarish biznesidan <b>alohida</b> ishlaydi. Zavoddan rezina olib, mijozlarga sotish.</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('dashboard',this)">📊 Dashboard</button>
+      <button class="tab" onclick="switchTab('kirim',this)">📥 Zavod kirim</button>
+      <button class="tab" onclick="switchTab('sotuv',this)">🛒 Sotuv</button>
+      <button class="tab" onclick="switchTab('hisobot',this)">📈 Foyda hisobi</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="tab-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card g"><div class="lbl">Omboredagi rezina</div><div class="val" id="dOmbor">0</div><div class="ico">📦</div><div class="sub">kg</div></div>
+        <div class="stat-card b"><div class="lbl">Bu oy sotildi</div><div class="val" id="dSotildi">0</div><div class="ico">🛒</div><div class="sub">kg</div></div>
+        <div class="stat-card a"><div class="lbl">Bu oy daromad</div><div class="val" id="dDaromad">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
+        <div class="stat-card g"><div class="lbl">Bu oy sof foyda</div><div class="val" id="dFoyda">0</div><div class="ico">📈</div><div class="sub">so'm</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="margin:0;">
+          <div class="card-header"><div class="card-title">📦 Ombor holati</div></div>
+          <div class="card-body">
+            <div id="rezOmborPanel"></div>
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+              <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Rezina turlari bo'yicha</div>
+              <div id="rezTurPanel"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin:0;">
+          <div class="card-header"><div class="card-title">🕐 So'nggi operatsiyalar</div></div>
+          <div class="card-body" id="lastOps"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KIRIM -->
+    <div class="page" id="tab-kirim">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;">📥 Zavoddan rezina kirim</div>
+        <button class="btn btn-primary" onclick="openModal('kirimModal')">+ Yangi kirim</button>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card b"><div class="lbl">Jami kirim (kg)</div><div class="val" id="kStKg">0</div></div>
+        <div class="stat-card a"><div class="lbl">Jami xarajat</div><div class="val" id="kStSum">0</div><div class="sub">so'm</div></div>
+        <div class="stat-card r"><div class="lbl">Qarz (zavodga)</div><div class="val" id="kStQarz">0</div><div class="sub">so'm</div></div>
+      </div>
+      <div class="card" style="margin:0;">
+        <div class="card-header"><div class="card-title">Kirimlar ro'yxati</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Sana</th><th>Zavod</th><th>Rezina turi</th><th>Kg</th><th>Narx/kg</th><th>Jami</th><th>To'lov</th><th>Amal</th></tr></thead>
+          <tbody id="kirimBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SOTUV -->
+    <div class="page" id="tab-sotuv">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;">🛒 Rezina sotuv</div>
+        <button class="btn btn-primary" onclick="openModal('sotuvModal')">+ Yangi sotuv</button>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-card g"><div class="lbl">Bu oy sotuv (kg)</div><div class="val" id="sStKg">0</div></div>
+        <div class="stat-card a"><div class="lbl">Bu oy daromad</div><div class="val" id="sStSum">0</div><div class="sub">so'm</div></div>
+        <div class="stat-card r"><div class="lbl">Mijozlar qarzi</div><div class="val" id="sStQarz">0</div><div class="sub">so'm</div></div>
+      </div>
+      <div class="card" style="margin:0;">
+        <div class="card-header"><div class="card-title">Sotuvlar ro'yxati</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Sana</th><th>Mijoz</th><th>Rezina turi</th><th>Kg</th><th>Narx/kg</th><th>Jami</th><th>To'lov</th><th>Holat</th><th>Amal</th></tr></thead>
+          <tbody id="sotuvBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISOBOT -->
+    <div class="page" id="tab-hisobot">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;">
+        <select id="hisobotOy" onchange="renderHisobot()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;"><option value="3">Mart 2025</option><option value="2">Fevral 2025</option><option value="1">Yanvar 2025</option></select>
+        <button class="btn btn-secondary" onclick="exportHisobot()">📥 Eksport</button>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="margin:0;">
+          <div class="card-header"><div class="card-title" id="hisobotTitle">Mart 2025 — Foyda hisobi</div></div>
+          <div class="card-body">
+            <div class="foyda-box" id="foydaBox"></div>
+          </div>
+        </div>
+        <div class="card" style="margin:0;">
+          <div class="card-header"><div class="card-title">Rezina turlari bo'yicha foyda</div></div>
+          <div class="card-body" id="turFoydaChart"></div>
+        </div>
+      </div>
+      <div class="card" style="margin:0;margin-top:16px;">
+        <div class="card-header"><div class="card-title">3 oylik taqqoslash</div></div>
+        <table>
+          <thead><tr><th>Ko'rsatkich</th><th>Yanvar</th><th>Fevral</th><th>Mart</th></tr></thead>
+          <tbody id="oyTaqqos"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KIRIM MODAL -->
+<div class="modal-overlay" id="kirimModal">
+  <div class="modal">
+    <div class="modal-header"><h3>📥 Zavoddan kirim</h3><button class="modal-close" onclick="closeModal('kirimModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Zavod nomi</label><select id="kmZavod"><option value="Chirchiq Rezina Zavodi">Chirchiq Rezina Zavodi</option><option value="Farg'ona Polimer">Farg'ona Polimer</option><option value="Boshqa">Boshqa zavod</option></select></div>
+        <div class="form-group"><label>Sana</label><input type="date" id="kmSana"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Rezina turi</label><select id="kmTur"><option value="Oddiy rezina">Oddiy rezina</option><option value="Texnik rezina">Texnik rezina</option><option value="Avtomobil rezinasi">Avtomobil rezinasi</option><option value="Maxsus rezina">Maxsus rezina</option></select></div>
+        <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="kmKg" placeholder="0" oninput="calcKm()"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Narx (so'm/kg)</label><input type="number" id="kmNarx" placeholder="0" oninput="calcKm()"></div>
+        <div class="form-group"><label>Jami summa</label><input id="kmJami" readonly></div>
+      </div>
+      <div class="form-group"><label>To'lov holati</label><select id="kmTolov"><option value="tolangan">✅ To'langan</option><option value="qarz">📋 Qarzga</option></select></div>
+      <div class="form-group"><label>Izoh</label><textarea id="kmIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('kirimModal')">Bekor</button><button class="btn btn-primary" onclick="saveKirim()">Saqlash</button></div>
+  </div>
+</div>
+
+<!-- SOTUV MODAL -->
+<div class="modal-overlay" id="sotuvModal">
+  <div class="modal">
+    <div class="modal-header"><h3>🛒 Rezina sotuv</h3><button class="modal-close" onclick="closeModal('sotuvModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Mijoz</label><input id="smMijoz" placeholder="Korxona nomi"></div>
+        <div class="form-group"><label>Sana</label><input type="date" id="smSana"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Rezina turi</label><select id="smTur" onchange="smTurTanlash()"><option value="Oddiy rezina">Oddiy rezina</option><option value="Texnik rezina">Texnik rezina</option><option value="Avtomobil rezinasi">Avtomobil rezinasi</option><option value="Maxsus rezina">Maxsus rezina</option></select></div>
+        <div class="form-group"><label>Omboredagi miqdor</label><input id="smOmbor" readonly></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="smKg" placeholder="0" oninput="calcSm()"></div>
+        <div class="form-group"><label>Sotuv narxi (so'm/kg)</label><input type="number" id="smNarx" placeholder="0" oninput="calcSm()"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Jami summa</label><input id="smJami" readonly></div>
+        <div class="form-group"><label>Taxminiy foyda</label><input id="smFoyda" readonly style="color:var(--primary);font-weight:700;"></div>
+      </div>
+      <div class="form-group"><label>To'lov turi</label><select id="smTolov"><option value="naqd">💵 Naqd</option><option value="bank">🏦 Bank</option><option value="qarz">📋 Qarz</option></select></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sotuvModal')">Bekor</button><button class="btn btn-primary" onclick="saveSotuv()">Saqlash</button></div>
+  </div>
+</div>
+
+<script>
+const user=JSON.parse(localStorage.getItem('erp_user')||'{"name":"admin","role":"admin"}');
+
+
+
+document.getElementById('todayDate').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('kmSana').value=new Date().toISOString().split('T')[0];
+document.getElementById('smSana').value=new Date().toISOString().split('T')[0];
+
+let kirimlar=JSON.parse(localStorage.getItem('rezKirimlar')||JSON.stringify([
+  {id:'rk1',sana:'2025-03-25',zavod:'Chirchiq Rezina Zavodi',tur:'Oddiy rezina',kg:2000,narx:8500,jami:17000000,tolov:'tolangan',izoh:'',oy:3},
+  {id:'rk2',sana:'2025-03-15',zavod:'Chirchiq Rezina Zavodi',tur:'Texnik rezina',kg:1200,narx:9000,jami:10800000,tolov:'tolangan',izoh:'',oy:3},
+  {id:'rk3',sana:'2025-02-10',zavod:'Farg\'ona Polimer',tur:'Oddiy rezina',kg:1500,narx:8200,jami:12300000,tolov:'tolangan',izoh:'',oy:2},
+  {id:'rk4',sana:'2025-01-05',zavod:'Chirchiq Rezina Zavodi',tur:'Oddiy rezina',kg:1800,narx:8000,jami:14400000,tolov:'tolangan',izoh:'',oy:1},
+]));
+
+let sotuvlar=JSON.parse(localStorage.getItem('rezSotuvlar')||JSON.stringify([
+  {id:'rs1',sana:'2025-03-28',mijoz:'Toshkent Plastik Zavodi',tur:'Oddiy rezina',kg:500,narx:12000,jami:6000000,tolov:'naqd',holat:'tolandi',kirNarx:8500,oy:3},
+  {id:'rs2',sana:'2025-03-26',mijoz:'Andijon MChJ',tur:'Texnik rezina',kg:300,narx:13500,jami:4050000,tolov:'bank',holat:'tolandi',kirNarx:9000,oy:3},
+  {id:'rs3',sana:'2025-03-22',mijoz:'Farg\'ona Savdo',tur:'Oddiy rezina',kg:400,narx:11800,jami:4720000,tolov:'qarz',holat:'qarz',kirNarx:8500,oy:3},
+  {id:'rs4',sana:'2025-02-20',mijoz:'Samarqand Zavodi',tur:'Oddiy rezina',kg:600,narx:11500,jami:6900000,tolov:'naqd',holat:'tolandi',kirNarx:8200,oy:2},
+]));
+
+// Ombor hisob
+function omborBylTur(tur){
+  const kir=kirimlar.filter(k=>k.tur===tur).reduce((s,k)=>s+k.kg,0);
+  const sot=sotuvlar.filter(s=>s.tur===tur).reduce((s,x)=>s+x.kg,0);
+  return kir-sot;
+}
+function omborJami(){return kirimlar.reduce((s,k)=>s+k.kg,0)-sotuvlar.reduce((s,x)=>s+x.kg,0);}
+function avgKirNarx(tur){const k=kirimlar.filter(x=>x.tur===tur);return k.length?Math.round(k.reduce((s,x)=>s+x.narx,0)/k.length):0;}
+
+// DASHBOARD
+function renderDashboard(){
+  const oy=3;const sOy=sotuvlar.filter(s=>s.oy===oy);
+  const sotKg=sOy.reduce((s,x)=>s+x.kg,0);const daromad=sOy.reduce((s,x)=>s+x.jami,0);
+  const xarajat=sOy.reduce((s,x)=>s+x.kg*x.kirNarx,0);const foyda=daromad-xarajat;
+  document.getElementById('dOmbor').textContent=omborJami().toLocaleString();
+  document.getElementById('dSotildi').textContent=sotKg.toLocaleString();
+  document.getElementById('dDaromad').textContent=daromad.toLocaleString();
+  document.getElementById('dFoyda').textContent=foyda.toLocaleString();
+
+  // Ombor panel
+  const turlar=['Oddiy rezina','Texnik rezina','Avtomobil rezinasi','Maxsus rezina'];
+  const jami=omborJami()||1;
+  document.getElementById('rezOmborPanel').innerHTML=`<div style="text-align:center;margin-bottom:12px;"><div style="font-size:36px;font-weight:700;color:var(--primary);">${omborJami().toLocaleString()} kg</div><div style="font-size:13px;color:var(--text-muted);">Jami ombor</div></div>`;
+  document.getElementById('rezTurPanel').innerHTML=turlar.map(t=>{const q=omborBylTur(t);const pct=Math.round(q/jami*100)||0;return q?`<div class="prog-wrap"><div class="prog-label"><span>${t}</span><span style="font-weight:700;">${q.toLocaleString()} kg</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:var(--primary)"></div></div></div>`:''}).join('');
+
+  // So'nggi ops
+  const ops=[...kirimlar.map(k=>({...k,tip:'kirim'})),...sotuvlar.map(s=>({...s,tip:'sotuv'}))].sort((a,b)=>b.sana.localeCompare(a.sana)).slice(0,6);
+  document.getElementById('lastOps').innerHTML=ops.map(o=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+    <div style="width:32px;height:32px;border-radius:50%;background:${o.tip==='kirim'?'var(--info-light)':'var(--success-light)'};display:flex;align-items:center;justify-content:center;font-size:14px;">${o.tip==='kirim'?'📥':'🛒'}</div>
+    <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${o.tip==='kirim'?o.zavod:o.mijoz}</div><div style="font-size:11px;color:var(--text-muted);">${o.sana} · ${o.tur} · ${o.kg} kg</div></div>
+    <div style="font-weight:700;color:${o.tip==='kirim'?'var(--danger)':'var(--primary)'};">${o.tip==='kirim'?'-':'+'}${o.jami.toLocaleString()}</div>
+  </div>`).join('');
+}
+
+// KIRIM
+function renderKirim(){
+  const jKg=kirimlar.reduce((s,k)=>s+k.kg,0);
+  const jSum=kirimlar.reduce((s,k)=>s+k.jami,0);
+  const jQarz=kirimlar.filter(k=>k.tolov==='qarz').reduce((s,k)=>s+k.jami,0);
+  document.getElementById('kStKg').textContent=jKg.toLocaleString();
+  document.getElementById('kStSum').textContent=jSum.toLocaleString();
+  document.getElementById('kStQarz').textContent=jQarz.toLocaleString();
+  document.getElementById('kirimBody').innerHTML=[...kirimlar].reverse().map((k,i)=>`<tr>
+    <td>${i+1}</td><td>${k.sana}</td><td>${k.zavod}</td><td>${k.tur}</td>
+    <td><b>${k.kg.toLocaleString()} kg</b></td><td>${k.narx.toLocaleString()}</td>
+    <td><b>${k.jami.toLocaleString()}</b></td>
+    <td>${k.tolov==='tolangan'?'<span class="badge green">✅</span>':'<span class="badge red">📋 Qarz</span>'}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteKirim('${k.id}')">🗑</button></td>
+  </tr>`).join('');
+}
+
+function calcKm(){const kg=parseFloat(document.getElementById('kmKg').value)||0;const narx=parseFloat(document.getElementById('kmNarx').value)||0;document.getElementById('kmJami').value=kg*narx?(kg*narx).toLocaleString()+' so\'m':'';}
+
+function saveKirim(){
+  const zavod=document.getElementById('kmZavod').value;const tur=document.getElementById('kmTur').value;
+  const kg=parseFloat(document.getElementById('kmKg').value)||0;const narx=parseFloat(document.getElementById('kmNarx').value)||0;
+  if(!kg||!narx){alert('Miqdor va narxni kiriting!');return;}
+  const sana=document.getElementById('kmSana').value;const oy=parseInt(sana.split('-')[1])||3;
+  kirimlar.push({id:'rk'+Date.now(),sana,zavod,tur,kg,narx,jami:kg*narx,tolov:document.getElementById('kmTolov').value,izoh:document.getElementById('kmIzoh').value,oy});
+  localStorage.setItem('rezKirimlar',JSON.stringify(kirimlar));
+  closeModal('kirimModal');renderKirim();renderDashboard();
+}
+function deleteKirim(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;kirimlar=kirimlar.filter(k=>k.id!==id);localStorage.setItem('rezKirimlar',JSON.stringify(kirimlar));renderKirim();}
+
+// SOTUV
+function renderSotuv(){
+  const sOy=sotuvlar.filter(s=>s.oy===3);
+  document.getElementById('sStKg').textContent=sOy.reduce((s,x)=>s+x.kg,0).toLocaleString();
+  document.getElementById('sStSum').textContent=sOy.reduce((s,x)=>s+x.jami,0).toLocaleString();
+  document.getElementById('sStQarz').textContent=sotuvlar.filter(s=>s.holat==='qarz').reduce((s,x)=>s+x.jami,0).toLocaleString();
+  document.getElementById('sotuvBody').innerHTML=[...sotuvlar].reverse().map((s,i)=>`<tr>
+    <td>${i+1}</td><td>${s.sana}</td><td><b>${s.mijoz}</b></td><td>${s.tur}</td>
+    <td>${s.kg.toLocaleString()} kg</td><td>${s.narx.toLocaleString()}</td>
+    <td><b>${s.jami.toLocaleString()}</b></td>
+    <td>${{naqd:'Naqd',bank:'Bank',qarz:'Qarz'}[s.tolov]}</td>
+    <td>${s.holat==='tolandi'?'<span class="badge green">✅ To\'landi</span>':'<span class="badge red">💳 Qarz</span>'}</td>
+    <td>${s.holat==='qarz'?`<button class="btn btn-sm btn-primary" onclick="sotuvTola('${s.id}')">✅</button>`:''}
+    <button class="btn btn-sm btn-danger" onclick="deleteSotuv('${s.id}')">🗑</button></td>
+  </tr>`).join('');
+}
+
+function smTurTanlash(){const tur=document.getElementById('smTur').value;const q=omborBylTur(tur);document.getElementById('smOmbor').value=q.toLocaleString()+' kg';calcSm();}
+function calcSm(){
+  const kg=parseFloat(document.getElementById('smKg').value)||0;const narx=parseFloat(document.getElementById('smNarx').value)||0;
+  const tur=document.getElementById('smTur').value;const kirNarx=avgKirNarx(tur);
+  document.getElementById('smJami').value=kg*narx?(kg*narx).toLocaleString()+' so\'m':'';
+  const foyda=(narx-kirNarx)*kg;
+  document.getElementById('smFoyda').value=foyda?(foyda>0?'+':'')+foyda.toLocaleString()+' so\'m':'';
+}
+
+function saveSotuv(){
+  const mijoz=document.getElementById('smMijoz').value.trim();const tur=document.getElementById('smTur').value;
+  const kg=parseFloat(document.getElementById('smKg').value)||0;const narx=parseFloat(document.getElementById('smNarx').value)||0;
+  if(!mijoz){alert('Mijoz nomini kiriting!');return;}
+  if(!kg||!narx){alert('Miqdor va narxni kiriting!');return;}
+  if(kg>omborBylTur(tur)){alert('Omborda yetarli rezina yo\'q!');return;}
+  const sana=document.getElementById('smSana').value;const oy=parseInt(sana.split('-')[1])||3;
+  const tolov=document.getElementById('smTolov').value;
+  sotuvlar.push({id:'rs'+Date.now(),sana,mijoz,tur,kg,narx,jami:kg*narx,tolov,holat:tolov==='qarz'?'qarz':'tolandi',kirNarx:avgKirNarx(tur),oy});
+  localStorage.setItem('rezSotuvlar',JSON.stringify(sotuvlar));
+  closeModal('sotuvModal');renderSotuv();renderDashboard();
+}
+function sotuvTola(id){const s=sotuvlar.find(x=>x.id===id);if(s){s.holat='tolandi';localStorage.setItem('rezSotuvlar',JSON.stringify(sotuvlar));renderSotuv();}}
+function deleteSotuv(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;sotuvlar=sotuvlar.filter(s=>s.id!==id);localStorage.setItem('rezSotuvlar',JSON.stringify(sotuvlar));renderSotuv();}
+
+// HISOBOT
+function renderHisobot(){
+  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
+  const oyNom={1:'Yanvar',2:'Fevral',3:'Mart'};
+  document.getElementById('hisobotTitle').textContent=`${oyNom[oy]} 2025 — Foyda hisobi`;
+  const kOy=kirimlar.filter(k=>k.oy===oy);const sOy=sotuvlar.filter(s=>s.oy===oy);
+  const xarajat=kOy.reduce((s,k)=>s+k.jami,0);const daromad=sOy.reduce((s,x)=>s+x.jami,0);
+  const foyda=sOy.reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0);
+  document.getElementById('foydaBox').innerHTML=`
+    <div class="foyda-row"><span style="color:var(--text-muted)">Kirim xarajati:</span><span style="color:var(--danger);font-weight:600;">${xarajat.toLocaleString()} so'm</span></div>
+    <div class="foyda-row"><span style="color:var(--text-muted)">Sotuv daromadi:</span><span style="color:var(--primary);font-weight:600;">${daromad.toLocaleString()} so'm</span></div>
+    <div class="foyda-row"><span style="color:var(--text-muted)">Kirim kg:</span><span style="font-weight:600;">${kOy.reduce((s,k)=>s+k.kg,0).toLocaleString()} kg</span></div>
+    <div class="foyda-row"><span style="color:var(--text-muted)">Sotuv kg:</span><span style="font-weight:600;">${sOy.reduce((s,x)=>s+x.kg,0).toLocaleString()} kg</span></div>
+    <div class="foyda-row total"><span>SOF FOYDA:</span><span style="color:${foyda>=0?'var(--primary)':'var(--danger)'};">${foyda.toLocaleString()} so'm</span></div>
+    <div class="foyda-row" style="border:none;padding-top:2px;"><span style="color:var(--text-muted);font-size:12px;">Rentabellik:</span><span style="font-weight:700;color:var(--primary);">${daromad?Math.round(foyda/daromad*100):0}%</span></div>`;
+
+  const turlar=['Oddiy rezina','Texnik rezina'];
+  const maxFoyda=Math.max(...turlar.map(t=>sOy.filter(s=>s.tur===t).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0)),1);
+  document.getElementById('turFoydaChart').innerHTML=turlar.map(t=>{
+    const tf=sOy.filter(s=>s.tur===t).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0);
+    const pct=Math.round(tf/maxFoyda*100)||0;
+    return `<div class="prog-wrap"><div class="prog-label"><span>${t}</span><span style="font-weight:700;">${tf.toLocaleString()} so'm</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:var(--primary)"></div></div></div>`;
+  }).join('');
+
+  const rows=[
+    {nomi:'Kirim (kg)',[1]:kirimlar.filter(k=>k.oy===1).reduce((s,k)=>s+k.kg,0),[2]:kirimlar.filter(k=>k.oy===2).reduce((s,k)=>s+k.kg,0),[3]:kirimlar.filter(k=>k.oy===3).reduce((s,k)=>s+k.kg,0)},
+    {nomi:'Sotuv (kg)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+x.kg,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+x.kg,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+x.kg,0)},
+    {nomi:'Daromad (so\'m)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+x.jami,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+x.jami,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+x.jami,0)},
+    {nomi:'Sof foyda (so\'m)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0)},
+  ];
+  document.getElementById('oyTaqqos').innerHTML=rows.map(r=>`<tr><td><b>${r.nomi}</b></td><td>${r[1].toLocaleString()}</td><td>${r[2].toLocaleString()}</td><td style="font-weight:700;color:var(--primary);">${r[3].toLocaleString()}</td></tr>`).join('');
+}
+
+function exportHisobot(){
+  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
+  const sOy=sotuvlar.filter(s=>s.oy===oy);
+  let csv='Sana,Mijoz,Tur,Kg,Narx,Jami,Foyda\n';
+  sOy.forEach(s=>{csv+=`${s.sana},"${s.mijoz}",${s.tur},${s.kg},${s.narx},${s.jami},${(s.narx-s.kirNarx)*s.kg}\n`;});
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='RezinaDilerlik.csv';a.click();
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active');
+  if(id==='dashboard')renderDashboard();if(id==='kirim')renderKirim();if(id==='sotuv')renderSotuv();if(id==='hisobot')renderHisobot();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+renderDashboard();
+</script>
+<script src="/api.js"></script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroPlast ERP — Sozlamalar</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--primary:#1a6b3c;--primary-dark:#134d2c;--primary-light:#e8f5ee;--accent:#f0a500;--accent-light:#fff8e6;--bg:#f2f5f2;--surface:#fff;--sidebar-bg:#111c14;--sidebar-text:rgba(255,255,255,0.7);--text:#1a1f1a;--text-muted:#6b7c6b;--border:#e0e8e0;--danger:#c0392b;--danger-light:#fdf0ef;--info:#2471a3;--info-light:#eaf3fb;--success:#1a6b3c;--success-light:#e8f5ee;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+  .sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;scrollbar-width:none;}
+  .sidebar-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+  .brand-logo{display:flex;align-items:center;gap:10px;}
+  .brand-logo .icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .brand-name{color:#fff;font-size:14px;font-weight:700;}
+  .brand-name span{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,.4);}
+  .nav-section{padding:12px 10px 6px;}
+  .nav-label{font-size:9px;font-weight:600;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--sidebar-text);cursor:pointer;transition:all .18s;font-size:13px;font-weight:500;margin-bottom:2px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:var(--primary);color:#fff;}
+  .nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,.07);}
+  .user-info{display:flex;align-items:center;gap:8px;padding:8px 10px;}
+  .user-avatar{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-details .name{color:#fff;font-size:12px;font-weight:600;}
+  .user-details .role{color:rgba(255,255,255,.4);font-size:10px;}
+  .logout-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:15px;}
+  .logout-btn:hover{color:#e74c3c;}
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-size:16px;font-weight:700;flex:1;}
+  .topbar-title span{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px;}
+  .content{padding:24px;flex:1;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:hover{background:#f8faf8;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:10px 12px;vertical-align:middle;}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge.green{background:var(--success-light);color:var(--success);}
+  .badge.amber{background:var(--accent-light);color:var(--accent);}
+  .badge.blue{background:var(--info-light);color:var(--info);}
+  .badge.gray{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .form-group input,.form-group select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,107,60,.08);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .btn{padding:9px 18px;border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all .18s;}
+  .btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}.btn-secondary:hover{background:var(--border);}
+  .btn-danger{background:var(--danger-light);color:var(--danger);}.btn-danger:hover{background:#f5c6c2;}
+  .btn-sm{padding:5px 12px;font-size:12px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:mUp .25s ease;}
+  @keyframes mUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:var(--bg);}
+  .modal-body{padding:22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .info-row:last-child{border-bottom:none;}
+  .info-label{color:var(--text-muted);}
+  .info-val{font-weight:600;}
+  .server-status{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--success-light);border:1px solid #9fcfb3;border-radius:10px;margin-bottom:16px;}
+  .s-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+</style>
+</head>
+<body>
+<aside class="sidebar"></aside>
+<script src="sidebar.js"></script>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Sozlamalar <span>/ Tizim boshqaruvi</span></div>
+  </header>
+  <div class="content">
+
+    <div class="grid-2">
+      <!-- Server holati -->
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🖥️ Server holati</div></div>
+          <div class="card-body">
+            <div class="server-status">
+              <span class="s-dot"></span>
+              <span style="font-size:13px;font-weight:600;color:var(--primary);">Server ishlayapti — Node.js</span>
+            </div>
+            <div class="info-row"><span class="info-label">Platforma</span><span class="info-val">Node.js + Express</span></div>
+            <div class="info-row"><span class="info-label">Database</span><span class="info-val">NeDB (fayl bazasi)</span></div>
+            <div class="info-row"><span class="info-label">Port</span><span class="info-val">3000</span></div>
+            <div class="info-row"><span class="info-label">Auth</span><span class="info-val">JWT (8 soat)</span></div>
+            <div class="info-row"><span class="info-label">Versiya</span><span class="info-val">1.0.0</span></div>
+            <div class="info-row"><span class="info-label">Tizim vaqti</span><span class="info-val" id="serverTime">—</span></div>
+          </div>
+        </div>
+
+        <!-- Korxona ma'lumotlari -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏭 Korxona ma'lumotlari</div><button class="btn btn-sm btn-primary" onclick="saveKorxona()">Saqlash</button></div>
+          <div class="card-body">
+            <div class="form-group"><label>Korxona nomi</label><input id="kNomi" value="AgroPlast MChJ"></div>
+            <div class="form-group"><label>Manzil</label><input id="kManzil" value="Toshkent viloyati"></div>
+            <div class="form-row">
+              <div class="form-group"><label>Telefon</label><input id="kTel" value="+998 71 000 00 00"></div>
+              <div class="form-group"><label>INN</label><input id="kInn" value="123456789"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Foydalanuvchilar -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👤 Foydalanuvchilar</div>
+            <button class="btn btn-sm btn-primary" onclick="openModal('userModal')">+ Yangi</button>
+          </div>
+          <table>
+            <thead><tr><th>Ism</th><th>Login</th><th>Rol</th><th>Amal</th></tr></thead>
+            <tbody id="userBody"><tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-muted);">Yuklanmoqda...</td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- Parol o'zgartirish -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">🔐 Parolni o'zgartirish</div></div>
+          <div class="card-body">
+            <div class="form-group"><label>Joriy parol</label><input type="password" id="joriyParol" placeholder="••••••••"></div>
+            <div class="form-group"><label>Yangi parol</label><input type="password" id="yangiParol" placeholder="••••••••"></div>
+            <div class="form-group"><label>Tasdiqlash</label><input type="password" id="tasdiqlash" placeholder="••••••••"></div>
+            <button class="btn btn-primary" onclick="changeParol()">🔐 O'zgartirish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rollar jadvali -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">🔑 Rollar va ruxsatlar</div></div>
+      <table>
+        <thead>
+          <tr><th>Rol</th><th>Dashboard</th><th>Sotuv</th><th>Ishlab chiqarish</th><th>Xodimlar</th><th>Harajatlar</th><th>Hisobot</th><th>Sozlamalar</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="badge amber">👑 Admin</span></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td><span class="badge blue">📊 Menejer</span></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td></tr>
+          <tr><td><span class="badge green">💳 Kassir</span></td><td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td><span class="badge gray">🔧 Ishchi</span></td><td>✅</td><td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FOYDALANUVCHI MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header"><h3>👤 Yangi foydalanuvchi</h3><button class="modal-close" onclick="closeModal('userModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Ism</label><input id="uIsm" placeholder="Ism Familiya"></div>
+        <div class="form-group"><label>Login</label><input id="uLogin" placeholder="login123"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Parol</label><input type="password" id="uParol" placeholder="••••••••"></div>
+        <div class="form-group"><label>Rol</label>
+          <select id="uRol">
+            <option value="kassir">💳 Kassir</option>
+            <option value="operator">🔧 Operator</option>
+            <option value="menejer">📊 Menejer</option>
+            <option value="admin">👑 Admin</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('userModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveUser()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<script src="/api.js"></script>
+<script>
+showUser(); setDate();
+document.getElementById('serverTime').textContent = new Date().toLocaleString('uz-UZ');
+
+const ROL_NOM = { admin:'👑 Admin', menejer:'📊 Menejer', kassir:'💳 Kassir', operator:'🔧 Operator', ishchi:'🔧 Ishchi' };
+const ROL_BADGE = { admin:'amber', menejer:'blue', kassir:'green', operator:'gray', ishchi:'gray' };
+
+async function loadUsers() {
+  try {
+    const list = await API.get('/foydalanuvchilar');
+    document.getElementById('userBody').innerHTML = list.map(u => `<tr>
+      <td><b>${u.ism}</b></td>
+      <td><code style="background:var(--bg);padding:2px 8px;border-radius:4px;font-size:12px;">${u.login}</code></td>
+      <td><span class="badge ${ROL_BADGE[u.rol]||'gray'}">${ROL_NOM[u.rol]||u.rol}</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteUser('${u._id}','${u.login}')">🗑</button></td>
+    </tr>`).join('');
+  } catch(e) {
+    document.getElementById('userBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:12px;">Faqat admin ko\'ra oladi</td></tr>';
+  }
+}
+
+async function saveUser() {
+  const ism   = document.getElementById('uIsm').value.trim();
+  const login = document.getElementById('uLogin').value.trim();
+  const parol = document.getElementById('uParol').value;
+  const rol   = document.getElementById('uRol').value;
+  if (!ism || !login || !parol) { toast('Barcha maydonlarni to\'ldiring!', 'error'); return; }
+  try {
+    await API.post('/foydalanuvchilar', { ism, login, parol, rol });
+    toast('✅ Foydalanuvchi qo\'shildi!');
+    closeModal('userModal');
+    loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteUser(id, login) {
+  if (login === API.getUser()?.login) { toast('O\'zingizni o\'chira olmaysiz!', 'error'); return; }
+  if (!confirm(`${login} ni o\'chirishni tasdiqlaysizmi?`)) return;
+  try {
+    await API.del('/foydalanuvchilar/' + id);
+    toast('✅ O\'chirildi');
+    loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function saveKorxona() {
+  localStorage.setItem('korxona', JSON.stringify({
+    nomi:   document.getElementById('kNomi').value,
+    manzil: document.getElementById('kManzil').value,
+    tel:    document.getElementById('kTel').value,
+    inn:    document.getElementById('kInn').value,
+  }));
+  toast('✅ Korxona ma\'lumotlari saqlandi!');
+}
+
+async function changeParol() {
+  const joriy = document.getElementById('joriyParol').value;
+  const yangi = document.getElementById('yangiParol').value;
+  const tasd  = document.getElementById('tasdiqlash').value;
+  if (!joriy || !yangi) { toast('Barcha maydonlarni to\'ldiring!', 'error'); return; }
+  if (yangi !== tasd)   { toast('Yangi parollar mos emas!', 'error'); return; }
+  if (yangi.length < 4) { toast('Parol kamida 4 ta belgi bo\'lsin!', 'error'); return; }
+  toast('✅ Parol o\'zgartirildi! (Demo rejimda)');
+  document.getElementById('joriyParol').value = '';
+  document.getElementById('yangiParol').value = '';
+  document.getElementById('tasdiqlash').value = '';
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// Korxona ma'lumotlarini yuklash
+const k = JSON.parse(localStorage.getItem('korxona') || '{}');
+if (k.nomi)   document.getElementById('kNomi').value   = k.nomi;
+if (k.manzil) document.getElementById('kManzil').value = k.manzil;
+if (k.tel)    document.getElementById('kTel').value    = k.tel;
+if (k.inn)    document.getElementById('kInn').value    = k.inn;
+
+loadUsers();
+</script>
+</body>
+</html>

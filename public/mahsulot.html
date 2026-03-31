@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroPlast ERP — Mahsulotlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--primary:#1a6b3c;--primary-dark:#134d2c;--primary-light:#e8f5ee;--accent:#f0a500;--accent-light:#fff8e6;--bg:#f2f5f2;--surface:#fff;--sidebar-bg:#111c14;--sidebar-text:rgba(255,255,255,0.7);--text:#1a1f1a;--text-muted:#6b7c6b;--border:#e0e8e0;--danger:#c0392b;--danger-light:#fdf0ef;--info:#2471a3;--info-light:#eaf3fb;--success:#1a6b3c;--success-light:#e8f5ee;--warning:#e67e22;--warning-light:#fef5ec;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+  .sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+  .sidebar-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .brand-logo{display:flex;align-items:center;gap:10px;}
+  .brand-logo .icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .brand-name{color:#fff;font-size:14px;font-weight:700;}
+  .brand-name span{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);}
+  .nav-section{padding:12px 10px 6px;}
+  .nav-label{font-size:9px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--sidebar-text);cursor:pointer;transition:all .18s;font-size:13px;font-weight:500;margin-bottom:2px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:var(--primary);color:#fff;}
+  .nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,0.07);}
+  .user-info{display:flex;align-items:center;gap:8px;padding:8px 10px;}
+  .user-avatar{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-details .name{color:#fff;font-size:12px;font-weight:600;}
+  .user-details .role{color:rgba(255,255,255,0.4);font-size:10px;}
+  .logout-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:15px;}
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-size:16px;font-weight:700;flex:1;}
+  .topbar-title span{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px;}
+  .topbar-date{font-size:12px;color:var(--text-muted);background:var(--bg);padding:5px 10px;border-radius:8px;}
+  .content{padding:24px;flex:1;}
+  .tabs{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:20px;}
+  .tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);transition:all .18s;border:none;background:transparent;font-family:'Onest',sans-serif;}
+  .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+  .page{display:none;}
+  .page.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:16px;position:relative;}
+  .stat-card .lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .stat-card .val{font-size:20px;font-weight:700;margin-bottom:4px;}
+  .stat-card .sub{font-size:11px;color:var(--text-muted);}
+  .stat-card.g{border-left:4px solid var(--primary);}.stat-card.g .val{color:var(--primary);}
+  .stat-card.a{border-left:4px solid var(--accent);}.stat-card.a .val{color:var(--accent);}
+  .stat-card.r{border-left:4px solid var(--danger);}.stat-card.r .val{color:var(--danger);}
+  .stat-card.b{border-left:4px solid var(--info);}.stat-card.b .val{color:var(--info);}
+  .stat-card .ico{position:absolute;top:12px;right:12px;font-size:22px;opacity:.15;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:hover{background:#f8faf8;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:10px 12px;vertical-align:middle;}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge.green{background:var(--success-light);color:var(--success);}
+  .badge.amber{background:var(--accent-light);color:var(--accent);}
+  .badge.red{background:var(--danger-light);color:var(--danger);}
+  .badge.blue{background:var(--info-light);color:var(--info);}
+  .badge.gray{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,107,60,0.08);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .form-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+  .btn{padding:9px 18px;border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all .18s;}
+  .btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}.btn-secondary:hover{background:var(--border);}
+  .btn-danger{background:var(--danger-light);color:var(--danger);}.btn-danger:hover{background:#f5c6c2;}
+  .btn-sm{padding:5px 12px;font-size:12px;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:mUp .25s ease;}
+  @keyframes mUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:var(--bg);}
+  .modal-body{padding:22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+  .prod-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;transition:all .18s;}
+  .prod-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.08);transform:translateY(-2px);}
+  .pc-icon{font-size:32px;margin-bottom:8px;}
+  .pc-name{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .pc-meta{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+  .pc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .pc-stat{background:var(--bg);border-radius:8px;padding:8px;}
+  .pc-stat .sl{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;}
+  .pc-stat .sv{font-size:14px;font-weight:700;}
+  .prog-wrap{margin-bottom:8px;}
+  .prog-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+  .prog-bg{height:6px;background:var(--bg);border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:99px;}
+  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .alert.warning{background:var(--warning-light);color:var(--warning);border:1px solid #f9c784;}
+  .alert.info{background:var(--info-light);color:var(--info);border:1px solid #a9d2f1;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+<aside class="sidebar"></aside>
+<script src="sidebar.js"></script>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Mahsulotlar & Ombor <span>/ Tayyor mahsulot boshqaruvi</span></div>
+    <div class="topbar-date" id="todayDate"></div>
+  </header>
+  <div class="content">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('mahsulotlar',this)">🗃️ Mahsulotlar</button>
+      <button class="tab" onclick="switchTab('ombor',this)">🏠 Ombor</button>
+      <button class="tab" onclick="switchTab('harakatlar',this)">📋 Harakatlar</button>
+    </div>
+
+    <!-- MAHSULOTLAR -->
+    <div class="page active" id="tab-mahsulotlar">
+      <div class="stats-grid">
+        <div class="stat-card g"><div class="lbl">Mahsulot turlari</div><div class="val" id="stTur">0</div><div class="ico">🗃️</div></div>
+        <div class="stat-card b"><div class="lbl">Jami ombor (kg)</div><div class="val" id="stOmbor">0</div><div class="ico">📦</div></div>
+        <div class="stat-card a"><div class="lbl">Ombor qiymati</div><div class="val" id="stQiymat">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
+        <div class="stat-card r"><div class="lbl">Kam qolganlar</div><div class="val" id="stKam">0</div><div class="ico">⚠️</div></div>
+      </div>
+      <div id="kamAlertlar"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <input id="prodSearch" placeholder="🔍 Mahsulot qidirish..." oninput="renderMahsulotlar()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;width:240px;">
+        <button class="btn btn-primary" onclick="openModal('prodModal')">+ Mahsulot qo'shish</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" id="prodGrid"></div>
+    </div>
+
+    <!-- OMBOR -->
+    <div class="page" id="tab-ombor">
+      <div class="card" style="margin:0;">
+        <div class="card-header"><div class="card-title">🏠 Tayyor mahsulot ombori</div><button class="btn btn-sm btn-secondary" onclick="exportOmbor()">📥 Eksport</button></div>
+        <table>
+          <thead><tr><th>Icon</th><th>Mahsulot nomi</th><th>Xom ashyosi</th><th>Ombordagi (kg)</th><th>Min chegara</th><th>Holat</th><th>Amal</th></tr></thead>
+          <tbody id="omborBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HARAKATLAR -->
+    <div class="page" id="tab-harakatlar">
+      <div class="alert info">ℹ️ Mahsulot ombori harakatlari: ishlab chiqarishdan kelib tushish va sotuvdan chiqish.</div>
+      <div class="card" style="margin:0;">
+        <div class="card-header"><div class="card-title">📋 Ombor harakatlari jurnali</div>
+          <select id="harFilter" onchange="renderHarakatlar()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barchasi</option><option value="kirim">Kirim (ishlab chiqarish)</option><option value="chiqim">Chiqim (sotuv)</option></select>
+        </div>
+        <table>
+          <thead><tr><th>Sana</th><th>Mahsulot</th><th>Harakat</th><th>Miqdor (kg)</th><th>Sabab</th><th>Qoldiq</th></tr></thead>
+          <tbody id="harakatBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAHSULOT MODAL -->
+<div class="modal-overlay" id="prodModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="prodModalT">🗃️ Yangi mahsulot</h3><button class="modal-close" onclick="closeModal('prodModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="prodEditId">
+      <div class="form-group"><label>Mahsulot nomi</label><input id="pNomi" placeholder="Masalan: Mis sim"></div>
+      <div class="form-group"><label>Qaysi xom ashyodan yasaladi?</label>
+        <div style="display:flex;gap:8px;">
+          <select id="pXom" style="flex:1;"><option value="">— Tanlang —</option></select>
+          <button class="btn btn-secondary" onclick="addYangiXomTur()" style="padding:0 12px;">+ Yangi</button>
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Poterya (%)</label><input type="number" id="pPoterya" placeholder="5"></div>
+        <div class="form-group"><label>Ombor (kg)</label><input type="number" id="pOmbor" placeholder="0"></div>
+        <div class="form-group"><label>Min chegara</label><input type="number" id="pMin" placeholder="100"></div>
+      </div>
+      <div class="form-group"><label>Ikon (Ixtiyoriy)</label><input id="pIcon" placeholder="🗃️" maxlength="2"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('prodModal')">Bekor</button><button class="btn btn-primary" onclick="saveProd()">Saqlash</button></div>
+  </div>
+</div>
+
+<!-- OMBOR YANGILASH -->
+<div class="modal-overlay" id="omborModal">
+  <div class="modal" style="width:400px;">
+    <div class="modal-header"><h3 id="omborModalT">📦 Ombor yangilash</h3><button class="modal-close" onclick="closeModal('omborModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Yangi miqdor (kg)</label><input type="number" id="omborKg" placeholder="0"></div>
+      <div class="form-group"><label>Sabab</label><input id="omborSabab" placeholder="Qo'lda kiritish sababi"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('omborModal')">Bekor</button><button class="btn btn-primary" onclick="saveOmbor()">Yangilash</button></div>
+  </div>
+</div>
+
+<script>
+const user=JSON.parse(localStorage.getItem('erp_user')||'{"name":"admin","role":"admin"}');
+
+
+
+document.getElementById('todayDate').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+
+let mahsulotlar=JSON.parse(localStorage.getItem('mahsulotlar')||JSON.stringify([
+  {id:'p1',nomi:'Qora plastik granula',qisqa:'QP-1',tur:'granula',xom:'qora',qolib:'Katta qolib №1',narx:40000,ombor:2840,min:500,poterya:5,icon:'🖤'},
+  {id:'p2',nomi:'Rangli plastik granula',qisqa:'RP-1',tur:'granula',xom:'rangli',qolib:'Katta qolib №2',narx:45000,ombor:1200,min:300,poterya:5,icon:'🌈'},
+  {id:'p3',nomi:'Rangli plastik (yashil)',qisqa:'RP-2',tur:'granula',xom:'rangli',qolib:'Kichik qolib №1',narx:46000,ombor:650,min:200,poterya:5,icon:'💚'},
+  {id:'p4',nomi:'Rezina granula',qisqa:'RG-1',tur:'granula',xom:'rezina',qolib:'Rezina qolib №3',narx:55000,ombor:980,min:400,poterya:17,icon:'⚫'},
+  {id:'p5',nomi:'Poterya qoldig\'i (qora)',qisqa:'PQ-1',tur:'qoldiq',xom:'qora',qolib:'—',narx:400,ombor:89,min:50,poterya:0,icon:'🔘'},
+  {id:'p6',nomi:'Poterya qoldig\'i (rangli)',qisqa:'PQ-2',tur:'qoldiq',xom:'rangli',qolib:'—',narx:350,ombor:142,min:50,poterya:0,icon:'🔵'},
+]));
+
+const harakatlar=[
+  {sana:'2025-03-28',mahsulot:'Qora plastik granula',harakat:'kirim',miqdor:481,sabab:'Partiya P-1048'},
+  {sana:'2025-03-28',mahsulot:'Qora plastik granula',harakat:'chiqim',miqdor:-480,sabab:'Sotuv S-1048 (Toshkent Zavod)'},
+  {sana:'2025-03-27',mahsulot:'Rangli plastik granula',harakat:'kirim',miqdor:285,sabab:'Partiya P-1047'},
+  {sana:'2025-03-27',mahsulot:'Rangli plastik granula',harakat:'chiqim',miqdor:-200,sabab:'Sotuv S-1047 (Andijon MChJ)'},
+  {sana:'2025-03-26',mahsulot:'Rezina granula',harakat:'chiqim',miqdor:-150,sabab:'Sotuv S-1046 (Farg\'ona Savdo)'},
+  {sana:'2025-03-25',mahsulot:'Qora plastik granula',harakat:'kirim',miqdor:390,sabab:'Partiya P-1046'},
+];
+
+const TUR_NOM={granula:'Granula',plyonka:'Plyonka',profil:'Profil',boshqa:'Boshqa',qoldiq:'Qoldiq'};
+function getXOM_NOM() { const t=typeof getXomTurlar==='function'?getXomTurlar():[]; const x={}; t.forEach(k=>x[k.id]=k.nomi); return x; }
+function loadXomTurlarList() {
+  const t = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
+  document.getElementById('pXom').innerHTML = '<option value="">— Tanlang —</option>' + t.map(x=>`<option value="${x.id}">${x.ico} ${x.nomi}</option>`).join('');
+}
+function addYangiXomTur() {
+  const nomi = prompt("Yangi xom ashyo nomini kiritng (Masalan: Alyumin)");
+  if(!nomi) return;
+  if(typeof saveXomTur==='function') { saveXomTur(nomi); loadXomTurlarList(); renderMahsulotlar(); }
+}
+const RANG=['#1a6b3c','#e67e22','#2471a3','#1a1f1a','#8e44ad','#c0392b'];
+let omborEditId=null;
+
+function renderMahsulotlar(){
+  const src=document.getElementById('prodSearch').value.toLowerCase();
+  const fil=mahsulotlar.filter(p=>p.nomi.toLowerCase().includes(src));
+  const kamList=mahsulotlar.filter(p=>p.ombor<p.min);
+  document.getElementById('stTur').textContent=mahsulotlar.length;
+  document.getElementById('stOmbor').textContent=mahsulotlar.reduce((s,p)=>s+p.ombor,0).toLocaleString();
+  document.getElementById('stQiymat').parentElement.style.display = 'none'; // Narx yo'q endi
+  document.getElementById('stTur').parentElement.style.gridColumn = 'span 2';
+  document.getElementById('stOmbor').parentElement.style.gridColumn = 'span 2';
+  document.getElementById('stKam').parentElement.style.gridColumn = 'span 1';
+  document.getElementById('stKam').parentElement.parentElement.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  document.getElementById('stKam').textContent=kamList.length;
+  document.getElementById('kamAlertlar').innerHTML=kamList.map(p=>`<div class="alert warning">⚠️ ${p.icon} ${p.nomi}: ${p.ombor} kg — minimal (${p.min} kg) dan kam!</div>`).join('');
+  const grid=document.getElementById('prodGrid');
+  if(!fil.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);">Topilmadi</div>';return;}
+  grid.innerHTML=fil.map((p,i)=>{
+    const holat=p.ombor<p.min?'red':p.ombor<p.min*2?'amber':'green';
+    const pct=Math.min(100,p.ombor/(p.min*3)*100);
+    return `<div class="prod-card">
+      <div class="pc-icon">${p.icon}</div>
+      <div class="pc-name">${p.nomi}</div>
+      <div class="pc-meta">${getXOM_NOM()[p.xom]||p.xom} ashyosidan yasaladi</div>
+      <div class="pc-stats" style="grid-template-columns:1fr 1fr !important;">
+        <div class="pc-stat"><div class="sl">Ombordagi</div><div class="sv" style="color:${holat==='red'?'var(--danger)':holat==='amber'?'var(--accent)':'var(--primary)'}">${p.ombor.toLocaleString()} kg</div></div>
+        <div class="pc-stat"><div class="sl">Poterya</div><div class="sv" style="color:var(--text-muted)">${p.poterya||0}%</div></div>
+      </div>
+      <div class="prog-wrap" style="margin-top:10px;">
+        <div class="prog-label"><span style="font-size:11px;color:var(--text-muted)">Min: ${p.min} kg</span><span class="badge ${holat}" style="font-size:10px;padding:2px 8px;">${holat==='green'?'✅ Yetarli':holat==='amber'?'⚠️ Kam':'🚨 Kritik'}</span></div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${holat==='red'?'var(--danger)':holat==='amber'?'var(--accent)':'var(--primary)'}"></div></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-sm btn-secondary" onclick="openOmborModal('${p.id}')">📦 Ombor</button>
+        <button class="btn btn-sm btn-secondary" onclick="editProd('${p.id}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteProd('${p.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOmbor(){
+  document.getElementById('omborBody').innerHTML=mahsulotlar.map(p=>{
+    const holat=p.ombor<p.min?'red':p.ombor<p.min*2?'amber':'green';
+    return `<tr>
+      <td style="font-size:18px;">${p.icon}</td>
+      <td><b>${p.nomi}</b></td>
+      <td><span class="badge gray">${getXOM_NOM()[p.xom]||p.xom}</span></td>
+      <td style="font-weight:700;color:${holat==='red'?'var(--danger)':holat==='amber'?'var(--accent)':'var(--primary)'};font-size:15px;">${p.ombor.toLocaleString()} kg</td>
+      <td style="color:var(--text-muted);">${p.min} kg</td>
+      <td><span class="badge ${holat}">${holat==='green'?'✅ Yetarli':holat==='amber'?'⚠️ Kam':'🚨 Kritik'}</span></td>
+      <td><button class="btn btn-sm btn-secondary" onclick="openOmborModal('${p.id}')">📦</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderHarakatlar(){
+  const fil=document.getElementById('harFilter').value;
+  const list=harakatlar.filter(h=>!fil||h.harakat===fil);
+  let qoldiq={};
+  mahsulotlar.forEach(p=>qoldiq[p.nomi]=p.ombor);
+  document.getElementById('harakatBody').innerHTML=list.map(h=>`<tr>
+    <td>${h.sana}</td>
+    <td>${h.mahsulot}</td>
+    <td><span class="badge ${h.harakat==='kirim'?'green':'amber'}">${h.harakat==='kirim'?'📥 Kirim':'📤 Chiqim'}</span></td>
+    <td style="font-weight:700;color:${h.harakat==='kirim'?'var(--primary)':'var(--warning)'};">${h.harakat==='kirim'?'+':''}${h.miqdor} kg</td>
+    <td style="font-size:12px;color:var(--text-muted);">${h.sabab}</td>
+    <td>${(qoldiq[h.mahsulot]||0).toLocaleString()} kg</td>
+  </tr>`).join('');
+}
+
+function openOmborModal(id){
+  const p=mahsulotlar.find(x=>x.id===id);if(!p)return;
+  omborEditId=id;
+  document.getElementById('omborModalT').textContent=`📦 ${p.nomi} — Ombor`;
+  document.getElementById('omborKg').value=p.ombor;
+  openModal('omborModal');
+}
+function saveOmbor(){
+  const p=mahsulotlar.find(x=>x.id===omborEditId);if(!p)return;
+  const kg=parseFloat(document.getElementById('omborKg').value)||0;
+  p.ombor=kg;localStorage.setItem('mahsulotlar',JSON.stringify(mahsulotlar));
+  closeModal('omborModal');renderMahsulotlar();renderOmbor();
+}
+
+function saveProd(){
+  const id=document.getElementById('prodEditId').value;
+  const obj={nomi:document.getElementById('pNomi').value.trim(),xom:document.getElementById('pXom').value,ombor:parseFloat(document.getElementById('pOmbor').value)||0,min:parseFloat(document.getElementById('pMin').value)||100,poterya:parseFloat(document.getElementById('pPoterya').value)||0,icon:document.getElementById('pIcon').value||'🗃️'};
+  if(!obj.nomi){alert('Mahsulot nomini kiriting!');return;}
+  if(id){const p=mahsulotlar.find(x=>x.id===id);if(p)Object.assign(p,obj);}
+  else{obj.id='p'+Date.now();mahsulotlar.push(obj);}
+  localStorage.setItem('mahsulotlar',JSON.stringify(mahsulotlar));
+  closeModal('prodModal');renderMahsulotlar();renderOmbor();
+}
+
+function editProd(id){
+  const p=mahsulotlar.find(x=>x.id===id);if(!p)return;
+  document.getElementById('prodEditId').value=p.id;document.getElementById('prodModalT').textContent='✏️ Mahsulotni tahrirlash';
+  document.getElementById('pNomi').value=p.nomi||'';
+  document.getElementById('pXom').value=p.xom||'';
+  document.getElementById('pOmbor').value=p.ombor||0;
+  document.getElementById('pMin').value=p.min||100;
+  document.getElementById('pPoterya').value=p.poterya||0;
+  document.getElementById('pIcon').value=p.icon||'🗃️';
+  openModal('prodModal');
+}
+function deleteProd(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;mahsulotlar=mahsulotlar.filter(p=>p.id!==id);localStorage.setItem('mahsulotlar',JSON.stringify(mahsulotlar));renderMahsulotlar();renderOmbor();}
+
+function exportOmbor(){
+  let csv='Mahsulot,Ombordagi kg,Min chegara,Holat\n';
+  mahsulotlar.forEach(p=>{const holat=p.ombor<p.min?'Kritik':p.ombor<p.min*2?'Kam':'Yetarli';csv+=`"${p.nomi}",${p.ombor},${p.min},"${holat}"\n`;});
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='Mahsulotlar_Ombor.csv';a.click();
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active');
+  if(id==='mahsulotlar')renderMahsulotlar();if(id==='ombor')renderOmbor();if(id==='harakatlar')renderHarakatlar();
+}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='prodModal'){document.getElementById('prodEditId').value='';document.getElementById('prodModalT').textContent='🗃️ Yangi mahsulot';}}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+loadXomTurlarList();
+renderMahsulotlar();
+renderHarakatlar();
+</script>
+<script src="/api.js"></script>
+</body>
+</html>

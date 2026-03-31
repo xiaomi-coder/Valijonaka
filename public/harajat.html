@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroPlast ERP — Harajatlar & Hisobot</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#1a6b3c;--primary-dark:#134d2c;--primary-light:#e8f5ee;
+    --accent:#f0a500;--accent-light:#fff8e6;
+    --bg:#f2f5f2;--surface:#fff;
+    --sidebar-bg:#111c14;--sidebar-text:rgba(255,255,255,0.7);
+    --text:#1a1f1a;--text-muted:#6b7c6b;--border:#e0e8e0;
+    --danger:#c0392b;--danger-light:#fdf0ef;
+    --warning:#e67e22;--warning-light:#fef5ec;
+    --info:#2471a3;--info-light:#eaf3fb;
+    --success:#1a6b3c;--success-light:#e8f5ee;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+
+  /* SIDEBAR */
+  .sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;scrollbar-width:none;}
+  .sidebar::-webkit-scrollbar{display:none;}
+  .sidebar-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .brand-logo{display:flex;align-items:center;gap:10px;}
+  .brand-logo .icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .brand-name{color:#fff;font-size:14px;font-weight:700;}
+  .brand-name span{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);}
+  .nav-section{padding:12px 10px 6px;}
+  .nav-label{font-size:9px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--sidebar-text);cursor:pointer;transition:all .18s;font-size:13px;font-weight:500;margin-bottom:2px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:var(--primary);color:#fff;}
+  .nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,0.07);}
+  .user-info{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;}
+  .user-avatar{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-details .name{color:#fff;font-size:12px;font-weight:600;}
+  .user-details .role{color:rgba(255,255,255,0.4);font-size:10px;}
+  .logout-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:15px;}
+  .logout-btn:hover{color:#e74c3c;}
+
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-size:16px;font-weight:700;flex:1;}
+  .topbar-title span{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px;}
+  .topbar-date{font-size:12px;color:var(--text-muted);background:var(--bg);padding:5px 10px;border-radius:8px;}
+  .content{padding:24px;flex:1;}
+
+  /* TABS */
+  .tabs{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:20px;}
+  .tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);transition:all .18s;border:none;background:transparent;font-family:'Onest',sans-serif;}
+  .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+  .page{display:none;}
+  .page.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* CARD */
+  .card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:16px;position:relative;overflow:hidden;transition:transform .18s;}
+  .stat-card:hover{transform:translateY(-2px);}
+  .stat-card .lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .stat-card .val{font-size:20px;font-weight:700;margin-bottom:4px;}
+  .stat-card .sub{font-size:11px;color:var(--text-muted);}
+  .stat-card.g{border-left:4px solid var(--primary);}.stat-card.g .val{color:var(--primary);}
+  .stat-card.a{border-left:4px solid var(--accent);}.stat-card.a .val{color:var(--accent);}
+  .stat-card.r{border-left:4px solid var(--danger);}.stat-card.r .val{color:var(--danger);}
+  .stat-card.b{border-left:4px solid var(--info);}.stat-card.b .val{color:var(--info);}
+  .stat-card .ico{position:absolute;top:12px;right:12px;font-size:22px;opacity:.15;}
+  .stat-card .trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;margin-top:4px;}
+  .trend.up{background:var(--success-light);color:var(--success);}
+  .trend.down{background:var(--danger-light);color:var(--danger);}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:hover{background:#f8faf8;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:10px 12px;vertical-align:middle;}
+
+  /* BADGE */
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge.green{background:var(--success-light);color:var(--success);}
+  .badge.amber{background:var(--accent-light);color:var(--accent);}
+  .badge.red{background:var(--danger-light);color:var(--danger);}
+  .badge.blue{background:var(--info-light);color:var(--info);}
+  .badge.gray{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}
+  .badge.purple{background:#f0eeff;color:#6c3fcf;}
+
+  /* FORM */
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,107,60,0.08);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+  /* BTN */
+  .btn{padding:9px 18px;border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all .18s;}
+  .btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}.btn-secondary:hover{background:var(--border);}
+  .btn-danger{background:var(--danger-light);color:var(--danger);}.btn-danger:hover{background:#f5c6c2;}
+  .btn-sm{padding:5px 12px;font-size:12px;}
+
+  /* PROGRESS */
+  .prog-wrap{margin-bottom:12px;}
+  .prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .prog-bg{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:99px;transition:width 1s ease;}
+
+  /* ALERT */
+  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .alert.info{background:var(--info-light);color:var(--info);border:1px solid #a9d2f1;}
+  .alert.warning{background:var(--warning-light);color:var(--warning);border:1px solid #f9c784;}
+  .alert.success{background:var(--success-light);color:var(--success);border:1px solid #9fcfb3;}
+
+  /* KATEGORY CHIP */
+  .kat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+  .kat-chip{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .18s;text-align:center;}
+  .kat-chip:hover{border-color:var(--primary);background:var(--primary-light);}
+  .kat-chip.active{border-color:var(--primary);background:var(--primary-light);}
+  .kat-chip .kc-icon{font-size:22px;margin-bottom:4px;}
+  .kat-chip .kc-name{font-size:12px;font-weight:600;color:var(--text);}
+  .kat-chip .kc-sum{font-size:13px;font-weight:700;color:var(--primary);margin-top:2px;}
+
+  /* HISOBOT KARTA */
+  .hisobot-box{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:20px;}
+  .hb-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .hb-row:last-child{border-bottom:none;}
+  .hb-row.total{font-size:17px;font-weight:700;border-top:2px solid var(--border);margin-top:6px;padding-top:12px;}
+  .hb-row.profit{font-size:19px;font-weight:700;color:var(--primary);}
+  .hb-row.loss{font-size:19px;font-weight:700;color:var(--danger);}
+  .hb-label{color:var(--text-muted);}
+  .hb-val{font-weight:600;}
+
+  /* OY SOLISHTIRISH */
+  .taqqos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+  .taqqos-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .tc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .tc-oy{font-size:14px;font-weight:700;}
+  .tc-jami{font-size:13px;color:var(--text-muted);}
+  .tc-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;}
+  .tc-sum{font-weight:600;}
+
+  /* CSS BAR CHART */
+  .bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px;margin-bottom:8px;}
+  .bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .bc-bar{width:100%;border-radius:6px 6px 0 0;cursor:pointer;transition:opacity .15s;}
+  .bc-bar:hover{opacity:.8;}
+  .bc-label{font-size:10px;color:var(--text-muted);}
+  .bc-val{font-size:10px;font-weight:600;color:var(--text-muted);}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:mUp .25s ease;}
+  @keyframes mUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:var(--bg);}
+  .modal-body{padding:22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+  /* PRINT */
+  @media print{
+    .sidebar,.topbar,.tabs,.btn,.no-print{display:none!important;}
+    .main{margin-left:0;}
+    .content{padding:10px;}
+    .page.active{display:block!important;}
+  }
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar"></aside>
+<script src="sidebar.js"></script>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Harajatlar & Hisobot <span>/ Moliyaviy boshqaruv</span></div>
+    <div class="topbar-date" id="todayDate"></div>
+  </header>
+  <div class="content">
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('harajat',this)">💸 Harajatlar</button>
+      <button class="tab" onclick="switchTab('kategoriya',this)">🏷️ Kategoriyalar</button>
+      <button class="tab" onclick="switchTab('moshina',this)">🚗 Moshina harajat</button>
+      <button class="tab" onclick="switchTab('taqqos',this)">📊 Oy solishtirish</button>
+      <button class="tab" onclick="switchTab('hisobot',this)">📈 Hisobot</button>
+    </div>
+
+    <!-- ===== HARAJATLAR ===== -->
+    <div class="page active" id="tab-harajat">
+      <div class="stats-grid">
+        <div class="stat-card r"><div class="lbl">Bu oy harajat</div><div class="val" id="stHarajat">0</div><div class="ico">💸</div><div class="sub">so'm</div></div>
+        <div class="stat-card a"><div class="lbl">O'tgan oy</div><div class="val" id="stOtgan">0</div><div class="ico">📅</div><div class="sub">so'm</div><div id="stFarq"></div></div>
+        <div class="stat-card b"><div class="lbl">Harajatlar soni</div><div class="val" id="stSon">0</div><div class="ico">📋</div><div class="sub">bu oy</div></div>
+        <div class="stat-card g"><div class="lbl">Eng katta kategoriya</div><div class="val" id="stEngKatta" style="font-size:14px">—</div><div class="ico">🏆</div></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;" class="no-print">
+        <div style="display:flex;gap:8px;">
+          <select id="hFilterKat" onchange="renderHarajatlar()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
+            <option value="">Barcha kategoriyalar</option>
+          </select>
+          <select id="hFilterOy" onchange="renderHarajatlar()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
+            <option value="3">Mart 2025</option>
+            <option value="2">Fevral 2025</option>
+            <option value="1">Yanvar 2025</option>
+          </select>
+          <input placeholder="🔍 Qidirish..." oninput="filterHarajat(this.value)" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;width:180px;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Chop</button>
+          <button class="btn btn-secondary" onclick="exportHarajat()">📥 Eksport</button>
+          <button class="btn btn-primary" onclick="openModal('harajatModal')">+ Harajat qo'shish</button>
+        </div>
+      </div>
+
+      <!-- Kategoriya chips -->
+      <div class="kat-grid" id="katChips"></div>
+
+      <div class="card" style="margin:0">
+        <div class="card-header"><div class="card-title" id="harajatTableTitle">Barcha harajatlar</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Sana</th><th>Kategoriya</th><th>Tavsif</th><th>Moshina</th><th>Summa</th><th>Qo'shgan</th><th class="no-print">Amal</th></tr></thead>
+          <tbody id="harajatBody"></tbody>
+        </table>
+        <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:16px;font-size:13px;">
+          <span style="color:var(--text-muted)">Jami:</span>
+          <span style="font-size:17px;font-weight:700;color:var(--danger)" id="harajatJami">0 so'm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== KATEGORIYALAR ===== -->
+    <div class="page" id="tab-kategoriya">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;">🏷️ Harajat kategoriyalari</div>
+        <button class="btn btn-primary" onclick="openModal('katModal')">+ Kategoriya qo'shish</button>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">Kategoriyalar ro'yxati</div></div>
+          <table>
+            <thead><tr><th>Icon</th><th>Nomi</th><th>Bu oy summa</th><th>Harajatlar</th><th>Amal</th></tr></thead>
+            <tbody id="katBody"></tbody>
+          </table>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">📊 Taqsimot (Mart 2025)</div></div>
+          <div class="card-body" id="katChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MOSHINA HARAJAT ===== -->
+    <div class="page" id="tab-moshina">
+      <div class="alert info">ℹ️ Har bir moshina uchun alohida harajat va km hisobi. Haydovchiga reys haqqi avto-biriktiriladi.</div>
+      <div class="grid-3" style="margin-bottom:16px;" id="moshinaCards"></div>
+      <div class="card" style="margin:0">
+        <div class="card-header">
+          <div class="card-title">Moshina harajatlari jurnali</div>
+          <select id="moshinaFilter" onchange="renderMoshinaTable()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;">
+            <option value="">Barcha moshinalar</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Sana</th><th>Moshina</th><th>Kategoriya</th><th>Tavsif</th><th>Summa</th></tr></thead>
+          <tbody id="moshinaHarajatBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== OY SOLISHTIRISH ===== -->
+    <div class="page" id="tab-taqqos">
+      <div class="taqqos-grid" id="taqqosGrid"></div>
+      <div class="card" style="margin:0">
+        <div class="card-header"><div class="card-title">📊 Kategoriya bo'yicha oy solishtirish</div></div>
+        <table>
+          <thead><tr><th>Kategoriya</th><th>Yanvar</th><th>Fevral</th><th>Mart</th><th>Farq (F→M)</th></tr></thead>
+          <tbody id="taqqosBody"></tbody>
+          <tfoot>
+            <tr style="background:var(--bg)">
+              <td style="padding:10px 12px;font-weight:700;">JAMI</td>
+              <td id="tqJan" style="padding:10px 12px;font-weight:700;"></td>
+              <td id="tqFev" style="padding:10px 12px;font-weight:700;"></td>
+              <td id="tqMart" style="padding:10px 12px;font-weight:700;color:var(--primary);"></td>
+              <td id="tqFarq" style="padding:10px 12px;font-weight:700;"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== HISOBOT ===== -->
+    <div class="page" id="tab-hisobot">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+          <div style="font-size:20px;font-weight:700;">📈 Moliyaviy hisobot</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">Foyda va zarar tahlili</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <select id="hisobotOy" onchange="renderHisobot()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
+            <option value="3">Mart 2025</option>
+            <option value="2">Fevral 2025</option>
+            <option value="1">Yanvar 2025</option>
+          </select>
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Chop etish</button>
+          <button class="btn btn-secondary" onclick="exportHisobot()">📥 Eksport</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="hisobotStats"></div>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <!-- P&L -->
+        <div class="hisobot-box">
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">📊 Foyda va zarar hisobi <span id="hisobotOyNom" class="badge blue" style="font-size:13px;"></span></div>
+
+          <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">DAROMADLAR</div>
+          <div class="hb-row"><span class="hb-label">Plastik granula sotuvi</span><span class="hb-val" id="hPlastik">—</span></div>
+          <div class="hb-row"><span class="hb-label">Rezina dilerlik</span><span class="hb-val" id="hRezina">—</span></div>
+          <div class="hb-row"><span class="hb-label">Poterya sotuvi</span><span class="hb-val" id="hPoterya">—</span></div>
+          <div class="hb-row total"><span>Jami daromad</span><span style="color:var(--primary)" id="hDaromad">—</span></div>
+
+          <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin:16px 0 8px;">HARAJATLAR</div>
+          <div class="hb-row" id="hKatRows"></div>
+          <div class="hb-row"><span class="hb-label">Oylik fond</span><span class="hb-val" id="hOylik">—</span></div>
+          <div class="hb-row total"><span>Jami harajat</span><span style="color:var(--danger)" id="hHarajat">—</span></div>
+
+          <div style="height:1px;background:var(--border);margin:16px 0;"></div>
+          <div class="hb-row" id="hFoydaRow" style="font-size:20px;font-weight:700;padding:12px 0;border:none;"><span>SOF FOYDA / ZARAR</span><span id="hFoyda">—</span></div>
+          <div class="hb-row" style="border:none;padding-top:0;"><span class="hb-label">Rentabellik</span><span id="hRentabellik" style="font-weight:700;font-size:15px;">—</span></div>
+        </div>
+
+        <!-- Grafik va breakdown -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- Daromad manbalari -->
+          <div class="hisobot-box" style="flex:1">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📊 Daromad manbalari</div>
+            <div id="daromadChart"></div>
+          </div>
+          <!-- Harajat taqsimoti -->
+          <div class="hisobot-box" style="flex:1">
+            <div style="font-size:14px;font-weight:700;margin-bottom:14px;">💸 Harajat taqsimoti</div>
+            <div id="harajatChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oylar taqqoslash -->
+      <div class="hisobot-box">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">📅 3 oylik taqqoslash</div>
+        <table>
+          <thead><tr><th>Ko'rsatkich</th><th>Yanvar</th><th>Fevral</th><th>Mart</th><th>O'sish (F→M)</th></tr></thead>
+          <tbody id="oyTaqqosBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HARAJAT MODAL -->
+<div class="modal-overlay" id="harajatModal">
+  <div class="modal">
+    <div class="modal-header"><h3>💸 Harajat qo'shish</h3><button class="modal-close" onclick="closeModal('harajatModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Kategoriya</label>
+          <select id="hKat"><option value="">— Tanlang —</option></select>
+        </div>
+        <div class="form-group"><label>Sana</label><input type="date" id="hSana"></div>
+      </div>
+      <div class="form-group"><label>Tavsif</label><input id="hTavsif" placeholder="Nima uchun harajat?"></div>
+      <div id="moshinaSelectWrap" style="display:none">
+        <div class="form-group"><label>Moshina tanlang</label>
+          <select id="hMoshina">
+            <option value="">— Tanlang —</option>
+            <option>01 A 234 BC — Nexia</option>
+            <option>01 B 567 DE — Damas</option>
+            <option>78 C 890 FG — Yuk mashinasi</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Summa (so'm)</label><input type="number" id="hSumma" placeholder="0"></div>
+        <div class="form-group"><label>To'lov usuli</label>
+          <select id="hTolov"><option value="naqd">💵 Naqd</option><option value="bank">🏦 Bank</option><option value="qarz">📋 Qarz</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Izoh (ixtiyoriy)</label><textarea id="hIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('harajatModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveHarajat()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- KATEGORIYA MODAL -->
+<div class="modal-overlay" id="katModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-header"><h3>🏷️ Yangi kategoriya</h3><button class="modal-close" onclick="closeModal('katModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Kategoriya nomi</label><input id="katNomi" placeholder="Masalan: Ta'mirlash"></div>
+        <div class="form-group"><label>Icon (emoji)</label><input id="katIcon" placeholder="🔧" maxlength="2"></div>
+      </div>
+      <div class="form-group"><label>Rang</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;" id="rangGrid">
+          <div class="rang-chip" onclick="selRang(this,'#1a6b3c')" style="width:28px;height:28px;border-radius:50%;background:#1a6b3c;cursor:pointer;border:2px solid transparent;"></div>
+          <div class="rang-chip" onclick="selRang(this,'#2471a3')" style="width:28px;height:28px;border-radius:50%;background:#2471a3;cursor:pointer;border:2px solid transparent;"></div>
+          <div class="rang-chip" onclick="selRang(this,'#e67e22')" style="width:28px;height:28px;border-radius:50%;background:#e67e22;cursor:pointer;border:2px solid transparent;"></div>
+          <div class="rang-chip" onclick="selRang(this,'#c0392b')" style="width:28px;height:28px;border-radius:50%;background:#c0392b;cursor:pointer;border:2px solid transparent;"></div>
+          <div class="rang-chip" onclick="selRang(this,'#8e44ad')" style="width:28px;height:28px;border-radius:50%;background:#8e44ad;cursor:pointer;border:2px solid transparent;"></div>
+          <div class="rang-chip" onclick="selRang(this,'#f0a500')" style="width:28px;height:28px;border-radius:50%;background:#f0a500;cursor:pointer;border:2px solid transparent;"></div>
+        </div>
+        <input type="hidden" id="katRang" value="#1a6b3c">
+      </div>
+      <div class="form-group"><label>Moshina bog'liqmi?</label>
+        <select id="katMoshina"><option value="0">Yo'q</option><option value="1">Ha (moshina tanlash chiqadi)</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('katModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveKat()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== INIT =====
+const user=JSON.parse(localStorage.getItem('erp_user')||'{"name":"admin","role":"admin"}');
+
+
+
+document.getElementById('todayDate').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('hSana').value=new Date().toISOString().split('T')[0];
+
+// ===== MA'LUMOTLAR =====
+let kategoriyalar=JSON.parse(localStorage.getItem('kategoriyalar')||JSON.stringify([
+  {id:'k1',nomi:'Moshina / Yoqilg\'i',icon:'🚗',rang:'#2471a3',moshina:1},
+  {id:'k2',nomi:'Elektr / Kommunal',icon:'💡',rang:'#f0a500',moshina:0},
+  {id:'k3',nomi:'Ta\'mirlash',icon:'🔧',rang:'#e67e22',moshina:1},
+  {id:'k4',nomi:'Qadoqlash',icon:'📦',rang:'#1a6b3c',moshina:0},
+  {id:'k5',nomi:'Ish haqi',icon:'💳',rang:'#8e44ad',moshina:0},
+  {id:'k6',nomi:'Boshqa',icon:'📌',rang:'#c0392b',moshina:0},
+]));
+
+let harajatlar=JSON.parse(localStorage.getItem('harajatlar')||JSON.stringify([
+  // Mart (oy=3)
+  {id:'h1',katId:'k1',sana:'2025-03-28',tavsif:'Yoqilg\'i — 40 litr',moshina:'01 A 234 BC — Nexia',summa:320000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
+  {id:'h2',katId:'k2',sana:'2025-03-27',tavsif:'Mart elektr to\'lovi',moshina:'',summa:450000,tolov:'bank',izoh:'',oy:3,qoshgan:'Admin'},
+  {id:'h3',katId:'k3',sana:'2025-03-26',tavsif:'Motor ta\'mirlash',moshina:'78 C 890 FG — Yuk mashinasi',summa:800000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
+  {id:'h4',katId:'k1',sana:'2025-03-25',tavsif:'Yoqilg\'i — Andijon reys',moshina:'01 A 234 BC — Nexia',summa:280000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
+  {id:'h5',katId:'k4',sana:'2025-03-24',tavsif:'Polietilen qoplar',moshina:'',summa:380000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Kassir'},
+  {id:'h6',katId:'k2',sana:'2025-03-20',tavsif:'Suv to\'lovi',moshina:'',summa:120000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
+  {id:'h7',katId:'k6',sana:'2025-03-15',tavsif:'Mehmonlar ziyofat',moshina:'',summa:500000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
+  {id:'h8',katId:'k1',sana:'2025-03-12',tavsif:'Moshina yuvish',moshina:'01 B 567 DE — Damas',summa:30000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Kassir'},
+  // Fevral (oy=2)
+  {id:'h9',katId:'k1',sana:'2025-02-28',tavsif:'Fevral yoqilg\'i',moshina:'01 A 234 BC — Nexia',summa:290000,tolov:'naqd',izoh:'',oy:2,qoshgan:'Admin'},
+  {id:'h10',katId:'k2',sana:'2025-02-25',tavsif:'Fevral elektr',moshina:'',summa:480000,tolov:'bank',izoh:'',oy:2,qoshgan:'Admin'},
+  {id:'h11',katId:'k3',sana:'2025-02-20',tavsif:'Qolib ta\'mirlash',moshina:'',summa:350000,tolov:'naqd',izoh:'',oy:2,qoshgan:'Admin'},
+  {id:'h12',katId:'k4',sana:'2025-02-15',tavsif:'Qadoqlash materiallari',moshina:'',summa:310000,tolov:'naqd',izoh:'',oy:2,qoshgan:'Admin'},
+  // Yanvar (oy=1)
+  {id:'h13',katId:'k1',sana:'2025-01-28',tavsif:'Yanvar yoqilg\'i',moshina:'01 A 234 BC — Nexia',summa:260000,tolov:'naqd',izoh:'',oy:1,qoshgan:'Admin'},
+  {id:'h14',katId:'k2',sana:'2025-01-25',tavsif:'Yanvar elektr',moshina:'',summa:410000,tolov:'bank',izoh:'',oy:1,qoshgan:'Admin'},
+  {id:'h15',katId:'k6',sana:'2025-01-10',tavsif:'Ofis jihozlar',moshina:'',summa:650000,tolov:'naqd',izoh:'',oy:1,qoshgan:'Admin'},
+]));
+
+// Demo daromadlar (sotuvlardan)
+const DAROMADLAR={
+  1:{plastik:32000000,rezina:9500000,poterya:2200000},
+  2:{plastik:38000000,rezina:10200000,poterya:2800000},
+  3:{plastik:41000000,rezina:11000000,poterya:3000000},
+};
+const OYLIK_FOND={1:5800000,2:6200000,3:7444000};
+const OY_NOMI={1:'Yanvar',2:'Fevral',3:'Mart'};
+let selectedRang='#1a6b3c';
+let activeKatFilter='';
+
+// ===== UTIL =====
+function katById(id){return kategoriyalar.find(k=>k.id===id)||{nomi:'Boshqa',icon:'📌',rang:'#999'};}
+function harajatByOy(oy,katId=''){
+  return harajatlar.filter(h=>h.oy===oy&&(!katId||h.katId===katId));
+}
+function sumHarajat(list){return list.reduce((s,h)=>s+h.summa,0);}
+function katSum(katId,oy){return sumHarajat(harajatlar.filter(h=>h.katId===katId&&h.oy===oy));}
+
+// ===== HARAJAT SELECT SETUP =====
+function setupKatSelect(){
+  const sel=document.getElementById('hKat');
+  const filter=document.getElementById('hFilterKat');
+  const opts=kategoriyalar.map(k=>`<option value="${k.id}">${k.icon} ${k.nomi}</option>`).join('');
+  sel.innerHTML='<option value="">— Tanlang —</option>'+opts;
+  filter.innerHTML='<option value="">Barcha kategoriyalar</option>'+opts;
+}
+
+document.getElementById('hKat').addEventListener('change',function(){
+  const k=katById(this.value);
+  document.getElementById('moshinaSelectWrap').style.display=k.moshina?'block':'none';
+});
+
+// ===== HARAJATLAR =====
+let filteredHarajatlar=[];
+function renderHarajatlar(){
+  const oy=parseInt(document.getElementById('hFilterOy').value)||3;
+  const katF=document.getElementById('hFilterKat').value;
+  filteredHarajatlar=harajatlar.filter(h=>h.oy===oy&&(!katF||h.katId===katF)&&(!activeKatFilter||h.katId===activeKatFilter));
+  const body=document.getElementById('harajatBody');
+  const jami=sumHarajat(filteredHarajatlar);
+
+  // Stats
+  const oyH=harajatlar.filter(h=>h.oy===oy);
+  const prevH=harajatlar.filter(h=>h.oy===oy-1);
+  const oySum=sumHarajat(oyH); const prevSum=sumHarajat(prevH);
+  const farq=oySum-prevSum; const farqPct=prevSum?Math.abs(Math.round(farq/prevSum*100)):0;
+  document.getElementById('stHarajat').textContent=oySum.toLocaleString();
+  document.getElementById('stOtgan').textContent=prevSum.toLocaleString();
+  document.getElementById('stFarq').innerHTML=farq>0?`<span class="trend down">↑ ${farqPct}%</span>`:`<span class="trend up">↓ ${farqPct}%</span>`;
+  document.getElementById('stSon').textContent=oyH.length;
+  const topKat=kategoriyalar.reduce((t,k)=>katSum(k.id,oy)>katSum(t.id,oy)?k:t,kategoriyalar[0]);
+  document.getElementById('stEngKatta').textContent=topKat?(topKat.icon+' '+topKat.nomi):'—';
+
+  // Kat chips
+  const chips=document.getElementById('katChips');
+  chips.innerHTML=kategoriyalar.map(k=>{
+    const s=katSum(k.id,oy);
+    const isActive=activeKatFilter===k.id;
+    return `<div class="kat-chip ${isActive?'active':''}" onclick="katFilter('${k.id}')">
+      <div class="kc-icon">${k.icon}</div>
+      <div class="kc-name">${k.nomi}</div>
+      <div class="kc-sum">${s.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+
+  if(!filteredHarajatlar.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">Harajat yo\'q</td></tr>';document.getElementById('harajatJami').textContent='0 so\'m';return;}
+  body.innerHTML=filteredHarajatlar.slice().reverse().map((h,i)=>{
+    const k=katById(h.katId);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${h.sana}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px;background:${k.rang}18;color:${k.rang};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;">${k.icon} ${k.nomi}</span></td>
+      <td>${h.tavsif}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${h.moshina||'—'}</td>
+      <td style="font-weight:700;color:var(--danger)">${h.summa.toLocaleString()}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${h.qoshgan}</td>
+      <td class="no-print"><button class="btn btn-sm btn-danger" onclick="deleteHarajat('${h.id}')">🗑</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('harajatJami').textContent=jami.toLocaleString()+' so\'m';
+}
+
+function katFilter(id){
+  activeKatFilter=activeKatFilter===id?'':id;
+  renderHarajatlar();
+}
+
+function filterHarajat(q){
+  const oy=parseInt(document.getElementById('hFilterOy').value)||3;
+  const list=harajatlar.filter(h=>h.oy===oy&&(h.tavsif.toLowerCase().includes(q.toLowerCase())||katById(h.katId).nomi.toLowerCase().includes(q.toLowerCase())));
+  filteredHarajatlar=list;
+  const body=document.getElementById('harajatBody');
+  if(!list.length){body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text-muted);">Topilmadi</td></tr>';return;}
+  body.innerHTML=list.map((h,i)=>{const k=katById(h.katId);return `<tr><td>${i+1}</td><td>${h.sana}</td><td><span style="background:${k.rang}18;color:${k.rang};padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;">${k.icon} ${k.nomi}</span></td><td>${h.tavsif}</td><td style="font-size:12px;color:var(--text-muted)">${h.moshina||'—'}</td><td style="font-weight:700;color:var(--danger)">${h.summa.toLocaleString()}</td><td style="font-size:12px;color:var(--text-muted)">${h.qoshgan}</td><td><button class="btn btn-sm btn-danger" onclick="deleteHarajat('${h.id}')">🗑</button></td></tr>`;}).join('');
+  document.getElementById('harajatJami').textContent=sumHarajat(list).toLocaleString()+' so\'m';
+}
+
+function saveHarajat(){
+  const katId=document.getElementById('hKat').value;
+  const summa=parseFloat(document.getElementById('hSumma').value)||0;
+  const tavsif=document.getElementById('hTavsif').value.trim();
+  const sana=document.getElementById('hSana').value;
+  if(!katId){alert('Kategoriyani tanlang!');return;}
+  if(!summa){alert('Summani kiriting!');return;}
+  if(!tavsif){alert('Tavsifni kiriting!');return;}
+  const oy=parseInt(sana.split('-')[1])||3;
+  const h={id:'h'+Date.now(),katId,sana,tavsif,moshina:document.getElementById('hMoshina').value,summa,tolov:document.getElementById('hTolov').value,izoh:document.getElementById('hIzoh').value,oy,qoshgan:user.name};
+  harajatlar.push(h);
+  localStorage.setItem('harajatlar',JSON.stringify(harajatlar));
+  document.getElementById('hTavsif').value='';document.getElementById('hSumma').value='';document.getElementById('hIzoh').value='';document.getElementById('hKat').value='';document.getElementById('moshinaSelectWrap').style.display='none';
+  closeModal('harajatModal');
+  renderHarajatlar();
+}
+
+function deleteHarajat(id){
+  if(!confirm('Harajatni o\'chirishni tasdiqlaysizmi?'))return;
+  harajatlar=harajatlar.filter(h=>h.id!==id);
+  localStorage.setItem('harajatlar',JSON.stringify(harajatlar));
+  renderHarajatlar();
+}
+
+function exportHarajat(){
+  const oy=parseInt(document.getElementById('hFilterOy').value)||3;
+  let csv='Sana,Kategoriya,Tavsif,Moshina,Summa,Tolov,Qoshgan\n';
+  harajatlar.filter(h=>h.oy===oy).forEach(h=>{const k=katById(h.katId);csv+=`"${h.sana}","${k.nomi}","${h.tavsif}","${h.moshina||''}",${h.summa},"${h.tolov}","${h.qoshgan}"\n`;});
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Harajatlar_${OY_NOMI[oy]}_2025.csv`;a.click();
+}
+
+// ===== KATEGORIYALAR =====
+function renderKategoriyalar(){
+  const oy=3;
+  const body=document.getElementById('katBody');
+  body.innerHTML=kategoriyalar.map(k=>{
+    const s=katSum(k.id,oy); const cnt=harajatlar.filter(h=>h.katId===k.id&&h.oy===oy).length;
+    return `<tr>
+      <td style="font-size:20px">${k.icon}</td>
+      <td><b>${k.nomi}</b>${k.moshina?'<span class="badge blue" style="margin-left:6px;font-size:10px;">🚗</span>':''}</td>
+      <td style="font-weight:700;color:var(--danger)">${s.toLocaleString()}</td>
+      <td>${cnt} ta</td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-sm btn-danger" onclick="deleteKat('${k.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Pie chart (CSS progress bars)
+  const total=kategoriyalar.reduce((s,k)=>s+katSum(k.id,oy),0)||1;
+  document.getElementById('katChart').innerHTML=kategoriyalar.map(k=>{
+    const s=katSum(k.id,oy);const pct=Math.round(s/total*100);
+    return `<div class="prog-wrap">
+      <div class="prog-label"><span>${k.icon} ${k.nomi}</span><span style="font-weight:700">${pct}% &nbsp; ${s.toLocaleString()}</span></div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${k.rang}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function saveKat(){
+  const nomi=document.getElementById('katNomi').value.trim();
+  const icon=document.getElementById('katIcon').value||'📌';
+  if(!nomi){alert('Kategoriya nomini kiriting!');return;}
+  kategoriyalar.push({id:'k'+Date.now(),nomi,icon,rang:selectedRang,moshina:parseInt(document.getElementById('katMoshina').value)});
+  localStorage.setItem('kategoriyalar',JSON.stringify(kategoriyalar));
+  closeModal('katModal');
+  setupKatSelect(); renderKategoriyalar(); renderHarajatlar();
+}
+function deleteKat(id){
+  if(!confirm('Kategoriyani o\'chirmoqchimisiz? Undagi harajatlar saqlanib qoladi.'))return;
+  kategoriyalar=kategoriyalar.filter(k=>k.id!==id);
+  localStorage.setItem('kategoriyalar',JSON.stringify(kategoriyalar));
+  renderKategoriyalar(); setupKatSelect();
+}
+function selRang(el,rang){
+  selectedRang=rang;
+  document.getElementById('katRang').value=rang;
+  document.querySelectorAll('.rang-chip').forEach(c=>c.style.border='2px solid transparent');
+  el.style.border='3px solid #333';
+}
+
+// ===== MOSHINA =====
+function renderMoshina(){
+  const moshinalar=[
+    {raqam:'01 A 234 BC',model:'Nexia 3',haydovchi:'Yusupov Anvar'},
+    {raqam:'01 B 567 DE',model:'Damas',haydovchi:'—'},
+    {raqam:'78 C 890 FG',model:'Yuk mashinasi',haydovchi:'—'},
+  ];
+  const oy=3;
+  const grid=document.getElementById('moshinaCards');
+  grid.innerHTML=moshinalar.map(m=>{
+    const mH=harajatlar.filter(h=>h.oy===oy&&h.moshina&&h.moshina.includes(m.raqam));
+    const s=sumHarajat(mH);
+    return `<div class="hisobot-box" style="margin:0">
+      <div style="font-size:18px;margin-bottom:8px;">🚗</div>
+      <div style="font-size:14px;font-weight:700;">${m.raqam}</div>
+      <div style="font-size:12px;color:var(--text-muted);">${m.model} &nbsp;·&nbsp; ${m.haydovchi}</div>
+      <div style="font-size:20px;font-weight:700;color:var(--danger);margin-top:10px;">${s.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${mH.length} ta harajat</div>
+    </div>`;
+  }).join('');
+
+  const sel=document.getElementById('moshinaFilter');
+  sel.innerHTML='<option value="">Barcha moshinalar</option>'+moshinalar.map(m=>`<option value="${m.raqam}">${m.raqam} — ${m.model}</option>`).join('');
+  renderMoshinaTable();
+}
+function renderMoshinaTable(){
+  const f=document.getElementById('moshinaFilter').value;
+  const oy=3;
+  const list=harajatlar.filter(h=>h.oy===oy&&h.moshina&&(!f||h.moshina.includes(f)));
+  const body=document.getElementById('moshinaHarajatBody');
+  body.innerHTML=list.length?list.map(h=>{const k=katById(h.katId);return `<tr><td>${h.sana}</td><td>${h.moshina}</td><td>${k.icon} ${k.nomi}</td><td>${h.tavsif}</td><td style="font-weight:700;color:var(--danger)">${h.summa.toLocaleString()}</td></tr>`; }).join(''):'<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-muted);">Ma\'lumot yo\'q</td></tr>';
+}
+
+// ===== TAQQOSLASH =====
+function renderTaqqos(){
+  const oylar=[1,2,3];
+  const grid=document.getElementById('taqqosGrid');
+  grid.innerHTML=oylar.map(oy=>{
+    const sum=sumHarajat(harajatlar.filter(h=>h.oy===oy));
+    const katRows=kategoriyalar.map(k=>`<div class="tc-row"><span>${k.icon} ${k.nomi}</span><span class="tc-sum">${katSum(k.id,oy).toLocaleString()}</span></div>`).join('');
+    return `<div class="taqqos-card">
+      <div class="tc-header"><div class="tc-oy">${OY_NOMI[oy]} 2025</div><div class="tc-jami" style="color:var(--danger);font-weight:700;">${sum.toLocaleString()}</div></div>
+      ${katRows}
+    </div>`;
+  }).join('');
+
+  const body=document.getElementById('taqqosBody');
+  let jan=0,fev=0,mart=0;
+  body.innerHTML=kategoriyalar.map(k=>{
+    const s1=katSum(k.id,1),s2=katSum(k.id,2),s3=katSum(k.id,3);
+    jan+=s1;fev+=s2;mart+=s3;
+    const farq=s3-s2;
+    return `<tr>
+      <td><span style="margin-right:6px;">${k.icon}</span>${k.nomi}</td>
+      <td>${s1.toLocaleString()}</td>
+      <td>${s2.toLocaleString()}</td>
+      <td><b>${s3.toLocaleString()}</b></td>
+      <td style="font-weight:700;color:${farq>0?'var(--danger)':'var(--success)'}">${farq>0?'↑ +':'↓ '}${Math.abs(farq).toLocaleString()}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tqJan').textContent=jan.toLocaleString();
+  document.getElementById('tqFev').textContent=fev.toLocaleString();
+  document.getElementById('tqMart').textContent=mart.toLocaleString();
+  const f=mart-fev;
+  document.getElementById('tqFarq').innerHTML=`<span style="color:${f>0?'var(--danger)':'var(--success)'};">${f>0?'↑ +':'↓ '}${Math.abs(f).toLocaleString()}</span>`;
+}
+
+// ===== HISOBOT =====
+function renderHisobot(){
+  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
+  document.getElementById('hisobotOyNom').textContent=OY_NOMI[oy]+' 2025';
+  const d=DAROMADLAR[oy];
+  const jDaromad=d.plastik+d.rezina+d.poterya;
+  const hList=harajatlar.filter(h=>h.oy===oy);
+  const jHarajat=sumHarajat(hList)+OYLIK_FOND[oy];
+  const foyda=jDaromad-jHarajat;
+  const rentabellik=jDaromad?Math.round(foyda/jDaromad*100):0;
+
+  // Stats
+  document.getElementById('hisobotStats').innerHTML=`
+    <div class="stat-card g"><div class="lbl">Jami daromad</div><div class="val">${(jDaromad/1000000).toFixed(1)}M</div><div class="ico">💰</div><div class="sub">so'm</div></div>
+    <div class="stat-card r"><div class="lbl">Jami harajat</div><div class="val">${(jHarajat/1000000).toFixed(1)}M</div><div class="ico">💸</div><div class="sub">so'm</div></div>
+    <div class="stat-card ${foyda>=0?'g':'r'}"><div class="lbl">Sof foyda</div><div class="val">${(foyda/1000000).toFixed(1)}M</div><div class="ico">${foyda>=0?'📈':'📉'}</div><div class="sub">so'm</div></div>
+    <div class="stat-card b"><div class="lbl">Rentabellik</div><div class="val">${rentabellik}%</div><div class="ico">🎯</div><div class="sub">daromaddan foyda ulushi</div></div>`;
+
+  document.getElementById('hPlastik').textContent=d.plastik.toLocaleString()+' so\'m';
+  document.getElementById('hRezina').textContent=d.rezina.toLocaleString()+' so\'m';
+  document.getElementById('hPoterya').textContent=d.poterya.toLocaleString()+' so\'m';
+  document.getElementById('hDaromad').textContent=jDaromad.toLocaleString()+' so\'m';
+
+  // Kat harajatlar
+  const katSums=kategoriyalar.map(k=>({k,s:katSum(k.id,oy)}));
+  document.getElementById('hKatRows').outerHTML=katSums.map(({k,s})=>`<div class="hb-row"><span class="hb-label">${k.icon} ${k.nomi}</span><span class="hb-val">${s.toLocaleString()} so'm</span></div>`).join('');
+
+  document.getElementById('hOylik').textContent=OYLIK_FOND[oy].toLocaleString()+' so\'m';
+  document.getElementById('hHarajat').textContent=jHarajat.toLocaleString()+' so\'m';
+
+  const foydaRow=document.getElementById('hFoydaRow');
+  document.getElementById('hFoyda').textContent=Math.abs(foyda).toLocaleString()+' so\'m';
+  document.getElementById('hFoyda').style.color=foyda>=0?'var(--primary)':'var(--danger)';
+  foydaRow.children[0].textContent=foyda>=0?'SOF FOYDA':'SOF ZARAR';
+  document.getElementById('hRentabellik').textContent=rentabellik+'%';
+  document.getElementById('hRentabellik').style.color=rentabellik>=20?'var(--primary)':rentabellik>=10?'var(--accent)':'var(--danger)';
+
+  // Daromad chart
+  const dItems=[{nomi:'Plastik granula',val:d.plastik,rang:'#1a6b3c'},{nomi:'Rezina dilerlik',val:d.rezina,rang:'#2471a3'},{nomi:'Poterya sotuvi',val:d.poterya,rang:'#f0a500'}];
+  document.getElementById('daromadChart').innerHTML=dItems.map(item=>{const pct=Math.round(item.val/jDaromad*100);return `<div class="prog-wrap"><div class="prog-label"><span>${item.nomi}</span><span style="font-weight:700">${pct}% &nbsp; ${(item.val/1000000).toFixed(1)}M</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${item.rang}"></div></div></div>`;}).join('');
+
+  const jHar=sumHarajat(hList)||1;
+  document.getElementById('harajatChart').innerHTML=kategoriyalar.map(k=>{const s=katSum(k.id,oy);const pct=Math.round(s/jHar*100);return s?`<div class="prog-wrap"><div class="prog-label"><span>${k.icon} ${k.nomi}</span><span style="font-weight:700">${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${k.rang}"></div></div></div>`:''}).join('');
+
+  // 3 oylik
+  const rows=[
+    {nomi:'Jami daromad',vals:[1,2,3].map(o=>{const dd=DAROMADLAR[o];return dd.plastik+dd.rezina+dd.poterya;}),green:true},
+    {nomi:'Jami harajat',vals:[1,2,3].map(o=>sumHarajat(harajatlar.filter(h=>h.oy===o))+OYLIK_FOND[o]),green:false},
+    {nomi:'Sof foyda',vals:[1,2,3].map(o=>{const dd=DAROMADLAR[o];const ttl=dd.plastik+dd.rezina+dd.poterya;const hh=sumHarajat(harajatlar.filter(h=>h.oy===o))+OYLIK_FOND[o];return ttl-hh;}),green:true},
+    {nomi:'Rentabellik %',vals:[1,2,3].map(o=>{const dd=DAROMADLAR[o];const ttl=dd.plastik+dd.rezina+dd.poterya;const hh=sumHarajat(harajatlar.filter(h=>h.oy===o))+OYLIK_FOND[o];return Math.round((ttl-hh)/ttl*100)+'%';}),green:true},
+  ];
+  document.getElementById('oyTaqqosBody').innerHTML=rows.map(r=>{
+    const [v1,v2,v3]=r.vals;
+    const farq=typeof v3==='string'?'—':(v3-v2);
+    return `<tr>
+      <td><b>${r.nomi}</b></td>
+      <td>${typeof v1==='number'?v1.toLocaleString():v1}</td>
+      <td>${typeof v2==='number'?v2.toLocaleString():v2}</td>
+      <td style="font-weight:700;color:var(--primary)">${typeof v3==='number'?v3.toLocaleString():v3}</td>
+      <td style="font-weight:700;color:${typeof farq==='number'&&farq>0?(r.green?'var(--primary)':'var(--danger)'):(r.green?'var(--danger)':'var(--primary)')}">${typeof farq==='number'?(farq>0?'↑ +':'↓ ')+Math.abs(farq).toLocaleString():'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportHisobot(){
+  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
+  const d=DAROMADLAR[oy];
+  const jDaromad=d.plastik+d.rezina+d.poterya;
+  const jHarajat=sumHarajat(harajatlar.filter(h=>h.oy===oy))+OYLIK_FOND[oy];
+  const foyda=jDaromad-jHarajat;
+  let csv=`AgroPlast ERP — Moliyaviy hisobot\n${OY_NOMI[oy]} 2025\n\n`;
+  csv+=`DAROMADLAR\nPlastik granula,${d.plastik}\nRezina dilerlik,${d.rezina}\nPoterya sotuvi,${d.poterya}\nJami daromad,${jDaromad}\n\n`;
+  csv+=`HARAJATLAR\n`;
+  kategoriyalar.forEach(k=>{ csv+=`${k.nomi},${katSum(k.id,oy)}\n`; });
+  csv+=`Oylik fond,${OYLIK_FOND[oy]}\nJami harajat,${jHarajat}\n\nSOF FOYDA,${foyda}\n`;
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Hisobot_${OY_NOMI[oy]}_2025.csv`;a.click();
+}
+
+// ===== TABS =====
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='harajat') renderHarajatlar();
+  if(id==='kategoriya') renderKategoriyalar();
+  if(id==='moshina') renderMoshina();
+  if(id==='taqqos') renderTaqqos();
+  if(id==='hisobot') renderHisobot();
+}
+
+// ===== MODAL =====
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ===== INIT =====
+setupKatSelect();
+renderHarajatlar();
+</script>
+<script src="/api.js"></script>
+</body>
+</html>

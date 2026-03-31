@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroPlast ERP — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--primary:#1a6b3c;--primary-dark:#134d2c;--primary-light:#e8f5ee;--accent:#f0a500;--accent-light:#fff8e6;--bg:#f2f5f2;--surface:#fff;--sidebar-bg:#111c14;--sidebar-text:rgba(255,255,255,0.7);--text:#1a1f1a;--text-muted:#6b7c6b;--border:#e0e8e0;--danger:#c0392b;--danger-light:#fdf0ef;--info:#2471a3;--info-light:#eaf3fb;--success:#1a6b3c;--success-light:#e8f5ee;--warning:#e67e22;--warning-light:#fef5ec;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+  .sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;scrollbar-width:none;}
+  .sidebar::-webkit-scrollbar{display:none;}
+  .sidebar-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+  .brand-logo{display:flex;align-items:center;gap:10px;}
+  .brand-logo .icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .brand-name{color:#fff;font-size:14px;font-weight:700;}
+  .brand-name span{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,.4);}
+  .nav-section{padding:12px 10px 6px;}
+  .nav-label{font-size:9px;font-weight:600;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--sidebar-text);cursor:pointer;transition:all .18s;font-size:13px;font-weight:500;margin-bottom:2px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:var(--primary);color:#fff;}
+  .nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,.07);}
+  .user-info{display:flex;align-items:center;gap:8px;padding:8px 10px;}
+  .user-avatar{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-details .name{color:#fff;font-size:12px;font-weight:600;}
+  .user-details .role{color:rgba(255,255,255,.4);font-size:10px;}
+  .logout-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:15px;}
+  .logout-btn:hover{color:#e74c3c;}
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-size:16px;font-weight:700;flex:1;}
+  .topbar-title span{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px;}
+  .topbar-date{font-size:12px;color:var(--text-muted);background:var(--bg);padding:5px 10px;border-radius:8px;}
+  .server-pill{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--primary);background:var(--primary-light);padding:4px 10px;border-radius:99px;}
+  .s-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .content{padding:24px;flex:1;}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:16px;position:relative;overflow:hidden;transition:transform .18s;}
+  .stat-card:hover{transform:translateY(-2px);}
+  .stat-card .lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .stat-card .val{font-size:24px;font-weight:700;margin-bottom:4px;}
+  .stat-card .sub{font-size:11px;color:var(--text-muted);}
+  .stat-card.g{border-left:4px solid var(--primary);}.stat-card.g .val{color:var(--primary);}
+  .stat-card.a{border-left:4px solid var(--accent);}.stat-card.a .val{color:var(--accent);}
+  .stat-card.r{border-left:4px solid var(--danger);}.stat-card.r .val{color:var(--danger);}
+  .stat-card.b{border-left:4px solid var(--info);}.stat-card.b .val{color:var(--info);}
+  .stat-card .ico{position:absolute;top:12px;right:12px;font-size:24px;opacity:.15;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  .card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  .card-action{font-size:12px;color:var(--primary);font-weight:600;background:none;border:none;cursor:pointer;padding:6px 12px;border-radius:6px;}
+  .card-action:hover{background:var(--primary-light);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:hover{background:#f8faf8;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:10px 12px;vertical-align:middle;}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge.green{background:var(--success-light);color:var(--success);}
+  .badge.amber{background:var(--accent-light);color:var(--accent);}
+  .badge.red{background:var(--danger-light);color:var(--danger);}
+  .badge.blue{background:var(--info-light);color:var(--info);}
+  .quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+  .quick-btn{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .18s;text-decoration:none;color:var(--text);}
+  .quick-btn:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-2px);}
+  .quick-btn .q-icon{font-size:24px;}
+  .quick-btn .q-label{font-size:12px;font-weight:600;text-align:center;color:var(--text-muted);}
+  .timeline{list-style:none;}
+  .timeline li{display:flex;gap:14px;padding-bottom:16px;position:relative;}
+  .timeline li:not(:last-child)::before{content:'';position:absolute;left:15px;top:28px;bottom:0;width:1px;background:var(--border);}
+  .tl-dot{width:30px;height:30px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;}
+  .tl-content .tl-title{font-size:13px;font-weight:600;}
+  .tl-content .tl-time{font-size:11px;color:var(--text-muted);}
+  .tl-content .tl-desc{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .prog-wrap{margin-bottom:12px;}
+  .prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .prog-bg{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:99px;background:var(--primary);}
+  .loading{text-align:center;padding:32px;color:var(--text-muted);}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+<aside class="sidebar"></aside>
+<script src="sidebar.js"></script>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Dashboard <span>/ Asosiy panel</span></div>
+    <div class="server-pill"><span class="s-dot"></span>Node.js server</div>
+    <div class="topbar-date" id="todayDate"></div>
+  </header>
+  <div class="content">
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card g"><div class="lbl">Bugungi sotuv</div><div class="val" id="sBugun">...</div><div class="ico">🛒</div><div class="sub">so'm</div></div>
+      <div class="stat-card a"><div class="lbl">Oy ishlab chiqarish</div><div class="val" id="sTayyor">...</div><div class="ico">🏗️</div><div class="sub">kg</div></div>
+      <div class="stat-card b"><div class="lbl">Jami mijozlar</div><div class="val" id="sMijoz">...</div><div class="ico">👥</div></div>
+      <div class="stat-card r"><div class="lbl">Jami qarz</div><div class="val" id="sQarz">...</div><div class="ico">💳</div><div class="sub">so'm</div></div>
+    </div>
+
+    <div class="quick-actions">
+      <a class="quick-btn" href="/sotuv.html"><div class="q-icon">🛒</div><div class="q-label">Yangi sotuv</div></a>
+      <a class="quick-btn" href="/xomAshyo.html"><div class="q-icon">📦</div><div class="q-label">Xom ashyo kirim</div></a>
+      <a class="quick-btn" href="/ishlab.html"><div class="q-icon">🏗️</div><div class="q-label">Ishlab chiqarish</div></a>
+      <a class="quick-btn" href="/harajat.html"><div class="q-icon">💸</div><div class="q-label">Harajat qo'shish</div></a>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">👥 So'nggi mijozlar</div><a class="card-action" href="/mijozlar.html">Barchasi →</a></div>
+        <div id="mijozlarTable"><div class="loading">Yuklanmoqda...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🗃️ Mahsulot ombori holati</div><a class="card-action" href="/mahsulot.html">Ko'rish →</a></div>
+        <div class="card-body" id="omborPanel"><div class="loading">Yuklanmoqda...</div></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🛒 So'nggi sotuvlar</div><a class="card-action" href="/sotuv.html">Barchasi →</a></div>
+        <div id="sotuvlarTable"><div class="loading">Yuklanmoqda...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">💸 So'nggi harajatlar</div><a class="card-action" href="/harajat.html">Barchasi →</a></div>
+        <div id="harajatlarTable"><div class="loading">Yuklanmoqda...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/api.js"></script>
+<script>
+showUser(); setDate();
+
+async function loadDashboard() {
+  try {
+    // Stats
+    const stats = await API.get('/dashboard/stats');
+    document.getElementById('sBugun').textContent   = stats.bugunSotuv.toLocaleString();
+    document.getElementById('sTayyor').textContent  = stats.oyTayyorKg.toLocaleString();
+    document.getElementById('sMijoz').textContent   = stats.mijozlarSoni;
+    document.getElementById('sQarz').textContent    = stats.jamilQarz.toLocaleString();
+
+    // Mijozlar
+    const mijozlar = await API.get('/mijozlar');
+    const TUR = { zavod:'<span class="badge blue">🏭 Zavod</span>', korxona:'<span class="badge green">🏢 Korxona</span>', oddiy:'<span class="badge amber">👤 Oddiy</span>' };
+    document.getElementById('mijozlarTable').innerHTML = `<table>
+      <thead><tr><th>Nomi</th><th>Turi</th><th>Qarz</th></tr></thead>
+      <tbody>${mijozlar.slice(0,5).map(m=>`<tr>
+        <td><b>${m.nomi}</b></td>
+        <td>${TUR[m.turi]||m.turi}</td>
+        <td style="color:${m.qarz?'var(--danger)':'var(--primary)'};font-weight:600;">${m.qarz?m.qarz.toLocaleString()+' so\'m':'✅ 0'}</td>
+      </tr>`).join('')}</tbody></table>`;
+
+    // Mahsulot ombori
+    const mahsulotlar = await API.get('/mahsulotlar');
+    document.getElementById('omborPanel').innerHTML = mahsulotlar.map(m=>{
+      const pct = Math.min(100, m.ombor/(m.min*3)*100);
+      const cl = m.ombor < m.min ? 'var(--danger)' : m.ombor < m.min*2 ? 'var(--accent)' : 'var(--primary)';
+      return `<div class="prog-wrap"><div class="prog-label"><span>${m.icon} ${m.nomi}</span><span style="font-weight:700;color:${cl}">${m.ombor.toLocaleString()} kg</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${cl}"></div></div></div>`;
+    }).join('');
+
+    // Sotuvlar
+    const sotuvlar = await API.get('/sotuvlar');
+    document.getElementById('sotuvlarTable').innerHTML = `<table>
+      <thead><tr><th>#</th><th>Mijoz</th><th>Summa</th><th>Holat</th></tr></thead>
+      <tbody>${sotuvlar.slice(0,5).map(s=>`<tr>
+        <td style="font-size:11px;color:var(--text-muted);">${s._id.slice(-4)}</td>
+        <td>${s.mijozNomi||'—'}</td>
+        <td><b>${(s.summa||0).toLocaleString()}</b></td>
+        <td>${s.holat==='tolandi'?'<span class="badge green">✅</span>':s.holat==='qarz'?'<span class="badge red">💳</span>':'<span class="badge amber">⚠️</span>'}</td>
+      </tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px;">Sotuv yo\'q</td></tr>'}</tbody></table>`;
+
+    // Harajatlar
+    const harajatlar = await API.get('/harajatlar');
+    document.getElementById('harajatlarTable').innerHTML = `<table>
+      <thead><tr><th>Sana</th><th>Tavsif</th><th>Summa</th></tr></thead>
+      <tbody>${harajatlar.slice(0,5).map(h=>`<tr>
+        <td>${h.sana}</td><td>${h.tavsif}</td>
+        <td style="color:var(--danger);font-weight:600;">${(h.summa||0).toLocaleString()}</td>
+      </tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:16px;">Harajat yo\'q</td></tr>'}</tbody></table>`;
+
+  } catch(e) {
+    toast('Ma\'lumot yuklanmadi: ' + e.message, 'error');
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

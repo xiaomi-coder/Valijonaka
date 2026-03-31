@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroPlast ERP — Xodimlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#1a6b3c;--primary-dark:#134d2c;--primary-light:#e8f5ee;
+    --accent:#f0a500;--accent-light:#fff8e6;
+    --bg:#f2f5f2;--surface:#fff;
+    --sidebar-bg:#111c14;--sidebar-text:rgba(255,255,255,0.7);
+    --text:#1a1f1a;--text-muted:#6b7c6b;--border:#e0e8e0;
+    --danger:#c0392b;--danger-light:#fdf0ef;
+    --warning:#e67e22;--warning-light:#fef5ec;
+    --info:#2471a3;--info-light:#eaf3fb;
+    --success:#1a6b3c;--success-light:#e8f5ee;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+
+  /* SIDEBAR */
+  .sidebar{width:220px;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;scrollbar-width:none;}
+  .sidebar::-webkit-scrollbar{display:none;}
+  .sidebar-brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+  .brand-logo{display:flex;align-items:center;gap:10px;}
+  .brand-logo .icon{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .brand-name{color:#fff;font-size:14px;font-weight:700;}
+  .brand-name span{display:block;font-size:10px;font-weight:400;color:rgba(255,255,255,0.4);}
+  .nav-section{padding:12px 10px 6px;}
+  .nav-label{font-size:9px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.2px;padding:0 8px;margin-bottom:4px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--sidebar-text);cursor:pointer;transition:all .18s;font-size:13px;font-weight:500;margin-bottom:2px;text-decoration:none;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:var(--primary);color:#fff;}
+  .nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+  .sidebar-footer{margin-top:auto;padding:12px 10px;border-top:1px solid rgba(255,255,255,0.07);}
+  .user-info{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;}
+  .user-avatar{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-details .name{color:#fff;font-size:12px;font-weight:600;}
+  .user-details .role{color:rgba(255,255,255,0.4);font-size:10px;}
+  .logout-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:15px;}
+  .logout-btn:hover{color:#e74c3c;}
+
+  /* MAIN */
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50;}
+  .topbar-title{font-size:16px;font-weight:700;flex:1;}
+  .topbar-title span{color:var(--text-muted);font-weight:400;font-size:13px;margin-left:6px;}
+  .topbar-date{font-size:12px;color:var(--text-muted);background:var(--bg);padding:5px 10px;border-radius:8px;}
+  .content{padding:24px;flex:1;}
+
+  /* TABS */
+  .tabs{display:flex;gap:2px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:20px;}
+  .tab{flex:1;padding:8px;text-align:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-muted);transition:all .18s;border:none;background:transparent;font-family:'Onest',sans-serif;}
+  .tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+  .page{display:none;}
+  .page.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* CARD */
+  .card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:700;}
+  .card-body{padding:18px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:16px;position:relative;overflow:hidden;transition:transform .18s;}
+  .stat-card:hover{transform:translateY(-2px);}
+  .stat-card .lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .stat-card .val{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .stat-card .sub{font-size:11px;color:var(--text-muted);}
+  .stat-card.g{border-left:4px solid var(--primary);}.stat-card.g .val{color:var(--primary);}
+  .stat-card.a{border-left:4px solid var(--accent);}.stat-card.a .val{color:var(--accent);}
+  .stat-card.r{border-left:4px solid var(--danger);}.stat-card.r .val{color:var(--danger);}
+  .stat-card.b{border-left:4px solid var(--info);}.stat-card.b .val{color:var(--info);}
+  .stat-card .ico{position:absolute;top:12px;right:12px;font-size:24px;opacity:.15;}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+  tbody tr:hover{background:#f8faf8;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody td{padding:10px 12px;vertical-align:middle;}
+
+  /* BADGE */
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .badge.green{background:var(--success-light);color:var(--success);}
+  .badge.amber{background:var(--accent-light);color:var(--accent);}
+  .badge.red{background:var(--danger-light);color:var(--danger);}
+  .badge.blue{background:var(--info-light);color:var(--info);}
+  .badge.gray{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}
+
+  /* FORM */
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+  .form-group input:focus,.form-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,107,60,0.08);}
+  .form-group input[readonly]{background:var(--bg);}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+  /* BTN */
+  .btn{padding:9px 18px;border-radius:8px;font-size:13px;font-family:'Onest',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all .18s;}
+  .btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);}.btn-secondary:hover{background:var(--border);}
+  .btn-danger{background:var(--danger-light);color:var(--danger);}.btn-danger:hover{background:#f5c6c2;}
+  .btn-warning{background:var(--warning-light);color:var(--warning);border:1px solid #f9c784;}
+  .btn-info{background:var(--info-light);color:var(--info);border:1px solid #a9d2f1;}
+  .btn-sm{padding:5px 12px;font-size:12px;}
+
+  /* XODIM KARTA */
+  .xodim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .xodim-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;transition:all .18s;cursor:pointer;}
+  .xodim-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.09);transform:translateY(-2px);}
+  .xc-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .xc-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;}
+  .xc-info .xc-name{font-size:15px;font-weight:700;}
+  .xc-info .xc-lavozim{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .xc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .xc-stat{background:var(--bg);border-radius:8px;padding:8px 10px;}
+  .xc-stat .xs-lbl{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;}
+  .xc-stat .xs-val{font-size:14px;font-weight:700;}
+  .xc-footer{margin-top:12px;display:flex;gap:6px;}
+
+  /* OYLIK KARTA */
+  .oylik-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+  .oylik-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .oylik-body{padding:16px 18px;}
+  .oylik-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .oylik-row:last-child{border-bottom:none;}
+  .oylik-row.total{font-size:16px;font-weight:700;border-top:2px solid var(--border);margin-top:4px;padding-top:10px;color:var(--primary);}
+  .oylik-label{color:var(--text-muted);}
+
+  /* AVANS */
+  .avans-timeline{display:flex;flex-direction:column;gap:10px;}
+  .avans-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border-radius:10px;}
+  .avans-icon{width:32px;height:32px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .avans-info{flex:1;}
+  .avans-info .a-name{font-size:13px;font-weight:600;}
+  .avans-info .a-meta{font-size:11px;color:var(--text-muted);}
+  .avans-summa{font-size:14px;font-weight:700;color:var(--accent);}
+
+  /* PROGRESS */
+  .prog-wrap{margin-bottom:10px;}
+  .prog-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .prog-bg{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:99px;background:var(--primary);transition:width 1s ease;}
+  .prog-fill.amber{background:var(--accent);}
+
+  /* ALERT */
+  .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .alert.success{background:var(--success-light);color:var(--success);border:1px solid #9fcfb3;}
+  .alert.warning{background:var(--warning-light);color:var(--warning);border:1px solid #f9c784;}
+  .alert.info{background:var(--info-light);color:var(--info);border:1px solid #a9d2f1;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:16px;width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:mUp .25s ease;}
+  @keyframes mUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+  .modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{background:var(--bg);}
+  .modal-body{padding:22px;}
+  .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+  /* Qo'shimcha yozish kiritish */
+  .kg-input-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px;background:var(--bg);border-radius:8px;}
+  .kg-input-row label{font-size:12px;font-weight:600;flex:1;}
+  .kg-input-row input{width:90px;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;text-align:right;font-family:'Onest',sans-serif;outline:none;}
+  .kg-input-row input:focus{border-color:var(--primary);}
+
+  /* REYS */
+  .reys-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+  .reys-icon{font-size:24px;}
+  .reys-info{flex:1;}
+  .reys-marshrut{font-size:13px;font-weight:700;}
+  .reys-meta{font-size:11px;color:var(--text-muted);margin-top:2px;}
+  .reys-summa{text-align:right;}
+  .reys-summa .rs-val{font-size:15px;font-weight:700;color:var(--primary);}
+  .reys-summa .rs-sub{font-size:11px;color:var(--text-muted);}
+
+  /* Scroll */
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar"></aside>
+<script src="sidebar.js"></script>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Xodimlar <span>/ HR va Oylik boshqaruvi</span></div>
+    <div class="topbar-date" id="todayDate"></div>
+  </header>
+
+  <div class="content">
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('xodimlar',this)">👷 Xodimlar</button>
+      <button class="tab" onclick="switchTab('oylik',this)">💳 Oylik hisoblash</button>
+      <button class="tab" onclick="switchTab('avans',this)">💰 Avanslar</button>
+      <button class="tab" onclick="switchTab('haydovchi',this)">🚗 Haydovchilar</button>
+      <button class="tab" onclick="switchTab('hisobot',this)">📊 HR Hisobot</button>
+    </div>
+
+    <!-- ===== XODIMLAR ===== -->
+    <div class="page active" id="tab-xodimlar">
+      <div class="stats-grid">
+        <div class="stat-card g"><div class="lbl">Jami xodimlar</div><div class="val" id="stJami">0</div><div class="ico">👷</div><div class="sub">Faol ishchilar</div></div>
+        <div class="stat-card a"><div class="lbl">Bu oy oylik jami</div><div class="val" id="stOylik">0</div><div class="ico">💳</div><div class="sub">so'm (hisoblangan)</div></div>
+        <div class="stat-card r"><div class="lbl">Berilgan avanslar</div><div class="val" id="stAvans">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
+        <div class="stat-card b"><div class="lbl">To'lanadigan</div><div class="val" id="stTolanadi">0</div><div class="ico">✅</div><div class="sub">so'm (qoldiq)</div></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;gap:8px;">
+          <select id="rolFilter" onchange="renderXodimlar()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
+            <option value="">Barcha rollar</option>
+            <option value="admin">Admin</option>
+            <option value="menejer">Menejer</option>
+            <option value="kassir">Kassir</option>
+            <option value="operator">Operator</option>
+            <option value="haydovchi">Haydovchi</option>
+          </select>
+          <input id="xSearch" placeholder="🔍 Ism qidirish..." oninput="renderXodimlar()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;width:200px;">
+        </div>
+        <button class="btn btn-primary" onclick="openModal('xodimModal')">+ Yangi xodim</button>
+      </div>
+
+      <div class="xodim-grid" id="xodimGrid"></div>
+    </div>
+
+    <!-- ===== OYLIK ===== -->
+    <div class="page" id="tab-oylik">
+      <div class="alert info">ℹ️ Xodimlar ishlab chiqargan kg miqdoriga qarab oylik hisob-kitob qilinadi. Avanslar avtomatik ayiriladi.</div>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;background:var(--surface);padding:16px;border-radius:12px;border:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:600;">Hisob oyi:</div>
+        <select id="oylikOy" onchange="renderOylik()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
+          <option value="3">Mart 2025</option>
+          <option value="2">Fevral 2025</option>
+          <option value="1">Yanvar 2025</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="hammasiniTola()">✅ Barchasini to'lash</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportOylik()">📥 Eksport</button>
+        <div style="margin-left:auto;font-size:13px;color:var(--text-muted);">Jami to'lanadigan: <b id="oylikJami" style="color:var(--primary);font-size:16px;">0 so'm</b></div>
+      </div>
+
+      <div class="card" style="margin:0">
+        <table>
+          <thead>
+            <tr>
+              <th>Xodim</th><th>Lavozim</th><th>Oy kg</th><th>Tarif</th>
+              <th>Hisoblangan</th><th>Bonus</th><th>Avanslar</th>
+              <th>TO'LANADIGAN</th><th>Holat</th><th>Amal</th>
+            </tr>
+          </thead>
+          <tbody id="oylikBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== AVANS ===== -->
+    <div class="page" id="tab-avans">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;">💰 Avanslar tarixi</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">Barcha xodimlar avanslarini kuzatish</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('avansModal')">+ Avans berish</button>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">Bu oy avanslar</div></div>
+          <div class="card-body" id="avansTimeline"></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">Xodim bo'yicha avans jami</div></div>
+          <table>
+            <thead><tr><th>Xodim</th><th>Jami avans</th><th>Hisoblangan oylik</th><th>Qoldiq</th></tr></thead>
+            <tbody id="avansXodimBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin:0">
+        <div class="card-header"><div class="card-title">Barcha avanslar</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Sana</th><th>Xodim</th><th>Sabab</th><th>Summa</th><th>Bergan</th><th>Holat</th></tr></thead>
+          <tbody id="avansBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== HAYDOVCHILAR ===== -->
+    <div class="page" id="tab-haydovchi">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;">🚗 Haydovchilar</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px;">Reys bo'yicha haq hisoblash</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" onclick="openModal('mashinaModal')">🚗 Moshina qo'shish</button>
+          <button class="btn btn-primary" onclick="openModal('reysModal')">+ Yangi reys</button>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- Haydovchi holati -->
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">Haydovchilar</div></div>
+          <table>
+            <thead><tr><th>Ism</th><th>Moshina</th><th>Reyslar</th><th>Bu oy haq</th><th>Avans</th><th>Qoldiq</th></tr></thead>
+            <tbody id="haydovchiBody"></tbody>
+          </table>
+        </div>
+        <!-- Moshinalar -->
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">🚗 Moshinalar</div></div>
+          <table>
+            <thead><tr><th>Raqam</th><th>Model</th><th>Haydovchi</th><th>Bu oy km</th><th>Holat</th></tr></thead>
+            <tbody id="mashinaBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reyslar -->
+      <div class="card" style="margin:0">
+        <div class="card-header"><div class="card-title">📋 Reyslar jurnali</div></div>
+        <table>
+          <thead><tr><th>#</th><th>Sana</th><th>Haydovchi</th><th>Moshina</th><th>Marshrut</th><th>Masofа</th><th>Reys haqqi</th><th>Holat</th><th>Amal</th></tr></thead>
+          <tbody id="reysBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== HISOBOT ===== -->
+    <div class="page" id="tab-hisobot">
+      <div class="stats-grid">
+        <div class="stat-card g"><div class="lbl">Jami oylik fond</div><div class="val" id="hrStat1">0</div><div class="sub">so'm (hisoblangan)</div></div>
+        <div class="stat-card a"><div class="lbl">To'langan avanslar</div><div class="val" id="hrStat2">0</div><div class="sub">so'm</div></div>
+        <div class="stat-card b"><div class="lbl">Eng unumdor</div><div class="val" id="hrStat3">—</div><div class="sub">eng ko'p kg ishlab chiqargan</div></div>
+        <div class="stat-card r"><div class="lbl">Reyslar soni</div><div class="val" id="hrStat4">0</div><div class="sub">bu oy</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">Xodim unumdorligi (kg)</div></div>
+          <div class="card-body" id="unumdorlikBody"></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-header"><div class="card-title">Oylik taqqoslash</div></div>
+          <table>
+            <thead><tr><th>Xodim</th><th>Yanvar</th><th>Fevral</th><th>Mart</th></tr></thead>
+            <tbody id="taqqoslashBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODALLAR ===== -->
+
+<!-- Xodim qo'shish -->
+<div class="modal-overlay" id="xodimModal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="xodimModalTitle">👷 Yangi xodim</h3><button class="modal-close" onclick="closeModal('xodimModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="xodimEditId">
+      <div class="form-row">
+        <div class="form-group"><label>Ism</label><input id="xIsm" placeholder="Ism"></div>
+        <div class="form-group"><label>Familiya</label><input id="xFamiliya" placeholder="Familiya"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Lavozim</label><input id="xLavozim" placeholder="Operator, Kassir..."></div>
+        <div class="form-group"><label>Rol</label>
+          <select id="xRol">
+            <option value="operator">Operator</option>
+            <option value="menejer">Menejer</option>
+            <option value="kassir">Kassir</option>
+            <option value="haydovchi">Haydovchi</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Telefon</label><input id="xTel" placeholder="+998..."></div>
+        <div class="form-group"><label>Boshlanish sanasi</label><input type="date" id="xSana"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Tarif (so'm/kg)</label><input type="number" id="xTarif" placeholder="1000"></div>
+        <div class="form-group"><label>Sabit oylik (bo'lsa)</label><input type="number" id="xSabit" placeholder="0 = kg bo'yicha"></div>
+      </div>
+      <div class="form-group"><label>Izoh</label><textarea id="xIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('xodimModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveXodim()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Avans modal -->
+<div class="modal-overlay" id="avansModal">
+  <div class="modal" style="width:440px">
+    <div class="modal-header"><h3>💰 Avans berish</h3><button class="modal-close" onclick="closeModal('avansModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>Xodim tanlang</label>
+        <select id="avXodim">
+          <option value="">— Tanlang —</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Avans miqdori (so'm)</label><input type="number" id="avSumma" placeholder="0" oninput="calcAvansQoldiq()"></div>
+      <div class="form-group"><label>Sabab</label><input id="avSabab" placeholder="Masalan: Shaxsiy ehtiyoj"></div>
+      <div class="form-group"><label>Sana</label><input type="date" id="avSana"></div>
+      <!-- Xodim holati -->
+      <div id="avXodimInfo" style="display:none;background:var(--bg);border-radius:10px;padding:12px;font-size:13px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span class="oylik-label">Bu oy hisoblangan:</span><span id="avHisoblangan" style="font-weight:700;">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span class="oylik-label">Berilgan avanslar:</span><span id="avBerilgan" style="font-weight:700;color:var(--danger);">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span class="oylik-label">Avansdan keyin qoldiq:</span><span id="avQoldiq" style="font-weight:700;color:var(--primary);">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('avansModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveAvans()">Avans berish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Kg kiritish modal -->
+<div class="modal-overlay" id="kgModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header"><h3 id="kgModalTitle">📦 Oy kg kiritish</h3><button class="modal-close" onclick="closeModal('kgModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert info">ℹ️ Xodim bu oy ishlab chiqargan kg miqdorini kiriting. Oylik avtomatik hisoblanadi.</div>
+      <div id="kgInputArea"></div>
+      <div class="form-group" style="margin-top:8px;">
+        <label>Bonus (so'm)</label>
+        <input type="number" id="kgBonus" placeholder="0" oninput="calcKgOylik()">
+      </div>
+      <div style="background:var(--primary-light);border-radius:10px;padding:14px;margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+          <span style="color:var(--text-muted);">Hisoblangan (kg × tarif):</span>
+          <span id="kgHisob" style="font-weight:700;">0 so'm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;">
+          <span style="color:var(--text-muted);">Bonus:</span>
+          <span id="kgBonusVal" style="font-weight:700;color:var(--accent);">0 so'm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--primary);">
+          <span>Jami oylik:</span>
+          <span id="kgJami">0 so'm</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('kgModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveKg()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Oylik to'lash modal -->
+<div class="modal-overlay" id="tolaModal">
+  <div class="modal" style="width:440px">
+    <div class="modal-header"><h3 id="tolaTitle">💳 Oylik to'lash</h3><button class="modal-close" onclick="closeModal('tolaModal')">✕</button></div>
+    <div class="modal-body">
+      <div id="tolaInfo" style="background:var(--bg);border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;"></div>
+      <div class="form-group"><label>To'lash usuli</label>
+        <select id="tolaUsul"><option value="naqd">💵 Naqd</option><option value="bank">🏦 Bank o'tkazmasi</option></select>
+      </div>
+      <div class="form-group"><label>Izoh</label><input id="tolaIzoh" placeholder="Qo'shimcha..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('tolaModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="confirmTola()">✅ To'lash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reys qo'shish -->
+<div class="modal-overlay" id="reysModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header"><h3>🚗 Yangi reys</h3><button class="modal-close" onclick="closeModal('reysModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Haydovchi</label>
+          <select id="reysHaydovchi"><option value="">— Tanlang —</option></select>
+        </div>
+        <div class="form-group"><label>Moshina</label>
+          <select id="reysMoshina"><option value="">— Tanlang —</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Sana</label><input type="date" id="reysSana"></div>
+        <div class="form-group"><label>Masofa (km)</label><input type="number" id="reysMasofa" placeholder="0" oninput="calcReysHaq()"></div>
+      </div>
+      <div class="form-group"><label>Marshrut</label><input id="reysMarshrut" placeholder="Masalan: Toshkent → Samarqand"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Reys haqqi (so'm)</label><input type="number" id="reysHaq" placeholder="0"></div>
+        <div class="form-group"><label>Avans (so'm)</label><input type="number" id="reysAvans" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label>Izoh</label><input id="reysIzoh" placeholder="Qo'shimcha..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('reysModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveReys()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Moshina qo'shish -->
+<div class="modal-overlay" id="mashinaModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-header"><h3>🚗 Moshina qo'shish</h3><button class="modal-close" onclick="closeModal('mashinaModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Davlat raqami</label><input id="mRaqam" placeholder="01 A 234 BC"></div>
+        <div class="form-group"><label>Model</label><input id="mModel" placeholder="Nexia, Damas..."></div>
+      </div>
+      <div class="form-group"><label>Mas'ul haydovchi</label>
+        <select id="mHaydovchi"><option value="">— Tanlang —</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('mashinaModal')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveMashina()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== INIT =====
+
+
+
+
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('avSana').value = new Date().toISOString().split('T')[0];
+document.getElementById('reysSana').value = new Date().toISOString().split('T')[0];
+
+// ===== MA'LUMOTLAR =====
+let xodimlar = JSON.parse(localStorage.getItem('xodimlar')||JSON.stringify([
+  {id:'x1',ism:'Jasur',familiya:'Karimov',lavozim:'Operator',rol:'operator',tel:'+998901234567',sana:'2023-01-15',tarif:1000,sabit:0,izoh:'',
+   oyKg:{1:980,2:1100,3:1240},avanslar:[],tolangan:[],bonus:{1:0,2:50000,3:0}},
+  {id:'x2',ism:'Obid',familiya:'Rahimov',lavozim:'Operator',rol:'operator',tel:'+998901234568',sana:'2023-03-10',tarif:1000,sabit:0,izoh:'',
+   oyKg:{1:870,2:920,3:980},avanslar:[],tolangan:[],bonus:{1:0,2:0,3:0}},
+  {id:'x3',ism:'Baxrom',familiya:'Toshmatov',lavozim:'Bosh operator',rol:'menejer',tel:'+998901234569',sana:'2022-06-01',tarif:1200,sabit:0,izoh:'',
+   oyKg:{1:1300,2:1450,3:1520},avanslar:[{id:'a1',summa:800000,sabab:'Shaxsiy',sana:'2025-03-10',bergan:'Admin'}],tolangan:[],bonus:{1:100000,2:100000,3:150000}},
+  {id:'x4',ism:'Farrux',familiya:'Hasanov',lavozim:'Kassir',rol:'kassir',tel:'+998901234570',sana:'2024-01-05',tarif:0,sabit:2500000,izoh:'',
+   oyKg:{1:0,2:0,3:0},avanslar:[{id:'a2',summa:1000000,sabab:'Avans',sana:'2025-03-05',bergan:'Admin'}],tolangan:[],bonus:{1:0,2:0,3:0}},
+  {id:'x5',ism:'Anvar',familiya:'Yusupov',lavozim:'Haydovchi',rol:'haydovchi',tel:'+998901234571',sana:'2023-08-20',tarif:0,sabit:0,izoh:'Reys bo\'yicha',
+   oyKg:{1:0,2:0,3:0},avanslar:[],tolangan:[],bonus:{1:0,2:0,3:0}},
+]));
+
+let avanslar = JSON.parse(localStorage.getItem('avanslarAll')||JSON.stringify([
+  {id:'av1',xodimId:'x3',xodimNomi:'Toshmatov Baxrom',summa:800000,sabab:'Shaxsiy ehtiyoj',sana:'2025-03-10',bergan:'Admin',holat:'aktiv'},
+  {id:'av2',xodimId:'x4',xodimNomi:'Hasanov Farrux',summa:1000000,sabab:'Avans',sana:'2025-03-05',bergan:'Admin',holat:'aktiv'},
+]));
+
+let reyslar = JSON.parse(localStorage.getItem('reyslar')||JSON.stringify([
+  {id:'r1',haydovchiId:'x5',haydovchiNomi:'Yusupov Anvar',moshina:'01 A 234 BC',sana:'2025-03-28',marshrut:'Toshkent → Samarqand',masofa:350,haq:150000,avans:50000,holat:'tolandi'},
+  {id:'r2',haydovchiId:'x5',haydovchiNomi:'Yusupov Anvar',moshina:'01 A 234 BC',sana:'2025-03-25',marshrut:'Toshkent → Andijon',masofa:320,haq:200000,avans:100000,holat:'kutilmoqda'},
+]));
+
+let mashinalar = JSON.parse(localStorage.getItem('mashinalar')||JSON.stringify([
+  {id:'m1',raqam:'01 A 234 BC',model:'Nexia 3',haydovchi:'Yusupov Anvar',km:670},
+  {id:'m2',raqam:'01 B 567 DE',model:'Damas',haydovchi:'—',km:210},
+  {id:'m3',raqam:'78 C 890 FG',model:'Yuk mashinasi',haydovchi:'—',km:1240},
+]));
+
+let tolanganOyliklar = JSON.parse(localStorage.getItem('tolanganOyliklar')||'{}');
+let currentTolaId = null;
+
+// ===== UTIL =====
+const RANGLAR = ['#1a6b3c','#2471a3','#8e44ad','#e67e22','#c0392b','#16a085'];
+function getRang(i){ return RANGLAR[i%RANGLAR.length]; }
+function getOyKg(x, oy){ return x.oyKg?.[oy]||0; }
+function getAvansJami(x){ return avanslar.filter(a=>a.xodimId===x.id&&a.holat==='aktiv').reduce((s,a)=>s+a.summa,0); }
+function hisoblangan(x, oy){
+  if(x.sabit>0) return x.sabit;
+  return getOyKg(x,oy)*x.tarif+(x.bonus?.[oy]||0);
+}
+function tolanadigan(x, oy){ return Math.max(0, hisoblangan(x,oy)-getAvansJami(x)); }
+
+// ===== XODIMLAR =====
+function renderXodimlar(){
+  const fil = document.getElementById('rolFilter').value;
+  const src = document.getElementById('xSearch').value.toLowerCase();
+  const grid = document.getElementById('xodimGrid');
+  const oyNo = 3;
+
+  let filtered = xodimlar.filter(x=>{
+    const rolOk = !fil||x.rol===fil;
+    const srcOk = !src||(x.ism+' '+x.familiya).toLowerCase().includes(src);
+    return rolOk&&srcOk;
+  });
+
+  // Stats
+  const jOylik = xodimlar.reduce((s,x)=>s+hisoblangan(x,oyNo),0);
+  const jAvans = xodimlar.reduce((s,x)=>s+getAvansJami(x),0);
+  const jTolanadi = xodimlar.reduce((s,x)=>s+tolanadigan(x,oyNo),0);
+  document.getElementById('stJami').textContent = xodimlar.length;
+  document.getElementById('stOylik').textContent = jOylik.toLocaleString();
+  document.getElementById('stAvans').textContent = jAvans.toLocaleString();
+  document.getElementById('stTolanadi').textContent = jTolanadi.toLocaleString();
+
+  if(!filtered.length){ grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);">Xodim topilmadi</div>'; return; }
+
+  grid.innerHTML = filtered.map((x,i)=>{
+    const kg = getOyKg(x,oyNo);
+    const hisob = hisoblangan(x,oyNo);
+    const avans = getAvansJami(x);
+    const qoldiq = tolanadigan(x,oyNo);
+    const tolandi = tolanganOyliklar[x.id+'_'+oyNo];
+    const initials = (x.ism[0]+(x.familiya[0]||'')).toUpperCase();
+    const rolBadge = {admin:'<span class="badge amber">👑 Admin</span>',menejer:'<span class="badge blue">📊 Menejer</span>',kassir:'<span class="badge green">💳 Kassir</span>',operator:'<span class="badge gray">🔧 Operator</span>',haydovchi:'<span class="badge blue">🚗 Haydovchi</span>'}[x.rol]||'';
+
+    return `<div class="xodim-card">
+      <div class="xc-top">
+        <div class="xc-avatar" style="background:${getRang(i)}">${initials}</div>
+        <div class="xc-info">
+          <div class="xc-name">${x.ism} ${x.familiya}</div>
+          <div class="xc-lavozim">${x.lavozim} &nbsp;${rolBadge}</div>
+        </div>
+      </div>
+      <div class="xc-stats">
+        <div class="xc-stat"><div class="xs-lbl">Bu oy kg</div><div class="xs-val" style="color:var(--primary)">${kg.toLocaleString()} kg</div></div>
+        <div class="xc-stat"><div class="xs-lbl">Hisoblangan</div><div class="xs-val">${hisob.toLocaleString()}</div></div>
+        <div class="xc-stat"><div class="xs-lbl">Avans</div><div class="xs-val" style="color:var(--danger)">${avans.toLocaleString()}</div></div>
+        <div class="xc-stat"><div class="xs-lbl">To'lanadigan</div><div class="xs-val" style="color:var(--primary);font-size:16px">${qoldiq.toLocaleString()}</div></div>
+      </div>
+      <div class="xc-footer">
+        <button class="btn btn-sm btn-info" onclick="openKgModal('${x.id}')">📦 Kg kiritish</button>
+        <button class="btn btn-sm btn-warning" onclick="openAvansFor('${x.id}')">💰 Avans</button>
+        ${!tolandi?`<button class="btn btn-sm btn-primary" onclick="openTola('${x.id}')">✅ To'lash</button>`:'<span class="badge green" style="padding:5px 10px;font-size:12px;">✅ To\'landi</span>'}
+        <button class="btn btn-sm btn-secondary" onclick="editXodim('${x.id}')">✏️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== OYLIK =====
+function renderOylik(){
+  const oy = parseInt(document.getElementById('oylikOy').value)||3;
+  const body = document.getElementById('oylikBody');
+  let jami=0;
+  body.innerHTML = xodimlar.map(x=>{
+    const kg=getOyKg(x,oy), hisob=hisoblangan(x,oy), avans=getAvansJami(x), qoldiq=tolanadigan(x,oy);
+    const bonus=x.bonus?.[oy]||0;
+    const tolandi=tolanganOyliklar[x.id+'_'+oy];
+    jami+=qoldiq;
+    const tarifStr = x.sabit>0?`Sabit: ${x.sabit.toLocaleString()}`:`${x.tarif.toLocaleString()} so'm/kg`;
+    return `<tr>
+      <td><b>${x.ism} ${x.familiya}</b><br><small style="color:var(--text-muted)">${x.tel}</small></td>
+      <td><span class="badge gray">${x.lavozim}</span></td>
+      <td><b style="color:var(--primary)">${kg.toLocaleString()} kg</b></td>
+      <td style="font-size:12px;color:var(--text-muted)">${tarifStr}</td>
+      <td>${(kg*x.tarif).toLocaleString()}</td>
+      <td style="color:var(--accent)">${bonus?'+'+bonus.toLocaleString():'-'}</td>
+      <td style="color:var(--danger)">${avans?'-'+avans.toLocaleString():'-'}</td>
+      <td><b style="font-size:15px;color:var(--primary)">${qoldiq.toLocaleString()}</b></td>
+      <td>${tolandi?'<span class="badge green">✅ To\'landi</span>':'<span class="badge amber">⏳ Kutilmoqda</span>'}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-info" onclick="openKgModal('${x.id}')">📦 Kg</button>
+        ${!tolandi?`<button class="btn btn-sm btn-primary" onclick="openTola('${x.id}')">✅ To'lash</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('oylikJami').textContent = jami.toLocaleString()+' so\'m';
+}
+
+function hammasiniTola(){
+  if(!confirm('Barcha kutilayotgan oyliklarni to\'lashni tasdiqlaysizmi?')) return;
+  const oy=parseInt(document.getElementById('oylikOy').value)||3;
+  xodimlar.forEach(x=>{ if(!tolanganOyliklar[x.id+'_'+oy]) tolanganOyliklar[x.id+'_'+oy]=true; });
+  localStorage.setItem('tolanganOyliklar',JSON.stringify(tolanganOyliklar));
+  renderOylik(); renderXodimlar();
+  alert('✅ Barcha oyliklar to\'landi deb belgilandi!');
+}
+
+function exportOylik(){
+  const oy=parseInt(document.getElementById('oylikOy').value)||3;
+  const oyNom={1:'Yanvar',2:'Fevral',3:'Mart'};
+  let csv='Xodim,Kg,Tarif,Hisoblangan,Bonus,Avans,Tolanadigan\n';
+  xodimlar.forEach(x=>{
+    const kg=getOyKg(x,oy),hisob=hisoblangan(x,oy),avans=getAvansJami(x),qoldiq=tolanadigan(x,oy),bonus=x.bonus?.[oy]||0;
+    csv+=`"${x.ism} ${x.familiya}",${kg},${x.tarif},${kg*x.tarif},${bonus},${avans},${qoldiq}\n`;
+  });
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`Oylik_${oyNom[oy]}_2025.csv`;
+  a.click();
+}
+
+// ===== KG MODAL =====
+let kgEditXodimId=null;
+function openKgModal(xId){
+  const x=xodimlar.find(x=>x.id===xId);
+  if(!x) return;
+  kgEditXodimId=xId;
+  document.getElementById('kgModalTitle').textContent=`📦 ${x.ism} ${x.familiya} — Kg kiritish`;
+  document.getElementById('kgBonus').value=x.bonus?.[3]||0;
+  const area=document.getElementById('kgInputArea');
+  area.innerHTML=[1,2,3].map(oy=>{
+    const oyNom={1:'Yanvar',2:'Fevral',3:'Mart'};
+    return `<div class="kg-input-row">
+      <label>${oyNom[oy]} 2025</label>
+      <input type="number" id="kgOy${oy}" value="${getOyKg(x,oy)}" placeholder="0" oninput="calcKgOylik()" min="0"> kg
+    </div>`;
+  }).join('');
+  calcKgOylik();
+  openModal('kgModal');
+}
+
+function calcKgOylik(){
+  const xId=kgEditXodimId;
+  const x=xodimlar.find(x=>x.id===xId);
+  if(!x) return;
+  const kg=parseFloat(document.getElementById('kgOy3')?.value)||0;
+  const bonus=parseFloat(document.getElementById('kgBonus')?.value)||0;
+  const hisob=x.sabit>0?x.sabit:kg*x.tarif;
+  const jami=hisob+bonus;
+  document.getElementById('kgHisob').textContent=hisob.toLocaleString()+' so\'m';
+  document.getElementById('kgBonusVal').textContent='+'+bonus.toLocaleString()+' so\'m';
+  document.getElementById('kgJami').textContent=jami.toLocaleString()+' so\'m';
+}
+
+function saveKg(){
+  const x=xodimlar.find(x=>x.id===kgEditXodimId);
+  if(!x) return;
+  [1,2,3].forEach(oy=>{
+    const v=parseFloat(document.getElementById('kgOy'+oy)?.value)||0;
+    if(!x.oyKg) x.oyKg={};
+    x.oyKg[oy]=v;
+  });
+  const bonus=parseFloat(document.getElementById('kgBonus').value)||0;
+  if(!x.bonus) x.bonus={};
+  x.bonus[3]=bonus;
+  localStorage.setItem('xodimlar',JSON.stringify(xodimlar));
+  closeModal('kgModal');
+  renderXodimlar(); renderOylik();
+}
+
+// ===== TO'LASH =====
+function openTola(xId){
+  const x=xodimlar.find(x=>x.id===xId);
+  if(!x) return;
+  currentTolaId=xId;
+  const oy=3; const hisob=hisoblangan(x,oy); const avans=getAvansJami(x); const qoldiq=tolanadigan(x,oy);
+  document.getElementById('tolaTitle').textContent=`💳 ${x.ism} ${x.familiya} — Oylik to'lash`;
+  document.getElementById('tolaInfo').innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--text-muted)">Hisoblangan oylik:</span><b>${hisob.toLocaleString()} so'm</b></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;"><span style="color:var(--text-muted)">Berilgan avanslar:</span><b style="color:var(--danger)">-${avans.toLocaleString()} so'm</b></div>
+    <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--primary);"><span>TO'LANADIGAN:</span><span>${qoldiq.toLocaleString()} so'm</span></div>`;
+  openModal('tolaModal');
+}
+
+function confirmTola(){
+  if(!currentTolaId) return;
+  const oy=3;
+  tolanganOyliklar[currentTolaId+'_'+oy]=true;
+  localStorage.setItem('tolanganOyliklar',JSON.stringify(tolanganOyliklar));
+  closeModal('tolaModal');
+  renderXodimlar(); renderOylik();
+  currentTolaId=null;
+}
+
+// ===== AVANS =====
+function renderAvansOptions(){
+  const sel=document.getElementById('avXodim');
+  const sel2=document.getElementById('mHaydovchi');
+  const sel3=document.getElementById('reysHaydovchi');
+  const opts=xodimlar.map(x=>`<option value="${x.id}">${x.ism} ${x.familiya} — ${x.lavozim}</option>`).join('');
+  if(sel) sel.innerHTML='<option value="">— Tanlang —</option>'+opts;
+  const haydovchiOpts=xodimlar.filter(x=>x.rol==='haydovchi').map(x=>`<option value="${x.id}">${x.ism} ${x.familiya}</option>`).join('');
+  if(sel2) sel2.innerHTML='<option value="">— Tanlang —</option>'+haydovchiOpts;
+  if(sel3) sel3.innerHTML='<option value="">— Tanlang —</option>'+haydovchiOpts;
+}
+
+document.getElementById('avXodim').addEventListener('change',function(){
+  const x=xodimlar.find(x=>x.id===this.value);
+  const info=document.getElementById('avXodimInfo');
+  if(!x){info.style.display='none';return;}
+  info.style.display='block';
+  const hisob=hisoblangan(x,3); const avans=getAvansJami(x); const newAvans=parseFloat(document.getElementById('avSumma').value)||0;
+  document.getElementById('avHisoblangan').textContent=hisob.toLocaleString()+' so\'m';
+  document.getElementById('avBerilgan').textContent=avans.toLocaleString()+' so\'m';
+  document.getElementById('avQoldiq').textContent=Math.max(0,hisob-avans-newAvans).toLocaleString()+' so\'m';
+});
+
+function calcAvansQoldiq(){
+  const xId=document.getElementById('avXodim').value;
+  const x=xodimlar.find(x=>x.id===xId); if(!x) return;
+  const hisob=hisoblangan(x,3); const avans=getAvansJami(x); const newAvans=parseFloat(document.getElementById('avSumma').value)||0;
+  document.getElementById('avHisoblangan').textContent=hisob.toLocaleString()+' so\'m';
+  document.getElementById('avBerilgan').textContent=avans.toLocaleString()+' so\'m';
+  document.getElementById('avQoldiq').textContent=Math.max(0,hisob-avans-newAvans).toLocaleString()+' so\'m';
+}
+
+function openAvansFor(xId){
+  renderAvansOptions();
+  document.getElementById('avXodim').value=xId;
+  document.getElementById('avXodim').dispatchEvent(new Event('change'));
+  openModal('avansModal');
+}
+
+function saveAvans(){
+  const xId=document.getElementById('avXodim').value;
+  const summa=parseFloat(document.getElementById('avSumma').value)||0;
+  const sabab=document.getElementById('avSabab').value.trim();
+  const sana=document.getElementById('avSana').value;
+  if(!xId){alert('Xodimni tanlang!');return;}
+  if(!summa){alert('Summani kiriting!');return;}
+  const x=xodimlar.find(x=>x.id===xId);
+  const newAvans={id:'av'+Date.now(),xodimId:xId,xodimNomi:`${x.ism} ${x.familiya}`,summa,sabab:sabab||'Avans',sana,bergan:user.name,holat:'aktiv'};
+  avanslar.push(newAvans);
+  localStorage.setItem('avanslarAll',JSON.stringify(avanslar));
+  document.getElementById('avSumma').value='';
+  document.getElementById('avSabab').value='';
+  closeModal('avansModal');
+  renderAvans(); renderXodimlar(); renderOylik();
+}
+
+function renderAvans(){
+  // Timeline
+  const tl=document.getElementById('avansTimeline');
+  const last=avanslar.slice(-5).reverse();
+  tl.innerHTML=last.length?last.map(a=>`
+    <div class="avans-item">
+      <div class="avans-icon">💰</div>
+      <div class="avans-info">
+        <div class="a-name">${a.xodimNomi}</div>
+        <div class="a-meta">${a.sana} &nbsp;·&nbsp; ${a.sabab} &nbsp;·&nbsp; Bergan: ${a.bergan}</div>
+      </div>
+      <div class="avans-summa">${a.summa.toLocaleString()}</div>
+    </div>`).join(''):'<div style="text-align:center;color:var(--text-muted);padding:16px;">Avans yo\'q</div>';
+
+  // Xodim bo'yicha
+  const xbody=document.getElementById('avansXodimBody');
+  xbody.innerHTML=xodimlar.map(x=>{
+    const avans=getAvansJami(x); const hisob=hisoblangan(x,3); const qoldiq=tolanadigan(x,3);
+    return `<tr><td><b>${x.ism} ${x.familiya}</b></td><td style="color:var(--danger)">${avans.toLocaleString()}</td><td>${hisob.toLocaleString()}</td><td style="color:var(--primary);font-weight:700">${qoldiq.toLocaleString()}</td></tr>`;
+  }).join('');
+
+  // Barcha avanslar
+  const body=document.getElementById('avansBody');
+  body.innerHTML=avanslar.length?avanslar.slice().reverse().map((a,i)=>`
+    <tr>
+      <td>${avanslar.length-i}</td>
+      <td>${a.sana}</td>
+      <td><b>${a.xodimNomi}</b></td>
+      <td>${a.sabab}</td>
+      <td style="font-weight:700;color:var(--accent)">${a.summa.toLocaleString()} so'm</td>
+      <td>${a.bergan}</td>
+      <td>${a.holat==='aktiv'?'<span class="badge amber">Aktiv</span>':'<span class="badge green">Hisobdan chiqdi</span>'}</td>
+    </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;padding:16px;color:var(--text-muted);">Avanslar yo\'q</td></tr>';
+}
+
+// ===== HAYDOVCHI =====
+function renderHaydovchi(){
+  const haydovchilar=xodimlar.filter(x=>x.rol==='haydovchi');
+  const hbody=document.getElementById('haydovchiBody');
+  hbody.innerHTML=haydovchilar.length?haydovchilar.map(x=>{
+    const xReyslar=reyslar.filter(r=>r.haydovchiId===x.id);
+    const oyHaq=xReyslar.reduce((s,r)=>s+r.haq,0);
+    const avans=getAvansJami(x); const qoldiq=Math.max(0,oyHaq-avans);
+    return `<tr>
+      <td><b>${x.ism} ${x.familiya}</b></td>
+      <td style="font-size:12px">${mashinalar.find(m=>m.haydovchi===x.ism+' '+x.familiya)?.raqam||'—'}</td>
+      <td>${xReyslar.length} ta</td>
+      <td style="color:var(--primary);font-weight:700">${oyHaq.toLocaleString()}</td>
+      <td style="color:var(--danger)">${avans.toLocaleString()}</td>
+      <td style="font-weight:700">${qoldiq.toLocaleString()}</td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--text-muted);">Haydovchi yo\'q</td></tr>';
+
+  // Moshinalar
+  const mbody=document.getElementById('mashinaBody');
+  mbody.innerHTML=mashinalar.map(m=>`
+    <tr>
+      <td><b>${m.raqam}</b></td>
+      <td>${m.model}</td>
+      <td>${m.haydovchi}</td>
+      <td>${m.km.toLocaleString()} km</td>
+      <td><span class="badge green">✅ Faol</span></td>
+    </tr>`).join('');
+
+  // Reyslar
+  const rbody=document.getElementById('reysBody');
+  rbody.innerHTML=reyslar.slice().reverse().map((r,i)=>`
+    <tr>
+      <td><b>${r.id}</b></td>
+      <td>${r.sana}</td>
+      <td>${r.haydovchiNomi}</td>
+      <td>${r.moshina}</td>
+      <td>${r.marshrut}</td>
+      <td>${r.masofa} km</td>
+      <td style="font-weight:700;color:var(--primary)">${r.haq.toLocaleString()}</td>
+      <td>${r.holat==='tolandi'?'<span class="badge green">✅ To\'landi</span>':'<span class="badge amber">⏳ Kutilmoqda</span>'}</td>
+      <td>
+        ${r.holat!=='tolandi'?`<button class="btn btn-sm btn-primary" onclick="reysTolaOrders('${r.id}')">✅</button>`:''}
+        <button class="btn btn-sm btn-danger" onclick="deleteReys('${r.id}')">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+function saveReys(){
+  const hId=document.getElementById('reysHaydovchi').value;
+  const hX=xodimlar.find(x=>x.id===hId);
+  const moshina=document.getElementById('reysMoshina').value;
+  const marshrut=document.getElementById('reysMarshrut').value.trim();
+  const masofa=parseFloat(document.getElementById('reysMasofa').value)||0;
+  const haq=parseFloat(document.getElementById('reysHaq').value)||0;
+  const avans=parseFloat(document.getElementById('reysAvans').value)||0;
+  if(!hId||!marshrut||!haq){alert('Barcha maydonlarni to\'ldiring!');return;}
+  const r={id:'r'+Date.now(),haydovchiId:hId,haydovchiNomi:hX?hX.ism+' '+hX.familiya:'—',moshina,sana:document.getElementById('reysSana').value,marshrut,masofa,haq,avans,holat:'kutilmoqda',izoh:document.getElementById('reysIzoh').value};
+  if(avans>0){
+    avanslar.push({id:'av'+Date.now(),xodimId:hId,xodimNomi:r.haydovchiNomi,summa:avans,sabab:'Reys avansi: '+marshrut,sana:r.sana,bergan:user.name,holat:'aktiv'});
+    localStorage.setItem('avanslarAll',JSON.stringify(avanslar));
+  }
+  reyslar.push(r); localStorage.setItem('reyslar',JSON.stringify(reyslar));
+  closeModal('reysModal'); renderHaydovchi();
+}
+
+function reysTolaOrders(id){
+  const r=reyslar.find(x=>x.id===id); if(!r) return;
+  r.holat='tolandi'; localStorage.setItem('reyslar',JSON.stringify(reyslar)); renderHaydovchi();
+}
+function deleteReys(id){ reyslar=reyslar.filter(r=>r.id!==id); localStorage.setItem('reyslar',JSON.stringify(reyslar)); renderHaydovchi(); }
+
+function saveMashina(){
+  const raqam=document.getElementById('mRaqam').value.trim();
+  const model=document.getElementById('mModel').value.trim();
+  if(!raqam||!model){alert('Raqam va modelni kiriting!');return;}
+  const hId=document.getElementById('mHaydovchi').value;
+  const hX=xodimlar.find(x=>x.id===hId);
+  mashinalar.push({id:'m'+Date.now(),raqam,model,haydovchi:hX?hX.ism+' '+hX.familiya:'—',km:0});
+  localStorage.setItem('mashinalar',JSON.stringify(mashinalar));
+  closeModal('mashinaModal'); renderHaydovchi();
+}
+
+function calcReysHaq(){ /* avtomat hisoblash logikasi bo'lishi mumkin */ }
+
+// ===== XODIM QO'SHISH =====
+function saveXodim(){
+  const id=document.getElementById('xodimEditId').value;
+  const obj={ism:document.getElementById('xIsm').value.trim(),familiya:document.getElementById('xFamiliya').value.trim(),lavozim:document.getElementById('xLavozim').value.trim(),rol:document.getElementById('xRol').value,tel:document.getElementById('xTel').value,sana:document.getElementById('xSana').value,tarif:parseFloat(document.getElementById('xTarif').value)||0,sabit:parseFloat(document.getElementById('xSabit').value)||0,izoh:document.getElementById('xIzoh').value};
+  if(!obj.ism||!obj.familiya){alert('Ism va familiyani kiriting!');return;}
+  if(id){const x=xodimlar.find(x=>x.id===id);if(x)Object.assign(x,obj);}
+  else{obj.id='x'+Date.now();obj.oyKg={};obj.avanslar=[];obj.tolangan=[];obj.bonus={};xodimlar.push(obj);}
+  localStorage.setItem('xodimlar',JSON.stringify(xodimlar));
+  closeModal('xodimModal'); renderXodimlar(); renderAvansOptions(); renderAvans();
+}
+
+function editXodim(xId){
+  const x=xodimlar.find(x=>x.id===xId);if(!x)return;
+  document.getElementById('xodimEditId').value=x.id;
+  document.getElementById('xodimModalTitle').textContent='✏️ Xodimni tahrirlash';
+  document.getElementById('xIsm').value=x.ism;
+  document.getElementById('xFamiliya').value=x.familiya;
+  document.getElementById('xLavozim').value=x.lavozim;
+  document.getElementById('xRol').value=x.rol;
+  document.getElementById('xTel').value=x.tel;
+  document.getElementById('xSana').value=x.sana;
+  document.getElementById('xTarif').value=x.tarif;
+  document.getElementById('xSabit').value=x.sabit;
+  document.getElementById('xIzoh').value=x.izoh||'';
+  openModal('xodimModal');
+}
+
+// ===== HISOBOT =====
+function renderHisobot(){
+  const jOylik=xodimlar.reduce((s,x)=>s+hisoblangan(x,3),0);
+  const jAvans=avanslar.reduce((s,a)=>s+a.summa,0);
+  const topKg=xodimlar.reduce((top,x)=>getOyKg(x,3)>getOyKg(top,3)?x:top,xodimlar[0]);
+  document.getElementById('hrStat1').textContent=jOylik.toLocaleString();
+  document.getElementById('hrStat2').textContent=jAvans.toLocaleString();
+  document.getElementById('hrStat3').textContent=topKg?topKg.ism+' '+topKg.familiya:'—';
+  document.getElementById('hrStat4').textContent=reyslar.length;
+
+  // Unumdorlik
+  const maxKg=Math.max(...xodimlar.map(x=>getOyKg(x,3)),1);
+  document.getElementById('unumdorlikBody').innerHTML=xodimlar.map((x,i)=>{
+    const kg=getOyKg(x,3); const pct=Math.round(kg/maxKg*100);
+    return `<div class="prog-wrap">
+      <div class="prog-label"><span>${x.ism} ${x.familiya}</span><span style="font-weight:700">${kg.toLocaleString()} kg</span></div>
+      <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${getRang(i)}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Taqqoslash
+  document.getElementById('taqqoslashBody').innerHTML=xodimlar.map(x=>`
+    <tr>
+      <td><b>${x.ism} ${x.familiya}</b></td>
+      <td>${getOyKg(x,1).toLocaleString()}</td>
+      <td>${getOyKg(x,2).toLocaleString()}</td>
+      <td><b style="color:var(--primary)">${getOyKg(x,3).toLocaleString()}</b></td>
+    </tr>`).join('');
+}
+
+// ===== TABS =====
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='xodimlar') renderXodimlar();
+  if(id==='oylik') renderOylik();
+  if(id==='avans'){ renderAvans(); renderAvansOptions(); }
+  if(id==='haydovchi'){ renderHaydovchi(); renderAvansOptions(); }
+  if(id==='hisobot') renderHisobot();
+}
+
+// ===== MODAL =====
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='xodimModal'){document.getElementById('xodimEditId').value='';document.getElementById('xodimModalTitle').textContent='👷 Yangi xodim';}
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ===== INIT RENDER =====
+renderXodimlar();
+renderAvansOptions();
+</script>
+<script src="/api.js"></script>
+</body>
+</html>
