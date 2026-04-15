@@ -13,7 +13,16 @@ router.post('/auth/login', async (req, res) => {
   try {
     const { login, parol } = req.body;
     const user = await db.foydalanuvchilar.findOne({ login });
-    if (!user) return res.status(401).json({ error: 'Login yoki parol noto\'g\'ri' });
+    
+    if (!user) {
+      const mijoz = await db.mijozlar.findOne({ login });
+      if (mijoz && (mijoz.parol === parol || await bcrypt.compare(parol, mijoz.parol))) {
+        const token = jwt.sign({ id: mijoz._id, ism: mijoz.nomi, login: mijoz.login, rol: 'mijoz' }, SECRET, { expiresIn: '8h' });
+        return res.json({ token, user: { ism: mijoz.nomi, login: mijoz.login, rol: 'mijoz', mijozId: mijoz._id } });
+      }
+      return res.status(401).json({ error: 'Login yoki parol noto\'g\'ri' });
+    }
+
     const ok = await bcrypt.compare(parol, user.parol);
     if (!ok) return res.status(401).json({ error: 'Login yoki parol noto\'g\'ri' });
     const token = jwt.sign({ id: user._id, ism: user.ism, login: user.login, rol: user.rol }, SECRET, { expiresIn: '8h' });

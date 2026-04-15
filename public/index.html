@@ -83,19 +83,37 @@ async function doLogin(e) {
   e.preventDefault();
   const btn = document.getElementById('loginBtn');
   const err = document.getElementById('err');
+  const loginInput = document.getElementById('login').value;
+  const parolInput = document.getElementById('parol').value;
+  
   btn.disabled = true; btn.textContent = 'Kirilmoqda...';
   err.classList.remove('show');
   try {
+    // Mijozlar orasidan qidirish (offline local storage)
+    const mijozlar = JSON.parse(localStorage.getItem('mijozlar') || '[]');
+    const m = mijozlar.find(x => x.login === loginInput && x.parol === parolInput && x.login);
+    if (m) {
+      localStorage.setItem('erp_token', 'mijoz_local_token');
+      localStorage.setItem('erp_user', JSON.stringify({ ism: m.nomi, login: m.login, rol: 'mijoz', id: m.id }));
+      window.location.href = '/mijoz_dashboard.html';
+      return;
+    }
+
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ login: document.getElementById('login').value, parol: document.getElementById('parol').value })
+      body: JSON.stringify({ login: loginInput, parol: parolInput })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     localStorage.setItem('erp_token', data.token);
     localStorage.setItem('erp_user', JSON.stringify(data.user));
-    window.location.href = '/dashboard.html';
+    
+    if (data.user.rol === 'mijoz') {
+      window.location.href = '/mijoz_dashboard.html';
+    } else {
+      window.location.href = '/dashboard.html';
+    }
   } catch(ex) {
     err.classList.add('show');
     btn.disabled = false; btn.textContent = 'Kirish →';

@@ -13,6 +13,7 @@ const SIDEBAR_HTML = `
   <div class="nav-section"><div class="nav-label">Moliya</div>
     <a class="nav-item" id="nav-harajat" href="harajat.html"><span class="icon">💸</span>Harajatlar</a>
     <a class="nav-item" id="nav-rezina" href="rezina.html"><span class="icon">🔵</span>Rezina dilerlik</a>
+    <a class="nav-item" id="nav-molxona" href="molxona.html"><span class="icon">🐄</span>Molxona</a>
   </div>
   <div class="nav-section"><div class="nav-label">HR</div>
     <a class="nav-item" id="nav-xodimlar" href="xodimlar.html"><span class="icon">👷</span>Xodimlar</a>
