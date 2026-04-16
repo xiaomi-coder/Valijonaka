@@ -236,7 +236,9 @@
     <div class="modal-header"><h3>📥 Zavoddan kirim</h3><button class="modal-close" onclick="closeModal('kirimModal')">✕</button></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label>Zavod nomi</label><select id="kmZavod"><option value="Chirchiq Rezina Zavodi">Chirchiq Rezina Zavodi</option><option value="Farg'ona Polimer">Farg'ona Polimer</option><option value="Boshqa">Boshqa zavod</option></select></div>
+        <div class="form-group"><label>Zavod nomi</label>
+          <div style="display:flex;gap:8px;"><select id="kmZavod" style="flex:1;"></select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiZavod()">+</button></div>
+        </div>
         <div class="form-group"><label>Sana</label><input type="date" id="kmSana"></div>
       </div>
       <div class="form-row">
@@ -350,6 +352,25 @@ function addYangiRezinaTur(){
   }
 }
 loadRezinaTurlariSelect();
+
+let zavodTurlari=JSON.parse(localStorage.getItem('rezZavodTurlari')||'[]');
+function loadZavodlarSelect(){
+  const html = zavodTurlari.map(z=>`<option value="${z}">${z}</option>`).join('');
+  document.getElementById('kmZavod').innerHTML = html;
+}
+function addYangiZavod(){
+  const z = prompt("Yangi Zavod nomini kiriting (masalan: Angren Rezina):");
+  if(z && z.trim()){
+    if(!zavodTurlari.includes(z.trim())){
+      zavodTurlari.push(z.trim());
+      localStorage.setItem('rezZavodTurlari', JSON.stringify(zavodTurlari));
+      loadZavodlarSelect();
+    } else {
+      alert("Bu zavod allaqachon mavjud!");
+    }
+  }
+}
+loadZavodlarSelect();
 
 // Ombor hisob
 function omborBylTur(tur){
