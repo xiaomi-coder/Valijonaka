@@ -1,4 +1,4 @@
-# 🏭 AgroPlast ERP — Node.js Backend
+# 🏭 Valijon ERP — Node.js Backend
 
 ## O'rnatish (Setup)
 
@@ -10,7 +10,7 @@
 
 ```bash
 # 1. Papkaga kiring
-cd agroplast-erp
+cd valijon-erp
 
 # 2. Kutubxonalarni o'rnating
 npm install
@@ -37,7 +37,7 @@ http://localhost:3000
 ## Loyiha tuzilmasi
 
 ```
-agroplast-erp/
+valijon-erp/
 ├── server.js          ← Asosiy server fayl
 ├── package.json       ← Kutubxonalar ro'yxati
 ├── db/
@@ -95,4 +95,4 @@ agroplast-erp/
 - **Backup** tizimi
 
 ---
-© 2025 AgroPlast ERP. Barcha huquqlar himoyalangan.
+© 2025 Valijon ERP. Barcha huquqlar himoyalangan.

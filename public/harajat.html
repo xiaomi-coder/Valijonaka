@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgroPlast ERP — Harajatlar & Hisobot</title>
+<title>Valijon ERP — Harajatlar & Hisobot</title>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -803,7 +803,7 @@ function exportHisobot(){
   const jDaromad=d.plastik+d.rezina+d.poterya;
   const jHarajat=sumHarajat(harajatlar.filter(h=>h.oy===oy))+OYLIK_FOND[oy];
   const foyda=jDaromad-jHarajat;
-  let csv=`AgroPlast ERP — Moliyaviy hisobot\n${OY_NOMI[oy]} 2025\n\n`;
+  let csv=`Valijon ERP — Moliyaviy hisobot\n${OY_NOMI[oy]} 2025\n\n`;
   csv+=`DAROMADLAR\nPlastik granula,${d.plastik}\nRezina dilerlik,${d.rezina}\nPoterya sotuvi,${d.poterya}\nJami daromad,${jDaromad}\n\n`;
   csv+=`HARAJATLAR\n`;
   kategoriyalar.forEach(k=>{ csv+=`${k.nomi},${katSum(k.id,oy)}\n`; });

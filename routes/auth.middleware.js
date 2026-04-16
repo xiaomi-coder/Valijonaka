@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.JWT_SECRET || 'agroplast_secret_2025';
+const SECRET = process.env.JWT_SECRET || 'valijon_secret_2025';
 
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];

@@ -1,7 +1,7 @@
 {
-  "name": "agroplast-erp",
+  "name": "valijon-erp",
   "version": "1.0.0",
-  "description": "AgroPlast ERP tizimi - Node.js backend",
+  "description": "Valijon ERP tizimi - Node.js backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

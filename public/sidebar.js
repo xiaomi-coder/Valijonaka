@@ -1,5 +1,5 @@
 const SIDEBAR_HTML = `
-  <div class="sidebar-brand"><div class="brand-logo"><div class="icon">🏭</div><div class="brand-name">AgroPlast ERP<span>Node.js Backend</span></div></div></div>
+  <div class="sidebar-brand"><div class="brand-logo"><div class="icon">🏭</div><div class="brand-name">Valijon ERP<span>Node.js Backend</span></div></div></div>
   <div class="nav-section"><div class="nav-label">Asosiy</div><a class="nav-item" id="nav-dashboard" href="dashboard.html"><span class="icon">📊</span>Dashboard</a></div>
   <div class="nav-section"><div class="nav-label">Ishlab chiqarish</div>
     <a class="nav-item" id="nav-xomAshyo" href="xomAshyo.html"><span class="icon">📦</span>Xom ashyo</a>

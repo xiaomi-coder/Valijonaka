@@ -30,7 +30,7 @@ initDB().then(() => {
   app.listen(PORT, () => {
     console.log('');
     console.log('╔════════════════════════════════════════╗');
-    console.log('║   🏭  AgroPlast ERP — Server TAYYOR!   ║');
+    console.log('║   🏭  Valijon ERP — Server TAYYOR!   ║');
     console.log('╠════════════════════════════════════════╣');
     console.log(`║   🌐  http://localhost:${PORT}             ║`);
     console.log('║   📋  Login: admin | Parol: 1234       ║');
