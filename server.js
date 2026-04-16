@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const path = require('path');
 const { initDB } = require('./db/database');
 const apiRoutes = require('./routes/api');
+const apiPgRoutes = require('./routes/api_pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API yo'llar
+app.use('/api', apiPgRoutes);
 app.use('/api', apiRoutes);
 
 // Barcha boshqa so'rovlar — index.html

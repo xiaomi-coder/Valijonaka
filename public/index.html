@@ -89,16 +89,6 @@ async function doLogin(e) {
   btn.disabled = true; btn.textContent = 'Kirilmoqda...';
   err.classList.remove('show');
   try {
-    // Mijozlar orasidan qidirish (offline local storage)
-    const mijozlar = JSON.parse(localStorage.getItem('mijozlar') || '[]');
-    const m = mijozlar.find(x => x.login === loginInput && x.parol === parolInput && x.login);
-    if (m) {
-      localStorage.setItem('erp_token', 'mijoz_local_token');
-      localStorage.setItem('erp_user', JSON.stringify({ ism: m.nomi, login: m.login, rol: 'mijoz', id: m.id }));
-      window.location.href = '/mijoz_dashboard.html';
-      return;
-    }
-
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
