@@ -183,6 +183,7 @@
   ::-webkit-scrollbar{width:5px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 
@@ -457,35 +458,9 @@ document.getElementById('todayDate').textContent=new Date().toLocaleDateString('
 document.getElementById('hSana').value=new Date().toISOString().split('T')[0];
 
 // ===== MA'LUMOTLAR =====
-let kategoriyalar=JSON.parse(localStorage.getItem('kategoriyalar')||JSON.stringify([
-  {id:'k1',nomi:'Moshina / Yoqilg\'i',icon:'🚗',rang:'#2471a3',moshina:1},
-  {id:'k2',nomi:'Elektr / Kommunal',icon:'💡',rang:'#f0a500',moshina:0},
-  {id:'k3',nomi:'Ta\'mirlash',icon:'🔧',rang:'#e67e22',moshina:1},
-  {id:'k4',nomi:'Qadoqlash',icon:'📦',rang:'#1a6b3c',moshina:0},
-  {id:'k5',nomi:'Ish haqi',icon:'💳',rang:'#8e44ad',moshina:0},
-  {id:'k6',nomi:'Boshqa',icon:'📌',rang:'#c0392b',moshina:0},
-]));
+let kategoriyalar=JSON.parse(localStorage.getItem('kategoriyalar')||'[]');
 
-let harajatlar=JSON.parse(localStorage.getItem('harajatlar')||JSON.stringify([
-  // Mart (oy=3)
-  {id:'h1',katId:'k1',sana:'2025-03-28',tavsif:'Yoqilg\'i — 40 litr',moshina:'01 A 234 BC — Nexia',summa:320000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
-  {id:'h2',katId:'k2',sana:'2025-03-27',tavsif:'Mart elektr to\'lovi',moshina:'',summa:450000,tolov:'bank',izoh:'',oy:3,qoshgan:'Admin'},
-  {id:'h3',katId:'k3',sana:'2025-03-26',tavsif:'Motor ta\'mirlash',moshina:'78 C 890 FG — Yuk mashinasi',summa:800000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
-  {id:'h4',katId:'k1',sana:'2025-03-25',tavsif:'Yoqilg\'i — Andijon reys',moshina:'01 A 234 BC — Nexia',summa:280000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
-  {id:'h5',katId:'k4',sana:'2025-03-24',tavsif:'Polietilen qoplar',moshina:'',summa:380000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Kassir'},
-  {id:'h6',katId:'k2',sana:'2025-03-20',tavsif:'Suv to\'lovi',moshina:'',summa:120000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
-  {id:'h7',katId:'k6',sana:'2025-03-15',tavsif:'Mehmonlar ziyofat',moshina:'',summa:500000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Admin'},
-  {id:'h8',katId:'k1',sana:'2025-03-12',tavsif:'Moshina yuvish',moshina:'01 B 567 DE — Damas',summa:30000,tolov:'naqd',izoh:'',oy:3,qoshgan:'Kassir'},
-  // Fevral (oy=2)
-  {id:'h9',katId:'k1',sana:'2025-02-28',tavsif:'Fevral yoqilg\'i',moshina:'01 A 234 BC — Nexia',summa:290000,tolov:'naqd',izoh:'',oy:2,qoshgan:'Admin'},
-  {id:'h10',katId:'k2',sana:'2025-02-25',tavsif:'Fevral elektr',moshina:'',summa:480000,tolov:'bank',izoh:'',oy:2,qoshgan:'Admin'},
-  {id:'h11',katId:'k3',sana:'2025-02-20',tavsif:'Qolib ta\'mirlash',moshina:'',summa:350000,tolov:'naqd',izoh:'',oy:2,qoshgan:'Admin'},
-  {id:'h12',katId:'k4',sana:'2025-02-15',tavsif:'Qadoqlash materiallari',moshina:'',summa:310000,tolov:'naqd',izoh:'',oy:2,qoshgan:'Admin'},
-  // Yanvar (oy=1)
-  {id:'h13',katId:'k1',sana:'2025-01-28',tavsif:'Yanvar yoqilg\'i',moshina:'01 A 234 BC — Nexia',summa:260000,tolov:'naqd',izoh:'',oy:1,qoshgan:'Admin'},
-  {id:'h14',katId:'k2',sana:'2025-01-25',tavsif:'Yanvar elektr',moshina:'',summa:410000,tolov:'bank',izoh:'',oy:1,qoshgan:'Admin'},
-  {id:'h15',katId:'k6',sana:'2025-01-10',tavsif:'Ofis jihozlar',moshina:'',summa:650000,tolov:'naqd',izoh:'',oy:1,qoshgan:'Admin'},
-]));
+let harajatlar=JSON.parse(localStorage.getItem('harajatlar')||'[]');
 
 // Demo daromadlar (sotuvlardan)
 const DAROMADLAR={
@@ -833,6 +808,6 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 setupKatSelect();
 renderHarajatlar();
 </script>
-<script src="/api.js"></script>
+
 </body>
 </html>

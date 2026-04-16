@@ -115,6 +115,7 @@
   ::-webkit-scrollbar{width:5px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 <aside class="sidebar"></aside>
@@ -265,16 +266,7 @@ const RANG=['#1a6b3c','#2471a3','#8e44ad','#e67e22','#c0392b','#16a085'];
 const TUR_BADGE={zavod:'<span class="badge blue">🏭 Zavod</span>',korxona:'<span class="badge green">🏢 Korxona</span>',oddiy:'<span class="badge gray">👤 Oddiy</span>'};
 const NARX_NOM={baza:'Baza',standart:'Standart',vip:'VIP',maxsus:'Maxsus'};
 
-let mijozlar=JSON.parse(localStorage.getItem('mijozlar')||JSON.stringify([
-  {id:'m1',nomi:'Toshkent Plastik Zavodi',turi:'zavod',tel:'+998712345678',masul:'Aliyev B.',manzil:'Toshkent',narxTur:'vip',izoh:'',
-   maxsusNarxlar:{},jami:48400000,tolangan:48400000,qarz:0,oxirgi:'2025-03-28'},
-  {id:'m2',nomi:'Andijon MChJ',turi:'korxona',tel:'+998743456789',masul:'Karimov J.',manzil:'Andijon',narxTur:'standart',izoh:'',
-   maxsusNarxlar:{},jami:12200000,tolangan:10000000,qarz:2200000,oxirgi:'2025-03-27'},
-  {id:'m3',nomi:'Farg\'ona Savdo',turi:'korxona',tel:'+998734567890',masul:'Rahimov O.',manzil:'Farg\'ona',narxTur:'standart',izoh:'',
-   maxsusNarxlar:{},jami:8800000,tolangan:8800000,qarz:0,oxirgi:'2025-03-26'},
-  {id:'m4',nomi:'Samarqand Zavodi',turi:'zavod',tel:'+998661234567',masul:'Toshmatov A.',manzil:'Samarqand',narxTur:'vip',izoh:'',
-   maxsusNarxlar:{},jami:22000000,tolangan:18000000,qarz:4000000,oxirgi:'2025-03-25'},
-]));
+let mijozlar=JSON.parse(localStorage.getItem('mijozlar')||'[]');
 
 const XARIDLAR=[
   {id:'x1',mijozId:'m1',sana:'2025-03-28',mahsulot:'Qora plastik granula',kg:480,narx:38000,summa:18240000,tolov:'Naqd',oy:3},
@@ -493,6 +485,6 @@ function closeModal(id){document.getElementById(id).classList.remove('open');if(
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 renderMijozlar();renderNarxMijozList();setupTarixSelect();updateSozrovBadge();
 </script>
-<script src="/api.js"></script>
+
 </body>
 </html>

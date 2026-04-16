@@ -92,3 +92,13 @@ function saveXomTur(nomi) {
   localStorage.setItem('xomTurlar', JSON.stringify(t));
   return id;
 }
+
+(function() {
+  const version = "1.1";
+  if (localStorage.getItem('erp_clean_version') !== version) {
+    const keysToClear = ['mahsulotlar', 'xodimlar', 'harajatlar', 'avanslarAll', 'reyslar', 'mashinalar', 'kategoriyalar', 'mijozlar', 'rezKirimlar', 'rezSotuvlar'];
+    keysToClear.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('erp_clean_version', version);
+    console.log("Local storage cleaned for production!");
+  }
+})();

@@ -222,6 +222,7 @@
   /* PRINT AREA */
   #printArea { display: none; }
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 
@@ -796,7 +797,8 @@ function printChek() {
     .chek-row{display:flex;justify-content:space-between}
     .bold{font-weight:700} .large{font-size:15px}
     .chek-footer{text-align:center;font-size:11px;color:#777;margin-top:8px}
-  </style></head><body>${html}<script>window.print();window.close();<\\/script><script src="/api.js"><\\/script>
+  </style><script src="/api.js"></script>
+</head><body>${html}<script>window.print();window.close();<\\/script><script src="/api.js"><\\/script>
 </body></html>`);
   win.document.close();
 }
@@ -921,6 +923,6 @@ function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 </script>
-<script src="/api.js"></script>
+
 </body>
 </html>

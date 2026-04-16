@@ -77,6 +77,7 @@
   .s-dot{width:10px;height:10px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 <aside class="sidebar"></aside>
@@ -193,7 +194,7 @@
   </div>
 </div>
 
-<script src="/api.js"></script>
+
 <script>
 showUser(); setDate();
 document.getElementById('serverTime').textContent = new Date().toLocaleString('uz-UZ');

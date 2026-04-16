@@ -107,6 +107,7 @@
   ::-webkit-scrollbar{width:5px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 <aside class="sidebar"></aside>
@@ -209,23 +210,9 @@ const user=JSON.parse(localStorage.getItem('erp_user')||'{"name":"admin","role":
 
 document.getElementById('todayDate').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
 
-let mahsulotlar=JSON.parse(localStorage.getItem('mahsulotlar')||JSON.stringify([
-  {id:'p1',nomi:'Qora plastik granula',qisqa:'QP-1',tur:'granula',xom:'qora',qolib:'Katta qolib №1',narx:40000,ombor:2840,min:500,poterya:5,icon:'🖤'},
-  {id:'p2',nomi:'Rangli plastik granula',qisqa:'RP-1',tur:'granula',xom:'rangli',qolib:'Katta qolib №2',narx:45000,ombor:1200,min:300,poterya:5,icon:'🌈'},
-  {id:'p3',nomi:'Rangli plastik (yashil)',qisqa:'RP-2',tur:'granula',xom:'rangli',qolib:'Kichik qolib №1',narx:46000,ombor:650,min:200,poterya:5,icon:'💚'},
-  {id:'p4',nomi:'Rezina granula',qisqa:'RG-1',tur:'granula',xom:'rezina',qolib:'Rezina qolib №3',narx:55000,ombor:980,min:400,poterya:17,icon:'⚫'},
-  {id:'p5',nomi:'Poterya qoldig\'i (qora)',qisqa:'PQ-1',tur:'qoldiq',xom:'qora',qolib:'—',narx:400,ombor:89,min:50,poterya:0,icon:'🔘'},
-  {id:'p6',nomi:'Poterya qoldig\'i (rangli)',qisqa:'PQ-2',tur:'qoldiq',xom:'rangli',qolib:'—',narx:350,ombor:142,min:50,poterya:0,icon:'🔵'},
-]));
+let mahsulotlar=JSON.parse(localStorage.getItem('mahsulotlar')||'[]');
 
-const harakatlar=[
-  {sana:'2025-03-28',mahsulot:'Qora plastik granula',harakat:'kirim',miqdor:481,sabab:'Partiya P-1048'},
-  {sana:'2025-03-28',mahsulot:'Qora plastik granula',harakat:'chiqim',miqdor:-480,sabab:'Sotuv S-1048 (Toshkent Zavod)'},
-  {sana:'2025-03-27',mahsulot:'Rangli plastik granula',harakat:'kirim',miqdor:285,sabab:'Partiya P-1047'},
-  {sana:'2025-03-27',mahsulot:'Rangli plastik granula',harakat:'chiqim',miqdor:-200,sabab:'Sotuv S-1047 (Andijon MChJ)'},
-  {sana:'2025-03-26',mahsulot:'Rezina granula',harakat:'chiqim',miqdor:-150,sabab:'Sotuv S-1046 (Farg\'ona Savdo)'},
-  {sana:'2025-03-25',mahsulot:'Qora plastik granula',harakat:'kirim',miqdor:390,sabab:'Partiya P-1046'},
-];
+const harakatlar=[];
 
 const TUR_NOM={granula:'Granula',plyonka:'Plyonka',profil:'Profil',boshqa:'Boshqa',qoldiq:'Qoldiq'};
 function getXOM_NOM() { const t=typeof getXomTurlar==='function'?getXomTurlar():[]; const x={}; t.forEach(k=>x[k.id]=k.nomi); return x; }
@@ -366,6 +353,6 @@ loadXomTurlarList();
 renderMahsulotlar();
 renderHarakatlar();
 </script>
-<script src="/api.js"></script>
+
 </body>
 </html>

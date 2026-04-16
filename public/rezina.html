@@ -101,6 +101,7 @@
   ::-webkit-scrollbar{width:5px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 <aside class="sidebar"></aside>
@@ -274,19 +275,9 @@ document.getElementById('todayDate').textContent=new Date().toLocaleDateString('
 document.getElementById('kmSana').value=new Date().toISOString().split('T')[0];
 document.getElementById('smSana').value=new Date().toISOString().split('T')[0];
 
-let kirimlar=JSON.parse(localStorage.getItem('rezKirimlar')||JSON.stringify([
-  {id:'rk1',sana:'2025-03-25',zavod:'Chirchiq Rezina Zavodi',tur:'Oddiy rezina',kg:2000,narx:8500,jami:17000000,tolov:'tolangan',izoh:'',oy:3},
-  {id:'rk2',sana:'2025-03-15',zavod:'Chirchiq Rezina Zavodi',tur:'Texnik rezina',kg:1200,narx:9000,jami:10800000,tolov:'tolangan',izoh:'',oy:3},
-  {id:'rk3',sana:'2025-02-10',zavod:'Farg\'ona Polimer',tur:'Oddiy rezina',kg:1500,narx:8200,jami:12300000,tolov:'tolangan',izoh:'',oy:2},
-  {id:'rk4',sana:'2025-01-05',zavod:'Chirchiq Rezina Zavodi',tur:'Oddiy rezina',kg:1800,narx:8000,jami:14400000,tolov:'tolangan',izoh:'',oy:1},
-]));
+let kirimlar=JSON.parse(localStorage.getItem('rezKirimlar')||'[]');
 
-let sotuvlar=JSON.parse(localStorage.getItem('rezSotuvlar')||JSON.stringify([
-  {id:'rs1',sana:'2025-03-28',mijoz:'Toshkent Plastik Zavodi',tur:'Oddiy rezina',kg:500,narx:12000,jami:6000000,tolov:'naqd',holat:'tolandi',kirNarx:8500,oy:3},
-  {id:'rs2',sana:'2025-03-26',mijoz:'Andijon MChJ',tur:'Texnik rezina',kg:300,narx:13500,jami:4050000,tolov:'bank',holat:'tolandi',kirNarx:9000,oy:3},
-  {id:'rs3',sana:'2025-03-22',mijoz:'Farg\'ona Savdo',tur:'Oddiy rezina',kg:400,narx:11800,jami:4720000,tolov:'qarz',holat:'qarz',kirNarx:8500,oy:3},
-  {id:'rs4',sana:'2025-02-20',mijoz:'Samarqand Zavodi',tur:'Oddiy rezina',kg:600,narx:11500,jami:6900000,tolov:'naqd',holat:'tolandi',kirNarx:8200,oy:2},
-]));
+let sotuvlar=JSON.parse(localStorage.getItem('rezSotuvlar')||'[]');
 
 // Ombor hisob
 function omborBylTur(tur){
@@ -445,6 +436,6 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 renderDashboard();
 </script>
-<script src="/api.js"></script>
+
 </body>
 </html>

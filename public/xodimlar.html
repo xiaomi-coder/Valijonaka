@@ -189,6 +189,7 @@
   ::-webkit-scrollbar{width:5px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 </style>
+<script src="/api.js"></script>
 </head>
 <body>
 
@@ -558,34 +559,13 @@ document.getElementById('avSana').value = new Date().toISOString().split('T')[0]
 document.getElementById('reysSana').value = new Date().toISOString().split('T')[0];
 
 // ===== MA'LUMOTLAR =====
-let xodimlar = JSON.parse(localStorage.getItem('xodimlar')||JSON.stringify([
-  {id:'x1',ism:'Jasur',familiya:'Karimov',lavozim:'Operator',rol:'operator',tel:'+998901234567',sana:'2023-01-15',tarif:1000,sabit:0,izoh:'',
-   oyKg:{1:980,2:1100,3:1240},avanslar:[],tolangan:[],bonus:{1:0,2:50000,3:0}},
-  {id:'x2',ism:'Obid',familiya:'Rahimov',lavozim:'Operator',rol:'operator',tel:'+998901234568',sana:'2023-03-10',tarif:1000,sabit:0,izoh:'',
-   oyKg:{1:870,2:920,3:980},avanslar:[],tolangan:[],bonus:{1:0,2:0,3:0}},
-  {id:'x3',ism:'Baxrom',familiya:'Toshmatov',lavozim:'Bosh operator',rol:'menejer',tel:'+998901234569',sana:'2022-06-01',tarif:1200,sabit:0,izoh:'',
-   oyKg:{1:1300,2:1450,3:1520},avanslar:[{id:'a1',summa:800000,sabab:'Shaxsiy',sana:'2025-03-10',bergan:'Admin'}],tolangan:[],bonus:{1:100000,2:100000,3:150000}},
-  {id:'x4',ism:'Farrux',familiya:'Hasanov',lavozim:'Kassir',rol:'kassir',tel:'+998901234570',sana:'2024-01-05',tarif:0,sabit:2500000,izoh:'',
-   oyKg:{1:0,2:0,3:0},avanslar:[{id:'a2',summa:1000000,sabab:'Avans',sana:'2025-03-05',bergan:'Admin'}],tolangan:[],bonus:{1:0,2:0,3:0}},
-  {id:'x5',ism:'Anvar',familiya:'Yusupov',lavozim:'Haydovchi',rol:'haydovchi',tel:'+998901234571',sana:'2023-08-20',tarif:0,sabit:0,izoh:'Reys bo\'yicha',
-   oyKg:{1:0,2:0,3:0},avanslar:[],tolangan:[],bonus:{1:0,2:0,3:0}},
-]));
+let xodimlar = JSON.parse(localStorage.getItem('xodimlar')||'[]');
 
-let avanslar = JSON.parse(localStorage.getItem('avanslarAll')||JSON.stringify([
-  {id:'av1',xodimId:'x3',xodimNomi:'Toshmatov Baxrom',summa:800000,sabab:'Shaxsiy ehtiyoj',sana:'2025-03-10',bergan:'Admin',holat:'aktiv'},
-  {id:'av2',xodimId:'x4',xodimNomi:'Hasanov Farrux',summa:1000000,sabab:'Avans',sana:'2025-03-05',bergan:'Admin',holat:'aktiv'},
-]));
+let avanslar = JSON.parse(localStorage.getItem('avanslarAll')||'[]');
 
-let reyslar = JSON.parse(localStorage.getItem('reyslar')||JSON.stringify([
-  {id:'r1',haydovchiId:'x5',haydovchiNomi:'Yusupov Anvar',moshina:'01 A 234 BC',sana:'2025-03-28',marshrut:'Toshkent → Samarqand',masofa:350,haq:150000,avans:50000,holat:'tolandi'},
-  {id:'r2',haydovchiId:'x5',haydovchiNomi:'Yusupov Anvar',moshina:'01 A 234 BC',sana:'2025-03-25',marshrut:'Toshkent → Andijon',masofa:320,haq:200000,avans:100000,holat:'kutilmoqda'},
-]));
+let reyslar = JSON.parse(localStorage.getItem('reyslar')||'[]');
 
-let mashinalar = JSON.parse(localStorage.getItem('mashinalar')||JSON.stringify([
-  {id:'m1',raqam:'01 A 234 BC',model:'Nexia 3',haydovchi:'Yusupov Anvar',km:670},
-  {id:'m2',raqam:'01 B 567 DE',model:'Damas',haydovchi:'—',km:210},
-  {id:'m3',raqam:'78 C 890 FG',model:'Yuk mashinasi',haydovchi:'—',km:1240},
-]));
+let mashinalar = JSON.parse(localStorage.getItem('mashinalar')||'[]');
 
 let tolanganOyliklar = JSON.parse(localStorage.getItem('tolanganOyliklar')||'{}');
 let currentTolaId = null;
@@ -1042,6 +1022,6 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 renderXodimlar();
 renderAvansOptions();
 </script>
-<script src="/api.js"></script>
+
 </body>
 </html>
