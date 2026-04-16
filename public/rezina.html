@@ -225,7 +225,9 @@
         <div class="form-group"><label>Sana</label><input type="date" id="kmSana"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Rezina turi</label><select id="kmTur"><option value="Oddiy rezina">Oddiy rezina</option><option value="Texnik rezina">Texnik rezina</option><option value="Avtomobil rezinasi">Avtomobil rezinasi</option><option value="Maxsus rezina">Maxsus rezina</option></select></div>
+        <div class="form-group"><label>Rezina turi</label>
+          <div style="display:flex;gap:8px;"><select id="kmTur" style="flex:1;"></select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
+        </div>
         <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="kmKg" placeholder="0" oninput="calcKm()"></div>
       </div>
       <div class="form-row">
@@ -249,7 +251,9 @@
         <div class="form-group"><label>Sana</label><input type="date" id="smSana"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Rezina turi</label><select id="smTur" onchange="smTurTanlash()"><option value="Oddiy rezina">Oddiy rezina</option><option value="Texnik rezina">Texnik rezina</option><option value="Avtomobil rezinasi">Avtomobil rezinasi</option><option value="Maxsus rezina">Maxsus rezina</option></select></div>
+        <div class="form-group"><label>Rezina turi</label>
+          <div style="display:flex;gap:8px;"><select id="smTur" style="flex:1;" onchange="smTurTanlash()"></select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
+        </div>
         <div class="form-group"><label>Omboredagi miqdor</label><input id="smOmbor" readonly></div>
       </div>
       <div class="form-row">
@@ -279,6 +283,29 @@ let kirimlar=JSON.parse(localStorage.getItem('rezKirimlar')||'[]');
 
 let sotuvlar=JSON.parse(localStorage.getItem('rezSotuvlar')||'[]');
 
+let rezinaTurlari=JSON.parse(localStorage.getItem('rezinaTurlari')||JSON.stringify(['Oddiy rezina','Texnik rezina','Avtomobil rezinasi','Maxsus rezina']));
+
+function loadRezinaTurlariSelect(){
+  const html = rezinaTurlari.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('kmTur').innerHTML = html;
+  document.getElementById('smTur').innerHTML = html;
+}
+function addYangiRezinaTur(){
+  const t = prompt("Yangi rezina turini kiriting (masalan: Traktor rezinasi):");
+  if(t && t.trim()){
+    if(!rezinaTurlari.includes(t.trim())){
+      rezinaTurlari.push(t.trim());
+      localStorage.setItem('rezinaTurlari', JSON.stringify(rezinaTurlari));
+      loadRezinaTurlariSelect();
+      renderDashboard();
+      renderHisobot();
+    } else {
+      alert("Bu tur allaqachon mavjud!");
+    }
+  }
+}
+loadRezinaTurlariSelect();
+
 // Ombor hisob
 function omborBylTur(tur){
   const kir=kirimlar.filter(k=>k.tur===tur).reduce((s,k)=>s+k.kg,0);
@@ -299,7 +326,7 @@ function renderDashboard(){
   document.getElementById('dFoyda').textContent=foyda.toLocaleString();
 
   // Ombor panel
-  const turlar=['Oddiy rezina','Texnik rezina','Avtomobil rezinasi','Maxsus rezina'];
+  const turlar=rezinaTurlari;
   const jami=omborJami()||1;
   document.getElementById('rezOmborPanel').innerHTML=`<div style="text-align:center;margin-bottom:12px;"><div style="font-size:36px;font-weight:700;color:var(--primary);">${omborJami().toLocaleString()} kg</div><div style="font-size:13px;color:var(--text-muted);">Jami ombor</div></div>`;
   document.getElementById('rezTurPanel').innerHTML=turlar.map(t=>{const q=omborBylTur(t);const pct=Math.round(q/jami*100)||0;return q?`<div class="prog-wrap"><div class="prog-label"><span>${t}</span><span style="font-weight:700;">${q.toLocaleString()} kg</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:var(--primary)"></div></div></div>`:''}).join('');
@@ -400,7 +427,7 @@ function renderHisobot(){
     <div class="foyda-row total"><span>SOF FOYDA:</span><span style="color:${foyda>=0?'var(--primary)':'var(--danger)'};">${foyda.toLocaleString()} so'm</span></div>
     <div class="foyda-row" style="border:none;padding-top:2px;"><span style="color:var(--text-muted);font-size:12px;">Rentabellik:</span><span style="font-weight:700;color:var(--primary);">${daromad?Math.round(foyda/daromad*100):0}%</span></div>`;
 
-  const turlar=['Oddiy rezina','Texnik rezina'];
+  const turlar=rezinaTurlari;
   const maxFoyda=Math.max(...turlar.map(t=>sOy.filter(s=>s.tur===t).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0)),1);
   document.getElementById('turFoydaChart').innerHTML=turlar.map(t=>{
     const tf=sOy.filter(s=>s.tur===t).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0);
