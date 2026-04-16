@@ -283,7 +283,7 @@ let kirimlar=JSON.parse(localStorage.getItem('rezKirimlar')||'[]');
 
 let sotuvlar=JSON.parse(localStorage.getItem('rezSotuvlar')||'[]');
 
-let rezinaTurlari=JSON.parse(localStorage.getItem('rezinaTurlari')||JSON.stringify(['Oddiy rezina','Texnik rezina','Avtomobil rezinasi','Maxsus rezina']));
+let rezinaTurlari=JSON.parse(localStorage.getItem('rezinaTurlari')||'[]');
 
 function loadRezinaTurlariSelect(){
   const html = rezinaTurlari.map(t=>`<option value="${t}">${t}</option>`).join('');

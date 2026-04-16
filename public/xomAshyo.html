@@ -287,11 +287,7 @@ async function initData() {
 }
 
 function loadKirimTurlari() {
-  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [
-    { id: 'qora', nomi: 'Qora plastik', ico: '🖤' },
-    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈' },
-    { id: 'rezina', nomi: 'Rezina', ico: '⚫' }
-  ];
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
   const sel = document.getElementById('kTur');
   if(sel) {
     sel.innerHTML = '<option value="">— Tanlang —</option>' + 
@@ -309,11 +305,7 @@ function addYangiTur() {
   const nomi = prompt("Yangi xom ashyo nomini kiriting (masalan: Oq plastik):");
   if (!nomi) return;
   const id = nomi.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [
-    { id: 'qora', nomi: 'Qora plastik', ico: '🖤' },
-    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈' },
-    { id: 'rezina', nomi: 'Rezina', ico: '⚫' }
-  ];
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
   if (turlar.find(t => t.id === id)) return alert('Bu tur allaqachon mavjud!');
   turlar.push({ id, nomi, ico: '📦' });
   OMBOR_BOSHL[id] = 0;
@@ -397,11 +389,7 @@ function resetKirim() {
 }
 
 function renderKirimOmborPanel() {
-  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [
-    { id: 'qora', nomi: 'Qora plastik', ico: '🖤' },
-    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈' },
-    { id: 'rezina', nomi: 'Rezina', ico: '⚫' }
-  ];
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
   document.getElementById('kirimOmborPanel').innerHTML = turlar.map(t => {
     const q = omborQoldiq(t.id);
     const max = (OMBOR_BOSHL[t.id] || 0) + kirimlar.filter(k => k.tur === t.id).reduce((s, k) => s + k.kg, 0);
@@ -418,11 +406,7 @@ function renderLastKirimlar() {
 
 // OMBOR
 function renderOmbor() {
-  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar().map(t => ({...t, min: t.min || 500})) : [
-    { id: 'qora', nomi: 'Qora plastik', ico: '🖤', min: 500 },
-    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈', min: 300 },
-    { id: 'rezina', nomi: 'Rezina', ico: '⚫', min: 200 }
-  ];
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar().map(t => ({...t, min: t.min || 500})) : [];
   let alerts = '';
   document.getElementById('omborKartalar').innerHTML = turlar.map(t => {
     const q = omborQoldiq(t.id);

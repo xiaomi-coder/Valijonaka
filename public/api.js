@@ -77,11 +77,7 @@ document.head.appendChild(styleEl);
 // XOM ASHYO TURLARI (Dinamik ro'yxat)
 // ============================================
 function getXomTurlar() {
-  const dflt = [
-    { id: 'qora', nomi: 'Qora plastik', ico: '🖤' },
-    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈' },
-    { id: 'rezina', nomi: 'Rezina', ico: '⚫' }
-  ];
+  const dflt = [];
   return JSON.parse(localStorage.getItem('xomTurlar') || JSON.stringify(dflt));
 }
 
@@ -94,9 +90,9 @@ function saveXomTur(nomi) {
 }
 
 (function() {
-  const version = "1.1";
+  const version = "1.2";
   if (localStorage.getItem('erp_clean_version') !== version) {
-    const keysToClear = ['mahsulotlar', 'xodimlar', 'harajatlar', 'avanslarAll', 'reyslar', 'mashinalar', 'kategoriyalar', 'mijozlar', 'rezKirimlar', 'rezSotuvlar'];
+    const keysToClear = ['mahsulotlar', 'xodimlar', 'harajatlar', 'avanslarAll', 'reyslar', 'mashinalar', 'kategoriyalar', 'mijozlar', 'rezKirimlar', 'rezSotuvlar', 'xomTurlar', 'rezinaTurlari'];
     keysToClear.forEach(k => localStorage.removeItem(k));
     localStorage.setItem('erp_clean_version', version);
     console.log("Local storage cleaned for production!");
