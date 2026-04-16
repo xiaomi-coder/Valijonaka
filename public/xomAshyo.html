@@ -301,7 +301,27 @@ function loadKirimTurlari() {
 function omborQoldiq(tur) {
   const kirdi = kirimlar.filter(k => k.tur === tur).reduce((s, k) => s + k.kg, 0);
   const sarflandi = partiyalar.filter(p => p.xomAshyoTuri === tur).reduce((s, p) => s + p.kirganKg, 0);
-  return OMBOR_BOSHL[tur] + kirdi - sarflandi;
+  return (OMBOR_BOSHL[tur] || 0) + kirdi - sarflandi;
+}
+
+function addYangiTur() {
+  const nomi = prompt("Yangi xom ashyo nomini kiriting (masalan: Oq plastik):");
+  if (!nomi) return;
+  const id = nomi.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [
+    { id: 'qora', nomi: 'Qora plastik', ico: '🖤' },
+    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈' },
+    { id: 'rezina', nomi: 'Rezina', ico: '⚫' }
+  ];
+  if (turlar.find(t => t.id === id)) return alert('Bu tur allaqachon mavjud!');
+  turlar.push({ id, nomi, ico: '📦' });
+  OMBOR_BOSHL[id] = 0;
+  if(typeof saveXomTur === 'function') saveXomTur(turlar); else localStorage.setItem('xomTurlar', JSON.stringify(turlar));
+  loadKirimTurlari();
+  renderKirimOmborPanel();
+  renderOmbor();
+  document.getElementById('kTur').value = id;
+  turTanlash();
 }
 
 
@@ -376,16 +396,16 @@ function resetKirim() {
 }
 
 function renderKirimOmborPanel() {
-  const turlar = [
-    { id: 'qora', nomi: 'Qora plastik', ico: '🖤', rang: '#1a1f1a' },
-    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈', rang: '#e67e22' },
-    { id: 'rezina', nomi: 'Rezina', ico: '⚫', rang: '#2471a3' }
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [
+    { id: 'qora', nomi: 'Qora plastik', ico: '🖤' },
+    { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈' },
+    { id: 'rezina', nomi: 'Rezina', ico: '⚫' }
   ];
   document.getElementById('kirimOmborPanel').innerHTML = turlar.map(t => {
     const q = omborQoldiq(t.id);
-    const max = OMBOR_BOSHL[t.id] + kirimlar.filter(k => k.tur === t.id).reduce((s, k) => s + k.kg, 0);
+    const max = (OMBOR_BOSHL[t.id] || 0) + kirimlar.filter(k => k.tur === t.id).reduce((s, k) => s + k.kg, 0);
     const pct = max ? Math.min(100, q / max * 100) : 0;
-    return `<div class="prog-wrap"><div class="prog-label"><span>${t.ico} ${t.nomi}</span><span style="font-weight:700">${q.toLocaleString()} kg</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${q < 500 ? 'var(--danger)' : q < 1000 ? 'var(--accent)' : 'var(--primary)'}"></div></div></div>`;
+    return `<div class="prog-wrap"><div class="prog-label"><span>${t.ico || '📦'} ${t.nomi}</span><span style="font-weight:700">${q.toLocaleString()} kg</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${q < 500 ? 'var(--danger)' : q < 1000 ? 'var(--accent)' : 'var(--primary)'}"></div></div></div>`;
   }).join('');
 }
 
@@ -397,7 +417,7 @@ function renderLastKirimlar() {
 
 // OMBOR
 function renderOmbor() {
-  const turlar = [
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar().map(t => ({...t, min: t.min || 500})) : [
     { id: 'qora', nomi: 'Qora plastik', ico: '🖤', min: 500 },
     { id: 'rangli', nomi: 'Rangli plastik', ico: '🌈', min: 300 },
     { id: 'rezina', nomi: 'Rezina', ico: '⚫', min: 200 }
@@ -408,11 +428,11 @@ function renderOmbor() {
     const kirdi = kirimlar.filter(k => k.tur === t.id).reduce((s, k) => s + k.kg, 0);
     const sarflandi = partiyalar.filter(p => p.xomAshyoTuri === t.id).reduce((s, p) => s + p.kirganKg, 0);
     const holat = q < t.min ? 'red' : q < t.min * 2 ? 'amber' : 'green';
-    if (q < t.min) alerts += `<div class="alert warning">⚠️ ${t.ico} ${t.nomi}: ${q.toLocaleString()} kg — minimal darajadan (${t.min} kg) past!</div>`;
-    const max = OMBOR_BOSHL[t.id] + kirdi;
+    if (q < t.min) alerts += `<div class="alert warning">⚠️ ${t.ico || '📦'} ${t.nomi}: ${q.toLocaleString()} kg — minimal darajadan (${t.min} kg) past!</div>`;
+    const max = (OMBOR_BOSHL[t.id] || 0) + kirdi;
     const pct = max ? Math.min(100, q / max * 100) : 0;
     return `<div class="ombor-card">
-      <div class="oc-top"><div class="oc-icon">${t.ico}</div><span class="badge ${holat}">${holat === 'green' ? '✅ Yetarli' : holat === 'amber' ? '⚠️ Kam' : '🚨 Kritik'}</span></div>
+      <div class="oc-top"><div class="oc-icon">${t.ico || '📦'}</div><span class="badge ${holat}">${holat === 'green' ? '✅ Yetarli' : holat === 'amber' ? '⚠️ Kam' : '🚨 Kritik'}</span></div>
       <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${t.nomi}</div>
       <div class="oc-kg" style="color:${holat === 'red' ? 'var(--danger)' : holat === 'amber' ? 'var(--accent)' : 'var(--primary)'}">${q.toLocaleString()} kg</div>
       <div style="font-size:11px;color:var(--text-muted);margin-top:4px;margin-bottom:10px;">Kirim: ${kirdi.toLocaleString()} kg &nbsp;·&nbsp; Sarflandi: ${sarflandi.toLocaleString()} kg</div>
