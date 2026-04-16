@@ -124,9 +124,9 @@
     <div class="page active" id="tab-dashboard">
       <div class="stats-grid">
         <div class="stat-card g"><div class="lbl">Omboredagi rezina</div><div class="val" id="dOmbor">0</div><div class="ico">📦</div><div class="sub">kg</div></div>
-        <div class="stat-card b"><div class="lbl">Bu oy sotildi</div><div class="val" id="dSotildi">0</div><div class="ico">🛒</div><div class="sub">kg</div></div>
-        <div class="stat-card a"><div class="lbl">Bu oy daromad</div><div class="val" id="dDaromad">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
-        <div class="stat-card g"><div class="lbl">Bu oy sof foyda</div><div class="val" id="dFoyda">0</div><div class="ico">📈</div><div class="sub">so'm</div></div>
+        <div class="stat-card b"><div class="lbl">2026 sotildi</div><div class="val" id="dSotildi">0</div><div class="ico">🛒</div><div class="sub">kg</div></div>
+        <div class="stat-card a"><div class="lbl">2026 daromad</div><div class="val" id="dDaromad">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
+        <div class="stat-card g"><div class="lbl">2026 sof foyda</div><div class="val" id="dFoyda">0</div><div class="ico">📈</div><div class="sub">so'm</div></div>
       </div>
       <div class="grid-2">
         <div class="card" style="margin:0;">
@@ -173,8 +173,8 @@
         <button class="btn btn-primary" onclick="openModal('sotuvModal')">+ Yangi sotuv</button>
       </div>
       <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="stat-card g"><div class="lbl">Bu oy sotuv (kg)</div><div class="val" id="sStKg">0</div></div>
-        <div class="stat-card a"><div class="lbl">Bu oy daromad</div><div class="val" id="sStSum">0</div><div class="sub">so'm</div></div>
+        <div class="stat-card g"><div class="lbl">2026 sotuv (kg)</div><div class="val" id="sStKg">0</div></div>
+        <div class="stat-card a"><div class="lbl">2026 daromad</div><div class="val" id="sStSum">0</div><div class="sub">so'm</div></div>
         <div class="stat-card r"><div class="lbl">Mijozlar qarzi</div><div class="val" id="sStQarz">0</div><div class="sub">so'm</div></div>
       </div>
       <div class="card" style="margin:0;">
@@ -189,12 +189,27 @@
     <!-- HISOBOT -->
     <div class="page" id="tab-hisobot">
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;">
-        <select id="hisobotOy" onchange="renderHisobot()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;"><option value="3">Mart 2025</option><option value="2">Fevral 2025</option><option value="1">Yanvar 2025</option></select>
+        <select id="hisobotOy" onchange="renderHisobot()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
+
+            <option value="12">Dekabr 2026</option>
+            <option value="11">Noyabr 2026</option>
+            <option value="10">Oktabr 2026</option>
+            <option value="9">Sentabr 2026</option>
+            <option value="8">Avgust 2026</option>
+            <option value="7">Iyul 2026</option>
+            <option value="6">Iyun 2026</option>
+            <option value="5">May 2026</option>
+            <option value="4">Aprel 2026</option>
+            <option value="3">Mart 2026</option>
+            <option value="2">Fevral 2026</option>
+            <option value="1">Yanvar 2026</option>
+    
+</select>
         <button class="btn btn-secondary" onclick="exportHisobot()">📥 Eksport</button>
       </div>
       <div class="grid-2">
         <div class="card" style="margin:0;">
-          <div class="card-header"><div class="card-title" id="hisobotTitle">Mart 2025 — Foyda hisobi</div></div>
+          <div class="card-header"><div class="card-title" id="hisobotTitle">Mart 2026 — Foyda hisobi</div></div>
           <div class="card-body">
             <div class="foyda-box" id="foydaBox"></div>
           </div>
@@ -226,7 +241,22 @@
       </div>
       <div class="form-row">
         <div class="form-group"><label>Rezina turi</label>
-          <div style="display:flex;gap:8px;"><select id="kmTur" style="flex:1;"></select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
+          <div style="display:flex;gap:8px;"><select id="kmTur" style="flex:1;">
+
+            <option value="12">Dekabr 2026</option>
+            <option value="11">Noyabr 2026</option>
+            <option value="10">Oktabr 2026</option>
+            <option value="9">Sentabr 2026</option>
+            <option value="8">Avgust 2026</option>
+            <option value="7">Iyul 2026</option>
+            <option value="6">Iyun 2026</option>
+            <option value="5">May 2026</option>
+            <option value="4">Aprel 2026</option>
+            <option value="3">Mart 2026</option>
+            <option value="2">Fevral 2026</option>
+            <option value="1">Yanvar 2026</option>
+    
+</select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
         </div>
         <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="kmKg" placeholder="0" oninput="calcKm()"></div>
       </div>
@@ -252,7 +282,22 @@
       </div>
       <div class="form-row">
         <div class="form-group"><label>Rezina turi</label>
-          <div style="display:flex;gap:8px;"><select id="smTur" style="flex:1;" onchange="smTurTanlash()"></select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
+          <div style="display:flex;gap:8px;"><select id="smTur" style="flex:1;" onchange="smTurTanlash()">
+
+            <option value="12">Dekabr 2026</option>
+            <option value="11">Noyabr 2026</option>
+            <option value="10">Oktabr 2026</option>
+            <option value="9">Sentabr 2026</option>
+            <option value="8">Avgust 2026</option>
+            <option value="7">Iyul 2026</option>
+            <option value="6">Iyun 2026</option>
+            <option value="5">May 2026</option>
+            <option value="4">Aprel 2026</option>
+            <option value="3">Mart 2026</option>
+            <option value="2">Fevral 2026</option>
+            <option value="1">Yanvar 2026</option>
+    
+</select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
         </div>
         <div class="form-group"><label>Omboredagi miqdor</label><input id="smOmbor" readonly></div>
       </div>
@@ -415,7 +460,7 @@ function deleteSotuv(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;sotu
 function renderHisobot(){
   const oy=parseInt(document.getElementById('hisobotOy').value)||3;
   const oyNom={1:'Yanvar',2:'Fevral',3:'Mart'};
-  document.getElementById('hisobotTitle').textContent=`${oyNom[oy]} 2025 — Foyda hisobi`;
+  document.getElementById('hisobotTitle').textContent=`${oyNom[oy]} 2026 — Foyda hisobi`;
   const kOy=kirimlar.filter(k=>k.oy===oy);const sOy=sotuvlar.filter(s=>s.oy===oy);
   const xarajat=kOy.reduce((s,k)=>s+k.jami,0);const daromad=sOy.reduce((s,x)=>s+x.jami,0);
   const foyda=sOy.reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0);

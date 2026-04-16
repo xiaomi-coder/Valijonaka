@@ -218,7 +218,7 @@
     <div class="page active" id="tab-xodimlar">
       <div class="stats-grid">
         <div class="stat-card g"><div class="lbl">Jami xodimlar</div><div class="val" id="stJami">0</div><div class="ico">👷</div><div class="sub">Faol ishchilar</div></div>
-        <div class="stat-card a"><div class="lbl">Bu oy oylik jami</div><div class="val" id="stOylik">0</div><div class="ico">💳</div><div class="sub">so'm (hisoblangan)</div></div>
+        <div class="stat-card a"><div class="lbl">2026 oylik jami</div><div class="val" id="stOylik">0</div><div class="ico">💳</div><div class="sub">so'm (hisoblangan)</div></div>
         <div class="stat-card r"><div class="lbl">Berilgan avanslar</div><div class="val" id="stAvans">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
         <div class="stat-card b"><div class="lbl">To'lanadigan</div><div class="val" id="stTolanadi">0</div><div class="ico">✅</div><div class="sub">so'm (qoldiq)</div></div>
       </div>
@@ -248,10 +248,21 @@
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;background:var(--surface);padding:16px;border-radius:12px;border:1px solid var(--border);">
         <div style="font-size:13px;font-weight:600;">Hisob oyi:</div>
         <select id="oylikOy" onchange="renderOylik()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
-          <option value="3">Mart 2025</option>
-          <option value="2">Fevral 2025</option>
-          <option value="1">Yanvar 2025</option>
-        </select>
+
+            <option value="12">Dekabr 2026</option>
+            <option value="11">Noyabr 2026</option>
+            <option value="10">Oktabr 2026</option>
+            <option value="9">Sentabr 2026</option>
+            <option value="8">Avgust 2026</option>
+            <option value="7">Iyul 2026</option>
+            <option value="6">Iyun 2026</option>
+            <option value="5">May 2026</option>
+            <option value="4">Aprel 2026</option>
+            <option value="3">Mart 2026</option>
+            <option value="2">Fevral 2026</option>
+            <option value="1">Yanvar 2026</option>
+    
+</select>
         <button class="btn btn-primary btn-sm" onclick="hammasiniTola()">✅ Barchasini to'lash</button>
         <button class="btn btn-secondary btn-sm" onclick="exportOylik()">📥 Eksport</button>
         <div style="margin-left:auto;font-size:13px;color:var(--text-muted);">Jami to'lanadigan: <b id="oylikJami" style="color:var(--primary);font-size:16px;">0 so'm</b></div>
@@ -283,7 +294,7 @@
 
       <div class="grid-2" style="margin-bottom:20px;">
         <div class="card" style="margin:0">
-          <div class="card-header"><div class="card-title">Bu oy avanslar</div></div>
+          <div class="card-header"><div class="card-title">2026 avanslar</div></div>
           <div class="card-body" id="avansTimeline"></div>
         </div>
         <div class="card" style="margin:0">
@@ -322,7 +333,7 @@
         <div class="card" style="margin:0">
           <div class="card-header"><div class="card-title">Haydovchilar</div></div>
           <table>
-            <thead><tr><th>Ism</th><th>Moshina</th><th>Reyslar</th><th>Bu oy haq</th><th>Avans</th><th>Qoldiq</th></tr></thead>
+            <thead><tr><th>Ism</th><th>Moshina</th><th>Reyslar</th><th>2026 haq</th><th>Avans</th><th>Qoldiq</th></tr></thead>
             <tbody id="haydovchiBody"></tbody>
           </table>
         </div>
@@ -330,7 +341,7 @@
         <div class="card" style="margin:0">
           <div class="card-header"><div class="card-title">🚗 Moshinalar</div></div>
           <table>
-            <thead><tr><th>Raqam</th><th>Model</th><th>Haydovchi</th><th>Bu oy km</th><th>Holat</th></tr></thead>
+            <thead><tr><th>Raqam</th><th>Model</th><th>Haydovchi</th><th>2026 km</th><th>Holat</th></tr></thead>
             <tbody id="mashinaBody"></tbody>
           </table>
         </div>
@@ -429,7 +440,7 @@
       <!-- Xodim holati -->
       <div id="avXodimInfo" style="display:none;background:var(--bg);border-radius:10px;padding:12px;font-size:13px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-          <span class="oylik-label">Bu oy hisoblangan:</span><span id="avHisoblangan" style="font-weight:700;">—</span>
+          <span class="oylik-label">2026 hisoblangan:</span><span id="avHisoblangan" style="font-weight:700;">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
           <span class="oylik-label">Berilgan avanslar:</span><span id="avBerilgan" style="font-weight:700;color:var(--danger);">—</span>
@@ -623,7 +634,7 @@ function renderXodimlar(){
         </div>
       </div>
       <div class="xc-stats">
-        <div class="xc-stat"><div class="xs-lbl">Bu oy kg</div><div class="xs-val" style="color:var(--primary)">${kg.toLocaleString()} kg</div></div>
+        <div class="xc-stat"><div class="xs-lbl">2026 kg</div><div class="xs-val" style="color:var(--primary)">${kg.toLocaleString()} kg</div></div>
         <div class="xc-stat"><div class="xs-lbl">Hisoblangan</div><div class="xs-val">${hisob.toLocaleString()}</div></div>
         <div class="xc-stat"><div class="xs-lbl">Avans</div><div class="xs-val" style="color:var(--danger)">${avans.toLocaleString()}</div></div>
         <div class="xc-stat"><div class="xs-lbl">To'lanadigan</div><div class="xs-val" style="color:var(--primary);font-size:16px">${qoldiq.toLocaleString()}</div></div>
@@ -687,7 +698,7 @@ function exportOylik(){
   });
   const a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download=`Oylik_${oyNom[oy]}_2025.csv`;
+  a.download=`Oylik_${oyNom[oy]}_2026.csv`;
   a.click();
 }
 
@@ -703,7 +714,7 @@ function openKgModal(xId){
   area.innerHTML=[1,2,3].map(oy=>{
     const oyNom={1:'Yanvar',2:'Fevral',3:'Mart'};
     return `<div class="kg-input-row">
-      <label>${oyNom[oy]} 2025</label>
+      <label>${oyNom[oy]} 2026</label>
       <input type="number" id="kgOy${oy}" value="${getOyKg(x,oy)}" placeholder="0" oninput="calcKgOylik()" min="0"> kg
     </div>`;
   }).join('');

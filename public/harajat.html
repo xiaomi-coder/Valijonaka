@@ -210,7 +210,7 @@
     <!-- ===== HARAJATLAR ===== -->
     <div class="page active" id="tab-harajat">
       <div class="stats-grid">
-        <div class="stat-card r"><div class="lbl">Bu oy harajat</div><div class="val" id="stHarajat">0</div><div class="ico">💸</div><div class="sub">so'm</div></div>
+        <div class="stat-card r"><div class="lbl">2026 harajat</div><div class="val" id="stHarajat">0</div><div class="ico">💸</div><div class="sub">so'm</div></div>
         <div class="stat-card a"><div class="lbl">O'tgan oy</div><div class="val" id="stOtgan">0</div><div class="ico">📅</div><div class="sub">so'm</div><div id="stFarq"></div></div>
         <div class="stat-card b"><div class="lbl">Harajatlar soni</div><div class="val" id="stSon">0</div><div class="ico">📋</div><div class="sub">bu oy</div></div>
         <div class="stat-card g"><div class="lbl">Eng katta kategoriya</div><div class="val" id="stEngKatta" style="font-size:14px">—</div><div class="ico">🏆</div></div>
@@ -222,10 +222,21 @@
             <option value="">Barcha kategoriyalar</option>
           </select>
           <select id="hFilterOy" onchange="renderHarajatlar()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
-            <option value="3">Mart 2025</option>
-            <option value="2">Fevral 2025</option>
-            <option value="1">Yanvar 2025</option>
-          </select>
+
+            <option value="12">Dekabr 2026</option>
+            <option value="11">Noyabr 2026</option>
+            <option value="10">Oktabr 2026</option>
+            <option value="9">Sentabr 2026</option>
+            <option value="8">Avgust 2026</option>
+            <option value="7">Iyul 2026</option>
+            <option value="6">Iyun 2026</option>
+            <option value="5">May 2026</option>
+            <option value="4">Aprel 2026</option>
+            <option value="3">Mart 2026</option>
+            <option value="2">Fevral 2026</option>
+            <option value="1">Yanvar 2026</option>
+    
+</select>
           <input placeholder="🔍 Qidirish..." oninput="filterHarajat(this.value)" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;width:180px;">
         </div>
         <div style="display:flex;gap:8px;">
@@ -261,12 +272,12 @@
         <div class="card" style="margin:0">
           <div class="card-header"><div class="card-title">Kategoriyalar ro'yxati</div></div>
           <table>
-            <thead><tr><th>Icon</th><th>Nomi</th><th>Bu oy summa</th><th>Harajatlar</th><th>Amal</th></tr></thead>
+            <thead><tr><th>Icon</th><th>Nomi</th><th>2026 summa</th><th>Harajatlar</th><th>Amal</th></tr></thead>
             <tbody id="katBody"></tbody>
           </table>
         </div>
         <div class="card" style="margin:0">
-          <div class="card-header"><div class="card-title">📊 Taqsimot (Mart 2025)</div></div>
+          <div class="card-header"><div class="card-title">📊 Taqsimot (Mart 2026)</div></div>
           <div class="card-body" id="katChart"></div>
         </div>
       </div>
@@ -320,10 +331,21 @@
         </div>
         <div style="display:flex;gap:8px;">
           <select id="hisobotOy" onchange="renderHisobot()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
-            <option value="3">Mart 2025</option>
-            <option value="2">Fevral 2025</option>
-            <option value="1">Yanvar 2025</option>
-          </select>
+
+            <option value="12">Dekabr 2026</option>
+            <option value="11">Noyabr 2026</option>
+            <option value="10">Oktabr 2026</option>
+            <option value="9">Sentabr 2026</option>
+            <option value="8">Avgust 2026</option>
+            <option value="7">Iyul 2026</option>
+            <option value="6">Iyun 2026</option>
+            <option value="5">May 2026</option>
+            <option value="4">Aprel 2026</option>
+            <option value="3">Mart 2026</option>
+            <option value="2">Fevral 2026</option>
+            <option value="1">Yanvar 2026</option>
+    
+</select>
           <button class="btn btn-secondary" onclick="window.print()">🖨️ Chop etish</button>
           <button class="btn btn-secondary" onclick="exportHisobot()">📥 Eksport</button>
         </div>
@@ -588,7 +610,7 @@ function exportHarajat(){
   const oy=parseInt(document.getElementById('hFilterOy').value)||3;
   let csv='Sana,Kategoriya,Tavsif,Moshina,Summa,Tolov,Qoshgan\n';
   harajatlar.filter(h=>h.oy===oy).forEach(h=>{const k=katById(h.katId);csv+=`"${h.sana}","${k.nomi}","${h.tavsif}","${h.moshina||''}",${h.summa},"${h.tolov}","${h.qoshgan}"\n`;});
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Harajatlar_${OY_NOMI[oy]}_2025.csv`;a.click();
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Harajatlar_${OY_NOMI[oy]}_2026.csv`;a.click();
 }
 
 // ===== KATEGORIYALAR =====
@@ -675,12 +697,12 @@ function exportHisobot(){
   const jDaromad=d.plastik+d.rezina+d.poterya;
   const jHarajat=sumHarajat(harajatlar.filter(h=>h.oy===oy))+OYLIK_FOND[oy];
   const foyda=jDaromad-jHarajat;
-  let csv=`Valijon ERP — Moliyaviy hisobot\n${OY_NOMI[oy]} 2025\n\n`;
+  let csv=`Valijon ERP — Moliyaviy hisobot\n${OY_NOMI[oy]} 2026\n\n`;
   csv+=`DAROMADLAR\nPlastik granula,${d.plastik}\nRezina dilerlik,${d.rezina}\nPoterya sotuvi,${d.poterya}\nJami daromad,${jDaromad}\n\n`;
   csv+=`HARAJATLAR\n`;
   kategoriyalar.forEach(k=>{ csv+=`${k.nomi},${katSum(k.id,oy)}\n`; });
   csv+=`Oylik fond,${OYLIK_FOND[oy]}\nJami harajat,${jHarajat}\n\nSOF FOYDA,${foyda}\n`;
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Hisobot_${OY_NOMI[oy]}_2025.csv`;a.click();
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Hisobot_${OY_NOMI[oy]}_2026.csv`;a.click();
 }
 
 // ===== TABS =====
