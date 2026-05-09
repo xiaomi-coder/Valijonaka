@@ -168,7 +168,7 @@
   <div class="modal">
     <div class="modal-header"><h3>💳 Yuborilgan to'lov haqida xabarnoma</h3><button class="modal-close" onclick="closeTolovModal()">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label>To'langan o'tkazma summasi (so'm)</label><input type="number" id="tSumma" placeholder="Masalan: 5000000"></div>
+      <div class="form-group"><label>To'langan o'tkazma summasi (so'm)</label><input type="text" inputmode="numeric" oninput="fmtSum(this)" id="tSumma" placeholder="Masalan: 5000000"></div>
       <div class="form-group"><label>Izoh / Qaysi bankdan qaysi kartaga tashlandi?</label><textarea id="tIzoh" rows="2" placeholder="Masalan: Agrobankdan 8600... kartasiga tashladim."></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeTolovModal()">Bekor qilish</button><button class="btn btn-primary" onclick="sendTolov()">Jo'natish</button></div>
@@ -179,6 +179,7 @@
   Valijon ERP Tizimi &copy; O'zbekiston, 2026. Barcha huquqlar qat'iy himoyalangan.
 </footer>
 
+<script src="/api.js"></script>
 <script>
   // Auth Check
   const token = localStorage.getItem('erp_token');
@@ -193,10 +194,11 @@
 
   document.getElementById('uName').textContent = user.ism || user.login;
 
-  // Load Data
-  function loadData() {
-    const mijozlar = JSON.parse(localStorage.getItem('mijozlar') || '[]');
-    const m = mijozlar.find(x => x.id === user.id);
+  async function loadData() {
+    const mijozlar = await API.get('/mijozlar') || [];
+    const ui = (user.ism||'').toLowerCase().trim();
+    const ul = (user.login||'').toLowerCase().trim();
+    const m = mijozlar.find(x => x.id === user.id || (ui !== '' && (x.nomi||'').toLowerCase().trim() === ui) || (ul !== '' && (x.login||'').toLowerCase().trim() === ul));
     
     if (m) {
       document.getElementById('stJami').textContent = (m.jami || 0).toLocaleString() + " so'm";
@@ -204,9 +206,14 @@
       document.getElementById('stQarz').textContent = (m.qarz || 0).toLocaleString() + " so'm";
     }
 
-    const barchaSotuvlar = JSON.parse(localStorage.getItem('sotuvlar') || '[]');
+    const barchaSotuvlar = await API.get('/sotuvlar') || [];
+    const mijId = m ? m.id : user.id;
     // Filter only current customer's sales
-    const mySotuvlar = barchaSotuvlar.filter(s => s.mijoz && s.mijoz.id === user.id).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const mySotuvlar = barchaSotuvlar.filter(s => (s.mijoz_id === mijId) || (ui !== '' && (s.mijoz_nomi||'').toLowerCase().trim() === ui) || (s.mijoz && s.mijoz.id === mijId)).sort((a,b) => {
+        const ad = new Date(a.created_at || a.createdAt || a.sana || 0);
+        const bd = new Date(b.created_at || b.createdAt || b.sana || 0);
+        return (isNaN(bd)?0:bd) - (isNaN(ad)?0:ad);
+    });
 
     const tbody = document.getElementById('tarixBody');
     if (mySotuvlar.length === 0) {
@@ -219,11 +226,13 @@
         else if (s.holat === 'qisman') holatBadge = '<span class="badge amber">Qisman (Qarz)</span>';
         else holatBadge = '<span class="badge red">Qarz</span>';
 
-        const mahsulotlar = (s.cart || []).map(c => c.nomi).join(', ') || 'Noma\'lum';
-        const sana = s.sana || new Date(s.createdAt).toISOString().split('T')[0];
+        const mahsulotlar = (s.cart || []).map(c => `<div style="margin-bottom:4px;">${c.nomi} <span style="color:var(--text-muted);font-size:12px;">(${c.kg}kg)</span></div>`).join('') || 'Noma\'lum';
+        const dStr = s.sana || s.createdAt || s.created_at;
+        let sana = '';
+        try { sana = new Date(dStr).toISOString().split('T')[0]; } catch(e) { sana = dStr||''; }
 
         return `<tr>
-          <td style="font-weight:600">${s.id}</td>
+          <td style="font-weight:600;font-size:12px;">${(s.id||'').split('-')[0]}</td>
           <td>${sana}</td>
           <td style="max-width:250px">${mahsulotlar}</td>
           <td>${s.totalKg} kg</td>
@@ -235,7 +244,7 @@
     }
 
     // Load Tolov So'rovlari
-    const barchaSozovlar = JSON.parse(localStorage.getItem('tolovSozrovlari') || '[]');
+    const barchaSozovlar = await API.get('/kesh/tolovSozrovlari') || [];
     const mySozovlar = barchaSozovlar.filter(t => t.mijozId === user.id).sort((a,b) => new Date(b.sana) - new Date(a.sana));
     const tBody = document.getElementById('tolovBody');
     if (mySozovlar.length === 0) {
@@ -259,22 +268,23 @@
   function openTolovModal() { document.getElementById('tolovModal').classList.add('open'); }
   function closeTolovModal() { document.getElementById('tolovModal').classList.remove('open'); document.getElementById('tSumma').value = ''; document.getElementById('tIzoh').value = ''; }
   
-  function sendTolov() {
+  async function sendTolov() {
     const sum = document.getElementById('tSumma').value;
     const izoh = document.getElementById('tIzoh').value;
-    if(!sum || parseInt(sum)<=0){ alert('Summani to\'g\'ri kiriting!'); return; }
+    const tozaSum = sum.replace(/[^0-9]/g, '');
+    if(!tozaSum || parseInt(tozaSum)<=0){ alert('Summani to\'g\'ri kiriting!'); return; }
     
-    const arr = JSON.parse(localStorage.getItem('tolovSozrovlari') || '[]');
+    const arr = await API.get('/kesh/tolovSozrovlari') || [];
     arr.push({
       id: 'T-' + Date.now(),
       mijozId: user.id,
       mijozNomi: user.ism,
-      summa: parseInt(sum),
+      summa: parseInt(tozaSum),
       izoh: izoh || '',
       sana: new Date().toISOString(),
       holat: 'kutilmoqda'
     });
-    localStorage.setItem('tolovSozrovlari', JSON.stringify(arr));
+    await API.post('/kesh/tolovSozrovlari', { data: arr });
     closeTolovModal();
     loadData();
   }

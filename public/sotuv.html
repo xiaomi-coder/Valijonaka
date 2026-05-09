@@ -277,19 +277,20 @@
           <div class="card" style="margin-bottom:16px">
             <div class="card-header"><div class="card-title">🗃️ Mahsulot qo'shish</div></div>
             <div class="card-body">
-              <div id="mahsulotGrid" class="pg-grid"></div>
               <div class="form-row-3">
                 <div class="form-group" style="margin:0">
                   <label>Tanlangan mahsulot</label>
-                  <input id="selProdName" readonly placeholder="—">
-                </div>
-                <div class="form-group" style="margin:0">
-                  <label>Narx (so'm/kg)</label>
-                  <input type="number" id="selProdNarx" placeholder="0" oninput="calcItem()">
+                  <select id="selProdId" onchange="selectProd(this.value)">
+                    <option value="">— Mahsulot tanlang —</option>
+                  </select>
                 </div>
                 <div class="form-group" style="margin:0">
                   <label>Miqdor (kg)</label>
                   <input type="number" id="selProdKg" placeholder="0" oninput="calcItem()">
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label>Narx (so'm/kg)</label>
+                  <input type="number" id="selProdNarx" placeholder="0" oninput="calcItem()">
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
@@ -352,11 +353,11 @@
                 <div class="tolov-progress" id="naqdBlock">
                   <div class="tolov-row">
                     <span class="tolov-label">💵 Naqd:</span>
-                    <input class="tolov-input" type="number" id="naqdSumma" placeholder="0" oninput="calcQarz()">
+                    <input class="tolov-input" type="text" id="naqdSumma" placeholder="0" oninput="formatInput(this)">
                   </div>
                   <div class="tolov-row" id="bankRow" style="display:none">
                     <span class="tolov-label">🏦 Bank:</span>
-                    <input class="tolov-input" type="number" id="bankSumma" placeholder="0" oninput="calcQarz()">
+                    <input class="tolov-input" type="text" id="bankSumma" placeholder="0" oninput="formatInput(this)">
                   </div>
                   <div class="tolov-qarz" id="qarzInfo" style="display:none"></div>
                 </div>
@@ -487,79 +488,116 @@
 
 <script>
 // ===== MA'LUMOTLAR =====
-function getXomTurlar() { const t=typeof window.getXomTurlar==='function'?window.getXomTurlar():JSON.parse(localStorage.getItem('xomTurlar')||'[]'); return t;}
+function safeJSON(key, def) {
+  try {
+    const v = localStorage.getItem(key);
+    if (!v || v === 'undefined' || v === 'null') return def;
+    const res = JSON.parse(v);
+    return res ? res : def;
+  } catch(e) { return def; }
+}
 
-const reqMijozlar = JSON.parse(localStorage.getItem('mijozlar')||'[]');
-const reqMahsulotlar = JSON.parse(localStorage.getItem('mahsulotlar')||'[]');
-const reqXomOmbor = JSON.parse(localStorage.getItem('xomOmbor')||'{}');
-const xTurlar = getXomTurlar();
+let reqMijozlar = [];
+let reqMahsulotlar = [];
+let reqXomOmbor = {};
+let xTurlar = [];
 
 const MAHSULOTLAR = [];
-reqMahsulotlar.forEach(p => { MAHSULOTLAR.push({ id: p.id, tur:'mahsulot', nomi: '📦 '+p.nomi, ombor: p.ombor }); });
-Object.entries(reqXomOmbor).forEach(([k,v]) => {
-  const nomi = xTurlar.find(x=>x.id===k)?.nomi || k;
-  MAHSULOTLAR.push({ id: 'xom_'+k, tur:'xom', xomId: k, nomi: '⚙️ ' + nomi + ' (Xom ashyo)', ombor: (v.kirgan||0) - (v.sarflangan||0) });
-});
-
 const MIJOZLAR_DATA = {};
-reqMijozlar.forEach(m => {
-  MIJOZLAR_DATA[m.id] = { nomi: m.nomi, tur: m.tur, tel: m.tel, manzil: m.manzil, id: m.id };
-});
 
 function loadMijozOptions() {
   const sel = document.getElementById('mijozSelect');
-  sel.innerHTML = '<option value="">— Mijoz tanlang —</option>' + reqMijozlar.map(m=>`<option value="${m.id}">${m.nomi} (${m.tur})</option>`).join('');
+  if(!sel) return;
+  const mList = Array.isArray(reqMijozlar) ? reqMijozlar : [];
+  sel.innerHTML = '<option value="">— Mijoz tanlang —</option>' + mList.map(m=>`<option value="${m.id}">${m.nomi} (${m.tur || m.turi || '—'})</option>`).join('');
 }
 
-let cart = [];
-let currentMijoz = null;
-let lastSotuv = null;
-let sotuvlar = JSON.parse(localStorage.getItem('sotuvlar') || '[]');
+var cart = [];
+var currentMijoz = null;
+var lastSotuv = null;
+var sotuvlar = safeJSON('sotuvlar', []);
 
 // ===== INIT =====
 
 
 
 
-document.getElementById('todayDate').textContent = new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
-document.getElementById('sotuvSana').value = new Date().toISOString().split('T')[0];
-loadMijozOptions();
-renderMahsulotGrid();
+async function initSotuv() {
+  try {
+    const sRes = await API.get('/sotuvlar');
+    if(sRes) sotuvlar = sRes;
+    
+    reqMijozlar = await API.get('/mijozlar') || [];
+    reqMahsulotlar = await API.get('/mahsulotlar') || [];
+    const xoRes = await API.get('/xom_ombor');
+    reqXomOmbor = xoRes?.data || {};
+    const xRes = await API.get('/xom-turlar');
+    xTurlar = Array.isArray(xRes) ? xRes : [];
+    window.GLOBAL_XOM_TURLAR = xTurlar;
+
+    MAHSULOTLAR.length = 0;
+    (Array.isArray(reqMahsulotlar) ? reqMahsulotlar : []).forEach(p => { 
+      MAHSULOTLAR.push({ id: p.id || p._id, tur:'mahsulot', nomi: '📦 '+ (p.nomi || p.nom), ombor: p.ombor || 0 }); 
+    });
+    Object.entries(reqXomOmbor || {}).forEach(([k,v]) => {
+      const xTList = Array.isArray(xTurlar) ? xTurlar : [];
+      const nomi = xTList.find(x=>x.id===k)?.nomi || k;
+      MAHSULOTLAR.push({ id: 'xom_'+k, tur:'xom', xomId: k, nomi: '⚙️ ' + nomi + ' (Xom ashyo)', ombor: (v?.kirgan||0) - (v?.sarflangan||0) });
+    });
+
+    Object.keys(MIJOZLAR_DATA).forEach(k => delete MIJOZLAR_DATA[k]);
+    (Array.isArray(reqMijozlar) ? reqMijozlar : []).forEach(m => {
+      const mid = m.id || m._id;
+      MIJOZLAR_DATA[mid] = { nomi: m.nomi, tur: m.tur || m.turi || '—', tel: m.tel, manzil: m.manzil, id: mid };
+      m.id = mid; // normalize
+    });
+
+  } catch(e) { console.error('Tarix yuklashda xato:', e); }
+
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+  if(document.getElementById('sotuvSana')) {
+    document.getElementById('sotuvSana').value = new Date().toISOString().split('T')[0];
+  }
+  loadMijozOptions();
+  renderMahsulotGrid();
+}
+initSotuv();
 
 // ===== TAB =====
 function switchTab(id, btn) {
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-'+id).classList.add('active');
-  if(id==='tarix') renderHistory();
-  if(id==='qarz') renderQarz();
-  if(id==='stat') renderStat();
+  try {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+id).classList.add('active');
+    if(id==='tarix') renderHistory();
+    if(id==='qarz') renderQarz();
+    if(id==='stat') renderStat();
+  } catch(e) {
+    alert("Xatolik (" + id + "): " + e.message);
+  }
 }
 
 // ===== MAHSULOT QIDIRISH =====
 function renderMahsulotGrid() {
-  const grid = document.getElementById('mahsulotGrid');
-  grid.innerHTML = MAHSULOTLAR.map(p=>`
-    <div class="pg-card" id="pgc_${p.id}" onclick="selectProd('${p.id}')">
-      <div class="pg-icon">${p.nomi.split(' ')[0]}</div>
-      <div class="pg-name">${p.nomi.substring(p.nomi.indexOf(' ')+1)}</div>
-      <div class="pg-meta">${p.ombor.toLocaleString()} kg qoldiq</div>
-    </div>`).join('');
+  const sel = document.getElementById('selProdId');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">— Mahsulot tanlang —</option>' + 
+    MAHSULOTLAR.map(p=>`<option value="${p.id}">${p.nomi} (Qoldiq: ${p.ombor.toLocaleString()} kg)</option>`).join('');
 }
 
 function selectProd(id) {
   const p = MAHSULOTLAR.find(x=>x.id===id);
-  if(!p) return;
-  document.querySelectorAll('.pg-card').forEach(c=>c.classList.remove('active'));
-  document.getElementById('pgc_'+id).classList.add('active');
-  
-  document.getElementById('selProdName').value = p.nomi.substring(p.nomi.indexOf(' ')+1);
-  document.getElementById('selProdName').dataset.id = p.id;
+  if(!p) {
+    document.getElementById('selProdNarx').value = '';
+    document.getElementById('selProdKg').value = '';
+    document.getElementById('itemJami').textContent = 'Jami: —';
+    return;
+  }
   document.getElementById('selProdNarx').value = '';
   document.getElementById('selProdKg').value = '';
   document.getElementById('itemJami').textContent = 'Jami: —';
-  document.getElementById('selProdNarx').focus();
+  document.getElementById('selProdKg').focus();
 }
 
 function calcItem() {
@@ -569,9 +607,16 @@ function calcItem() {
   document.getElementById('itemJami').textContent = jami>0 ? 'Jami: '+jami.toLocaleString()+' so\'m' : 'Jami: —';
 }
 
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (document.activeElement.id === 'selProdKg') document.getElementById('selProdNarx').focus();
+    else if (document.activeElement.id === 'selProdNarx') addToCart();
+  }
+});
+
 // ===== SAVAT =====
 function addToCart() {
-  const prodId = document.getElementById('selProdName').dataset.id;
+  const prodId = document.getElementById('selProdId').value;
   if(!prodId){ alert('Avval mahsulot tanlang!'); return; }
   const prod = MAHSULOTLAR.find(p=>p.id===prodId);
   if(!prod) return;
@@ -584,8 +629,7 @@ function addToCart() {
   if(existing){ existing.kg+=kg; existing.narx=narx; }
   else { cart.push({ prodId, nomi:prod.nomi, kg, narx }); }
   document.querySelectorAll('.pg-card').forEach(c=>c.classList.remove('active'));
-  document.getElementById('selProdName').value='';
-  document.getElementById('selProdName').dataset.id='';
+  document.getElementById('selProdId').value='';
   document.getElementById('selProdNarx').value='';
   document.getElementById('selProdKg').value='';
   document.getElementById('itemJami').textContent='Jami: —';
@@ -664,6 +708,17 @@ function tolovTuriOzgar() {
   else { document.getElementById('naqdBlock').style.display=''; calcQarz(); }
 }
 
+function parseSum(val) {
+  return parseFloat((val||'').toString().replace(/\s/g, '')) || 0;
+}
+
+function formatInput(el) {
+  let val = el.value.replace(/\D/g, '');
+  if(val !== '') el.value = parseInt(val).toLocaleString('ru-RU').replace(/,/g, ' ');
+  else el.value = '';
+  calcQarz();
+}
+
 function calcQarz() {
   const tur = document.getElementById('tolovTuri').value;
   const total = getFinalSum();
@@ -671,8 +726,8 @@ function calcQarz() {
   if(tur==='naqd' || tur==='bank'){ qi.style.display='none'; return; }
   if(tur==='qarz'){ qi.style.display='block'; qi.className='tolov-qarz'; qi.textContent=`📋 Butun summa qarzga yoziladi: ${total.toLocaleString()} so'm`; return; }
   if(tur==='aralash'){
-    const naqd = parseFloat(document.getElementById('naqdSumma').value)||0;
-    const bank2 = parseFloat(document.getElementById('bankSumma').value)||0;
+    const naqd = parseSum(document.getElementById('naqdSumma').value);
+    const bank2 = parseSum(document.getElementById('bankSumma').value);
     const qarz = total - naqd - bank2;
     qi.style.display='block';
     if(qarz>0){ qi.className='tolov-qarz'; qi.textContent=`💳 Qarz: ${qarz.toLocaleString()} so'm`; }
@@ -688,24 +743,24 @@ function getFinalSum() {
 }
 
 // ===== SOTUV SAQLASH =====
-function saveSotuv() {
+async function saveSotuv() {
   if(!document.getElementById('mijozSelect').value){ alert('Mijozni tanlang!'); return; }
   if(!cart.length){ alert('Savat bo\'sh!'); return; }
   const tur = document.getElementById('tolovTuri').value;
   const final = getFinalSum();
-  const naqd = parseFloat(document.getElementById('naqdSumma').value)||0;
-  const bank2 = parseFloat(document.getElementById('bankSumma').value)||0;
+  const naqd = parseSum(document.getElementById('naqdSumma').value);
+  const bank2 = parseSum(document.getElementById('bankSumma').value);
   let tolangan=0, qarz=0, holat='';
-  if(tur==='naqd'){ tolangan=final; qarz=0; holat='tolandi'; }
-  else if(tur==='bank'){ tolangan=final; qarz=0; holat='tolandi'; }
+  if(tur==='naqd'){ tolangan=final; qarz=0; holat='tolangan'; }
+  else if(tur==='bank'){ tolangan=final; qarz=0; holat='tolangan'; }
   else if(tur==='qarz'){ tolangan=0; qarz=final; holat='qarz'; }
-  else { tolangan=naqd+bank2; qarz=Math.max(0,final-tolangan); holat=qarz>0?'qisman':'tolandi'; }
+  else { tolangan=naqd+bank2; qarz=Math.max(0,final-tolangan); holat=qarz>0?'qisman':'tolangan'; }
 
-  const sotuv = {
-    id: 'S-' + (1048 + sotuvlar.length + 1),
+  const payload = {
     sana: document.getElementById('sotuvSana').value,
+    mijoz_id: currentMijoz.id,
     mijoz: currentMijoz,
-    cart: JSON.parse(JSON.stringify(cart)),
+    cart: cart,
     totalKg: cart.reduce((s,i)=>s+i.kg,0),
     summa: final,
     chegirma: parseFloat(document.getElementById('chegirma').value)||0,
@@ -713,30 +768,41 @@ function saveSotuv() {
     tolangan, qarz,
     holat,
     izoh: document.getElementById('izoh').value,
-    createdAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
   };
-  sotuvlar.push(sotuv);
-  localStorage.setItem('sotuvlar', JSON.stringify(sotuvlar));
-  lastSotuv = sotuv;
 
-  // Omborda kamaytirish
-  cart.forEach(item=>{ 
-    const prod=MAHSULOTLAR.find(p=>p.id===item.prodId); 
-    if(prod) {
-      if(prod.tur==='mahsulot') {
-         const d = reqMahsulotlar.find(x=>x.id===prod.id);
-         if(d) { d.ombor = Math.max(0, d.ombor - item.kg); localStorage.setItem('mahsulotlar',JSON.stringify(reqMahsulotlar)); }
-      } else if(prod.tur==='xom') {
-         if(reqXomOmbor[prod.xomId]) {
-            reqXomOmbor[prod.xomId].sarflangan += item.kg;
-            localStorage.setItem('xomOmbor', JSON.stringify(reqXomOmbor));
-         }
+  try {
+    const resSotuv = await API.post('/sotuvlar', payload);
+    lastSotuv = { ...payload, id: resSotuv.id || resSotuv._id || ('S-' + Date.now().toString().slice(-6)) };
+
+    let xomChanged = false;
+    for(const item of cart) {
+      const prod = MAHSULOTLAR.find(p=>p.id===item.prodId); 
+      if(prod) {
+        if(prod.tur==='mahsulot') {
+           const d = reqMahsulotlar.find(x=>(x.id===prod.id || x._id===prod.id));
+           if(d) {
+             d.ombor = Math.max(0, parseFloat(d.ombor) - item.kg);
+             await API.put(`/mahsulotlar/${d.id || d._id}`, d);
+           }
+        } else if(prod.tur==='xom') {
+           if(reqXomOmbor[prod.xomId]) {
+              reqXomOmbor[prod.xomId].sarflangan = (parseFloat(reqXomOmbor[prod.xomId].sarflangan) || 0) + item.kg;
+              xomChanged = true;
+           }
+        }
       }
     }
-  });
+    
+    if (xomChanged) await API.post('/xom_ombor', { data: reqXomOmbor });
 
-  document.getElementById('successMsg').textContent = `${sotuv.id} · ${sotuv.mijoz.nomi} · ${sotuv.summa.toLocaleString()} so'm`;
-  openModal('successModal');
+    document.getElementById('successMsg').textContent = `${lastSotuv.id} · ${lastSotuv.mijoz.nomi} · ${lastSotuv.summa.toLocaleString()} so'm`;
+    openModal('successModal');
+    
+    await initSotuv();
+  } catch (e) {
+    alert("Saqlashda xatolik: " + e.message);
+  }
 }
 
 // ===== CHEK =====
@@ -762,11 +828,11 @@ function buildChekHTML(s) {
     <div class="chek-row"><span>Jami (kg):</span><span>${s.totalKg} kg</span></div>
     <div class="chek-row"><span>Asosiy summa:</span><span>${asosiy.toLocaleString()}</span></div>
     ${s.chegirma>0?`<div class="chek-row"><span>Chegirma (${s.chegirma}%):</span><span>-${Math.round(asosiy*s.chegirma/100).toLocaleString()}</span></div>`:''}
-    <div class="chek-row bold large"><span>JAMI:</span><span>${s.summa.toLocaleString()} so'm</span></div>
+    <div class="chek-row bold large"><span>JAMI:</span><span>${(parseFloat((parseFloat(s.summa)||0))||0).toLocaleString()} so'm</span></div>
     <hr class="chek-divider">
     <div class="chek-row"><span>To'lov turi:</span><span>${{naqd:'Naqd',bank:'Bank',qarz:'Qarz',aralash:'Aralash'}[s.tolovTuri]}</span></div>
     <div class="chek-row"><span>To'langan:</span><span>${s.tolangan.toLocaleString()}</span></div>
-    ${s.qarz>0?`<div class="chek-row bold" style="color:var(--danger)"><span>Qarz:</span><span>${s.qarz.toLocaleString()}</span></div>`:''}
+    ${s.qarz>0?`<div class="chek-row bold" style="color:var(--danger)"><span>Qarz:</span><span>${(parseFloat(s.qarz)||0).toLocaleString()}</span></div>`:''}
     <hr class="chek-divider">
     <div class="chek-footer">Xarid uchun rahmat!<br>Tel: +998 71 000 00 00</div>
   `;
@@ -797,8 +863,8 @@ function printChek() {
     .chek-row{display:flex;justify-content:space-between}
     .bold{font-weight:700} .large{font-size:15px}
     .chek-footer{text-align:center;font-size:11px;color:#777;margin-top:8px}
-  </style><script src="/api.js"></script>
-</head><body>${html}<script>window.print();window.close();<\\/script><script src="/api.js"><\\/script>
+  </style>
+</head><body>${html}<script>window.print();window.close();<\/script>
 </body></html>`);
   win.document.close();
 }
@@ -821,17 +887,18 @@ function newSotuv() {
 // ===== TARIX =====
 function renderHistory(filter='', statusFilter='') {
   const body = document.getElementById('historyBody');
-  const data = sotuvlar.filter(s=>{
-    const txt = (s.id+s.mijoz.nomi).toLowerCase();
+  const safeSotuvlar = Array.isArray(sotuvlar) ? sotuvlar : [];
+  const data = safeSotuvlar.filter(s=>{
+    const mNomi = s.mijoz?.nomi || s.mijoz_nomi || ''; const txt = (s.id + mNomi).toLowerCase();
     const sf = !statusFilter || s.holat===statusFilter;
     return txt.includes(filter.toLowerCase()) && sf;
-  }).reverse();
+  });
 
   // Stats
   const today = new Date().toISOString().split('T')[0];
-  const bugun = sotuvlar.filter(s=>s.sana===today).reduce((a,s)=>a+s.summa,0);
-  const oyJami = sotuvlar.reduce((a,s)=>a+s.summa,0);
-  const qarzJami = sotuvlar.reduce((a,s)=>a+s.qarz,0);
+  const bugun = safeSotuvlar.filter(s=>s.sana===today).reduce((a,s)=>a+(parseFloat((parseFloat(s.summa)||0))||0),0);
+  const oyJami = safeSotuvlar.reduce((a,s)=>a+(parseFloat((parseFloat(s.summa)||0))||0),0);
+  const qarzJami = safeSotuvlar.reduce((a,s)=>a+(parseFloat(s.qarz)||0),0);
   document.getElementById('statBugun').textContent = bugun.toLocaleString();
   document.getElementById('statOy').textContent = oyJami.toLocaleString();
   document.getElementById('statQarz').textContent = qarzJami.toLocaleString();
@@ -839,14 +906,14 @@ function renderHistory(filter='', statusFilter='') {
   if(!data.length){ body.innerHTML='<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-muted)">Sotuvlar yo\'q</td></tr>'; return; }
   body.innerHTML = data.map(s=>{
     const holatBadge = {tolandi:'<span class="badge green">✅ To\'landi</span>',qarz:'<span class="badge red">💳 Qarz</span>',qisman:'<span class="badge amber">⚠️ Qisman</span>'}[s.holat];
-    const prods = s.cart.map(i=>i.nomi.split(' ')[0]).join(', ');
+    const prods = (s.cart || []).map(i=>i.nomi?i.nomi.split(' ')[0]:'').join(', ');
     return `<tr>
       <td><b>${s.id}</b></td>
       <td>${s.sana}</td>
-      <td>${s.mijoz.nomi}<br><small style="color:var(--text-muted)">${s.mijoz.tur}</small></td>
+      <td>${s.mijoz?.nomi || s.mijoz_nomi}<br><small style="color:var(--text-muted)">${s.mijoz?.tur || s.mijoz_turi}</small></td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${prods}</td>
       <td>${s.totalKg} kg</td>
-      <td><b>${s.summa.toLocaleString()}</b></td>
+      <td><b>${(parseFloat((parseFloat(s.summa)||0))||0).toLocaleString()}</b></td>
       <td>{{tolov}}</td>
       <td>${holatBadge}</td>
       <td style="display:flex;gap:4px">
@@ -866,15 +933,15 @@ function showChekById(id) {
   openModal('chekModal');
 }
 
-function tolovQabul(id) {
+async function tolovQabul(id) {
   const s = sotuvlar.find(x=>x.id===id);
   if(!s||!s.qarz) return;
-  const summa = prompt(`Qabul qilingan summa (qarz: ${s.qarz.toLocaleString()} so'm):`);
+  const summa = prompt(`Qabul qilingan summa (qarz: ${(parseFloat(s.qarz)||0).toLocaleString()} so'm):`);
   if(!summa) return;
   const miqdor = parseFloat(summa)||0;
-  s.tolangan += miqdor; s.qarz = Math.max(0, s.qarz-miqdor);
+  s.tolangan = parseFloat(s.tolangan||0) + miqdor; s.qarz = Math.max(0, s.qarz-miqdor);
   if(s.qarz===0) s.holat='tolandi';
-  localStorage.setItem('sotuvlar', JSON.stringify(sotuvlar));
+  await API.put('/sotuvlar/'+id, { tolangan: s.tolangan, qarz: s.qarz, holat: s.holat });
   renderHistory();
   alert(`✅ ${miqdor.toLocaleString()} so'm qabul qilindi!`);
 }
@@ -882,15 +949,16 @@ function tolovQabul(id) {
 // ===== QARZ =====
 function renderQarz() {
   const body = document.getElementById('qarzBody');
-  const qarzdorlar = sotuvlar.filter(s=>s.qarz>0);
+  const safeSotuvlar = Array.isArray(sotuvlar) ? sotuvlar : [];
+  const qarzdorlar = safeSotuvlar.filter(s=>s.qarz>0);
   if(!qarzdorlar.length){ body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">✅ Qarzdor mijoz yo\'q!</td></tr>'; return; }
   body.innerHTML = qarzdorlar.map(s=>`
     <tr>
-      <td><b>${s.mijoz.nomi}</b></td>
-      <td><span class="badge ${s.mijoz.tur==='Zavod'?'blue':'green'}">${s.mijoz.tur}</span></td>
+      <td><b>${s.mijoz?.nomi || s.mijoz_nomi}</b></td>
+      <td><span class="badge ${s.mijoz_turi==='Zavod'?'blue':'green'}">${s.mijoz?.tur || s.mijoz_turi}</span></td>
       <td>${s.id}</td>
       <td>${s.sana}</td>
-      <td style="color:var(--danger);font-weight:700">${s.qarz.toLocaleString()} so'm</td>
+      <td style="color:var(--danger);font-weight:700">${(parseFloat(s.qarz)||0).toLocaleString()} so'm</td>
       <td><span class="badge amber">30 kun</span></td>
       <td><button class="btn btn-sm btn-primary" onclick="tolovQabul('${s.id}')">💳 To'lov qabul</button></td>
     </tr>`).join('');
@@ -898,9 +966,10 @@ function renderQarz() {
 
 // ===== STATISTIKA =====
 function renderStat() {
-  const count = sotuvlar.length;
-  const sum = sotuvlar.reduce((a,s)=>a+s.summa,0);
-  const qarzSum = sotuvlar.reduce((a,s)=>a+s.qarz,0);
+  const safeSotuvlar = Array.isArray(sotuvlar) ? sotuvlar : [];
+  const count = safeSotuvlar.length;
+  const sum = safeSotuvlar.reduce((a,s)=>a+(parseFloat((parseFloat(s.summa)||0))||0),0);
+  const qarzSum = safeSotuvlar.reduce((a,s)=>a+(parseFloat(s.qarz)||0),0);
   document.getElementById('statCount').textContent = count;
   document.getElementById('statSum').textContent = sum.toLocaleString();
   document.getElementById('statAvg').textContent = count ? Math.round(sum/count).toLocaleString() : '0';
@@ -909,12 +978,12 @@ function renderStat() {
 
   // Mijoz bo'yicha
   const mijozStat = {};
-  sotuvlar.forEach(s=>{ if(!mijozStat[s.mijoz.nomi]) mijozStat[s.mijoz.nomi]={count:0,sum:0}; mijozStat[s.mijoz.nomi].count++; mijozStat[s.mijoz.nomi].sum+=s.summa; });
+  safeSotuvlar.forEach(s=>{ const mn = s.mijoz?.nomi || s.mijoz_nomi || 'Noma\'lum'; if(!mijozStat[mn]) mijozStat[mn]={count:0,sum:0}; mijozStat[mn].count++; mijozStat[mn].sum+=(parseFloat(s.summa)||0); });
   document.getElementById('statMijozBody').innerHTML = Object.entries(mijozStat).sort((a,b)=>b[1].sum-a[1].sum).map(([nomi,d])=>`<tr><td>${nomi}</td><td>${d.count} ta</td><td><b>${d.sum.toLocaleString()}</b></td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:16px">Ma\'lumot yo\'q</td></tr>';
 
   // Mahsulot bo'yicha
   const prodStat = {};
-  sotuvlar.forEach(s=>s.cart.forEach(i=>{ if(!prodStat[i.nomi]) prodStat[i.nomi]={kg:0,sum:0}; prodStat[i.nomi].kg+=i.kg; prodStat[i.nomi].sum+=i.kg*i.narx; }));
+  safeSotuvlar.forEach(s=>(s.cart || []).forEach(i=>{ if(!prodStat[i.nomi]) prodStat[i.nomi]={kg:0,sum:0}; prodStat[i.nomi].kg+=parseFloat(i.kg)||0; prodStat[i.nomi].sum+=(parseFloat(i.kg)||0)*(parseFloat(i.narx)||0); }));
   document.getElementById('statProdBody').innerHTML = Object.entries(prodStat).sort((a,b)=>b[1].sum-a[1].sum).map(([nomi,d])=>`<tr><td>${nomi}</td><td>${d.kg} kg</td><td><b>${d.sum.toLocaleString()}</b></td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:16px">Ma\'lumot yo\'q</td></tr>';
 }
 

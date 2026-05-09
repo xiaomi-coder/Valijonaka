@@ -201,8 +201,7 @@
         <div class="form-group"><label>Sana</label><input type="date" id="pSana"></div>
         <div class="form-group"><label>Olingan mollar soni (ta)</label><input type="number" id="pSoni" placeholder="50"></div>
       </div>
-      <div class="form-group"><label>Barcha mollarni sotib olish JAMI summasi (so'm)</label><input type="number" id="pJamiSum" placeholder="700000000"></div>
-      <div class="form-group"><label>Holati</label><select id="pHolat"><option value="aktiv">Aktiv (Davom etyapti)</option><option value="tugagan">Tugagan (Sotilib bo'lgan)</option></select></div>
+      <div class="form-group"><label>Barcha mollarni sotib olish JAMI summasi (so'm)</label><input type="text" inputmode="numeric" oninput="fmtSum(this)" id="pJamiSum" placeholder="700.000.000"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('partiyaModal')">Bekor qilish</button><button class="btn btn-primary" onclick="savePartiya()">Saqlash</button></div>
   </div>
@@ -222,8 +221,13 @@
         <div class="form-group"><label>Sana</label><input type="date" id="xSana"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Harajat turi</label><select id="xTur"><option value="Yem/Ozuqa">🌾 Yem, Piva shela, Press</option><option value="Dori/Ukol">💉 Dori va Ukollar</option><option value="Xizmat/Boshqa">🧹 Xizmat va Boshqalar</option></select></div>
-        <div class="form-group"><label>Summa (so'm)</label><input type="number" id="xSumma" placeholder="1500000"></div>
+        <div class="form-group"><label>Harajat turi</label>
+          <div style="display:flex;gap:8px;">
+            <select id="xTur" style="flex:1;"></select>
+            <button class="btn btn-secondary" style="padding:0 15px;" onclick="addYangiMolHarajatTuri()">+</button>
+          </div>
+        </div>
+        <div class="form-group"><label>Summa (so'm)</label><input type="text" inputmode="numeric" oninput="fmtSum(this)" id="xSumma" placeholder="1.500.000"></div>
       </div>
       <div class="form-group"><label>Nima olindi (Batafsil tushuntirish)?</label><textarea id="xIzoh" rows="2" placeholder="Masalan: 3 tonna kunjera olindi..."></textarea></div>
     </div>
@@ -250,10 +254,21 @@
         <div class="form-group"><label>Sotilgan mol soni (ta)</label><input type="number" id="sSoni" placeholder="10">
           <small id="sQoldiqMatn" style="color:var(--info);"></small>
         </div>
-        <div class="form-group"><label>JAMI tushgan summa (so'm)</label><input type="number" id="sSumma" placeholder="85000000"></div>
+        <div class="form-group"><label>JAMI tushgan summa (so'm)</label><input type="text" inputmode="numeric" oninput="fmtSum(this)" id="sSumma" placeholder="85.000.000"></div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sotuvModal')">Bekor</button><button class="btn btn-primary" onclick="saveSotuv()">Sotuv qilish</button></div>
+  </div>
+</div>
+
+<!-- PARTIYA HISOBOT MODAL -->
+<div class="modal-overlay" id="partiyaHisobotModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header"><h3 id="phTitle">Partiya Hisoboti</h3><button class="modal-close" onclick="closeModal('partiyaHisobotModal')">✕</button></div>
+    <div class="modal-body" id="phBody" style="background:#f7f9fa;border-radius:10px;padding:20px;font-size:15px;line-height:1.6;">
+       <!-- JS bilan to'ldiriladi -->
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('partiyaHisobotModal')">Yopish</button></div>
   </div>
 </div>
 
@@ -265,16 +280,57 @@ document.getElementById('pSana').value=new Date().toISOString().split('T')[0];
 document.getElementById('xSana').value=new Date().toISOString().split('T')[0];
 document.getElementById('sSana').value=new Date().toISOString().split('T')[0];
 
-// Malumotlarni o'qish (Hozircha Storage, APIga ulanish rejasi qilinguncha u ishlaydi)
-let partiyalar = JSON.parse(localStorage.getItem('mol-partiyalar') || '[]');
-let xarajatlar = JSON.parse(localStorage.getItem('mol-xarajatlar') || '[]');
-let sotuvlar   = JSON.parse(localStorage.getItem('mol-sotuvlar')   || '[]');
+let partiyalar = [];
+let xarajatlar = [];
+let sotuvlar   = [];
 
-// FUNKSIYALAR
-function saqlashBaza() {
-  localStorage.setItem('mol-partiyalar', JSON.stringify(partiyalar));
-  localStorage.setItem('mol-xarajatlar', JSON.stringify(xarajatlar));
-  localStorage.setItem('mol-sotuvlar', JSON.stringify(sotuvlar));
+let molHarajatTurlari = [];
+
+function loadMolHarajatTurlariSelect(){
+  const html = molHarajatTurlari.map(t=>`<option value="${t}">${t}</option>`).join('');
+  const el = document.getElementById('xTur');
+  if(el) el.innerHTML = html;
+}
+async function addYangiMolHarajatTuri(){
+  const t = prompt("Yangi harajat turini kiriting (masalan: Qurilish, Qorovul):");
+  if(t && t.trim()){
+    if(!molHarajatTurlari.includes(t.trim())){
+      molHarajatTurlari.push(t.trim());
+      await API.post('/kesh/mol_kat', { data: molHarajatTurlari });
+      loadMolHarajatTurlariSelect();
+    } else {
+      alert("Bu tur allaqachon mavjud!");
+    }
+  }
+}
+
+async function saqlashBaza() {
+  try {
+    molHarajatTurlari = await API.get('/kesh/mol_kat') || [];
+    if(molHarajatTurlari.length === 0) {
+      molHarajatTurlari = ['🌾 Yem/Ozuqa (Piva shela, Press)', '💉 Dori/Ukol', '🧹 Xizmat, Ishchi, Boshqalar'];
+      await API.post('/kesh/mol_kat', { data: molHarajatTurlari });
+    }
+    loadMolHarajatTurlariSelect();
+
+    const [pRes, xRes, sRes] = await Promise.all([
+      API.get('/mol/partiyalar'), API.get('/mol/xarajatlar'), API.get('/mol/sotuvlar')
+    ]);
+    partiyalar = pRes.map(p => ({
+      id: p.id, nomi: p.nomi, sana: p.sana ? p.sana.substring(0, 10) : '',
+      boshlangichSon: parseInt(p.boshlangich_son)||0,
+      kirimNarx: parseFloat(p.kirim_narx)||0, holat: p.holat||'aktiv'
+    }));
+    xarajatlar = xRes.map(x => ({
+      ...x, partiyaId: x.partiya_id, sana: x.sana ? x.sana.substring(0, 10) : '',
+      summa: parseFloat(x.summa)||0
+    }));
+    sotuvlar = sRes.map(s => ({
+      ...s, partiyaId: s.partiya_id, sana: s.sana ? s.sana.substring(0, 10) : '',
+      mollarSoni: parseInt(s.mollar_soni)||0, jamiSumma: parseFloat(s.jami_summa)||0
+    }));
+    renderBarchasi();
+  } catch(e) { console.error('Molxona db error:', e); }
 }
 
 function getSotilganCount(partiyaId) {
@@ -308,65 +364,65 @@ function tekshirOmborSoni() {
 }
 
 // ======================== SAQLASHLAR ===========================
-function savePartiya() {
-   let nomi = document.getElementById('pNom').value.trim();
-   let sana = document.getElementById('pSana').value;
-   let soni = parseInt(document.getElementById('pSoni').value) || 0;
-   let summa = parseInt(document.getElementById('pJamiSum').value) || 0;
-   let holat = document.getElementById('pHolat').value;
+async function savePartiya(){
+  const nomi=document.getElementById('pNom').value.trim();
+  const soni=parseInt(document.getElementById('pSoni').value)||0;
+  const jami_summa=parseSum('pJamiSum');
+  const sana=document.getElementById('pSana').value;
+  const holat='aktiv';
    
-   if(!nomi || soni<=0 || summa<=0) return alert('Barcha joylarni to\'ldiring!');
+   if(!nomi || soni<=0 || jami_summa<=0) return alert('Barcha joylarni to\'ldiring!');
    
-   partiyalar.push({
-     id: 'molp_'+Date.now(), nomi, sana, boshlangichSon: soni, kirimNarx: summa, holat
+   await API.post('/mol/partiyalar', {
+     nomi, sana, boshlangich_son: soni, kirim_narx: jami_summa, holat
    });
-   saqlashBaza(); closeModal('partiyaModal'); renderBarchasi();
+   closeModal('partiyaModal'); saqlashBaza();
 }
 
-function saveXarajat() {
+async function saveXarajat() {
    let pId = document.getElementById('xPartiya').value;
-   let sana = document.getElementById('xSana').value;
-   let tur = document.getElementById('xTur').value;
-   let hSum= parseInt(document.getElementById('xSumma').value) || 0;
-   let izoh = document.getElementById('xIzoh').value;
+   const tur=document.getElementById('xTur').value;
+   const izoh=document.getElementById('xIzoh').value.trim();
+   const summa=parseSum('xSumma');
+   const sana=document.getElementById('xSana').value;
    
-   if(!pId || hSum<=0) return alert('Partiya tanlanmadi yoki summa xato!');
+   if(!pId || summa<=0) return alert('Partiya tanlanmadi yoki summa xato!');
    
-   xarajatlar.push({
-     id: 'molx_'+Date.now(), partiyaId: pId, sana, tur, summa: hSum, izoh
+   await API.post('/mol/xarajatlar', {
+     partiya_id: pId, sana, tur, summa: summa, izoh
    });
-   saqlashBaza(); closeModal('xarajatModal'); renderBarchasi();
+   closeModal('xarajatModal'); saqlashBaza();
 }
 
-function saveSotuv() {
+async function saveSotuv() {
    let pId = document.getElementById('sPartiya').value;
    let sana = document.getElementById('sSana').value;
    let mijoz = document.getElementById('sMijoz').value;
    let sSoni = parseInt(document.getElementById('sSoni').value) || 0;
-   let sSum= parseInt(document.getElementById('sSumma').value) || 0;
+   let sSum= parseSum('sSumma');
    
-   if(!pId || sSoni<=0 || sSum<=0 || !mijoz) return alert('Ma\'lumotlarni to\'liq kiriting!');
+   if(!pId || sSoni<=0 || sSum<=0 || !mijoz) return alert('Barcha joylarni to\'g\'ri to\'ldiring!');
    
    let pt = partiyalar.find(p=>p.id === pId);
    let max = pt.boshlangichSon - getSotilganCount(pId);
    if(sSoni > max) return alert("Bitta partiyadan boridan ko'p sota olmaysiz!");
    
-   sotuvlar.push({
-     id: 'mols_'+Date.now(), partiyaId: pId, sana, mollarSoni: sSoni, jamiSumma: sSum, mijoz
+   await API.post('/mol/sotuvlar', {
+     partiya_id: pId, sana, mijoz, mollar_soni: sSoni, jami_summa: sSum
    });
    
    // Agar mol qolmasa avtomat tugagan qilamiz
    if(sSoni === max) {
-      pt.holat = 'tugagan';
+      await API.put('/mol/partiyalar/'+pId, { holat: 'tugagan' });
    }
 
-   saqlashBaza(); closeModal('sotuvModal'); renderBarchasi();
+   closeModal('sotuvModal'); saqlashBaza();
 }
 
 // OCHIRISHLAR
-function delP(id){ if(confirm("O'chiramanmi?")) { partiyalar = partiyalar.filter(p=>p.id!==id); xarajatlar = xarajatlar.filter(x=>x.partiyaId!==id); sotuvlar = sotuvlar.filter(s=>s.partiyaId!==id); saqlashBaza(); renderBarchasi();} }
-function delX(id){ if(confirm("O'chiramanmi?")) { xarajatlar = xarajatlar.filter(x=>x.id!==id); saqlashBaza(); renderBarchasi();} }
-function delS(id){ if(confirm("O'chiramanmi?")) { sotuvlar = sotuvlar.filter(s=>s.id!==id); saqlashBaza(); renderBarchasi();} }
+async function delP(id){ if(confirm("O'chiramanmi?")) { await API.del('/mol/partiyalar/'+id); saqlashBaza();} }
+async function delX(id){ if(confirm("O'chiramanmi?")) { await API.del('/mol/xarajatlar/'+id); saqlashBaza();} }
+async function delS(id){ if(confirm("O'chiramanmi?")) { await API.del('/mol/sotuvlar/'+id); saqlashBaza();} }
 
 // RENDER (KO'RSATISH)
 function renderBarchasi() {
@@ -376,10 +432,13 @@ function renderBarchasi() {
   let pHtml = '';
   partiyalar.sort((a,b)=>b.sana.localeCompare(a.sana)).forEach((p, i) => {
      let ortacha = p.boshlangichSon > 0 ? (p.kirimNarx / p.boshlangichSon) : 0;
-     pHtml += `<tr><td>${i+1}</td><td><b>${p.nomi}</b></td><td>${p.sana}</td><td>${p.boshlangichSon} ta</td>
+     pHtml += `<tr><td>${i+1}</td><td><b style="cursor:pointer;color:var(--primary);text-decoration:underline;" onclick="openPartiyaHisobot('${p.id}')">${p.nomi}</b></td><td>${p.sana}</td><td>${p.boshlangichSon} ta</td>
      <td>${ortacha.toLocaleString()} so'm</td><td>${p.kirimNarx.toLocaleString()} so'm</td>
      <td><span class="badge ${p.holat==='aktiv'?'green':'gray'}">${p.holat}</span></td>
-     <td><button class="btn btn-sm btn-danger" onclick="delP('${p.id}')">🗑</button></td></tr>`;
+     <td>
+       <button class="btn btn-sm btn-secondary" onclick="openPartiyaHisobot('${p.id}')">📊</button>
+       <button class="btn btn-sm btn-danger" onclick="delP('${p.id}')">🗑</button>
+     </td></tr>`;
   });
   document.getElementById('partiyalarBody').innerHTML = pHtml || "<tr><td colspan='8' style='text-align:center'>Hech qanday ma'lumot yo'q</td></tr>";
 
@@ -467,6 +526,72 @@ function renderBarchasi() {
   document.getElementById('activePartiyaInfo').innerHTML = aHtml;
 }
 
+function openPartiyaHisobot(pId) {
+  let p = partiyalar.find(x=>x.id===pId);
+  if(!p) return;
+  
+  let pXarajatlari = xarajatlar.filter(x=>x.partiyaId===pId);
+  let pSotuvlari = sotuvlar.filter(s=>s.partiyaId===pId);
+  
+  let totalXarajat = pXarajatlari.reduce((s,x)=>s+x.summa,0);
+  let totalSotuvSum = pSotuvlari.reduce((s,x)=>s+x.jamiSumma,0);
+  let jamiSotilganSon = getSotilganCount(pId);
+  
+  let tannarx = p.kirimNarx + totalXarajat;
+  let qoldiqMol = p.boshlangichSon - jamiSotilganSon;
+  let foyda = totalSotuvSum - tannarx;
+  
+  document.getElementById('phTitle').textContent = `📊 "${p.nomi}" Partiyasi Hisoboti`;
+  
+  let html = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
+      <div><b>Olingan sana:</b> ${p.sana}</div>
+      <div><b>Holati:</b> <span class="badge ${p.holat==='aktiv'?'green':'gray'}">${p.holat==='aktiv'?'Sotuv jarayonida':'Tugatilgan'}</span></div>
+    </div>
+    
+    <table class="table" style="background:#fff;margin-bottom:20px;">
+      <tr>
+        <td style="color:var(--text-muted)">Dastlabki sotib olingan mol soni</td>
+        <td style="text-align:right;font-weight:700">${p.boshlangichSon} ta</td>
+      </tr>
+      <tr>
+        <td style="color:var(--danger)">Mollarning yerdan olingan dastlabki narxi</td>
+        <td style="text-align:right;font-weight:700;color:var(--danger)">${p.kirimNarx.toLocaleString()} so'm</td>
+      </tr>
+      <tr>
+        <td style="color:var(--danger)">Ushbu partiyaga ketgan Yem/Dori harajatlari</td>
+        <td style="text-align:right;font-weight:700;color:var(--warning)">${totalXarajat.toLocaleString()} so'm</td>
+      </tr>
+      <tr style="border-top:2px solid var(--border)">
+        <td style="font-weight:700;">JAMI TANNARX HARAJATI</td>
+        <td style="text-align:right;font-weight:700;font-size:16px;">${tannarx.toLocaleString()} so'm</td>
+      </tr>
+      <tr><td colspan="2"></td></tr>
+      <tr>
+        <td style="color:var(--success)">Sotilib bo'lingan mollar soni</td>
+        <td style="text-align:right;font-weight:700;color:var(--success)">${jamiSotilganSon} ta <span style="font-size:12px;color:var(--text-muted)">(qoldi: ${qoldiqMol} ta)</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--success)">Sotuvdan tushgan daromad</td>
+        <td style="text-align:right;font-weight:700;color:var(--success)">${totalSotuvSum.toLocaleString()} so'm</td>
+      </tr>
+      <tr style="background:${foyda>0?'var(--success-light)':'var(--danger-light)'};border-top:2px solid var(--border)">
+        <td style="font-weight:700;color:var(--primary);font-size:18px;">SOF FOYDA (yoki Zarar)</td>
+        <td style="text-align:right;font-weight:700;font-size:18px;color:${foyda>0?'var(--success)':'var(--danger)'}">
+          ${foyda > 0 ? '+ ' : ''}${foyda.toLocaleString()} so'm
+        </td>
+      </tr>
+    </table>
+    
+    <div style="font-size:13px;color:var(--text-muted);text-align:center;">
+      Ushbu hisobot raqamlari qilingan barcha xarajatlar va tushgan sotuvlardan kelib chiqib avtomatik hisoblanmoqda.
+    </div>
+  `;
+  
+  document.getElementById('phBody').innerHTML = html;
+  document.getElementById('partiyaHisobotModal').classList.add('open');
+}
+
 // Boshqaruv
 function switchTab(id,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -478,7 +603,7 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 
-renderBarchasi();
+saqlashBaza();
 </script>
 </body>
 </html>

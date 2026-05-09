@@ -210,20 +210,37 @@ const user=JSON.parse(localStorage.getItem('erp_user')||'{"name":"admin","role":
 
 document.getElementById('todayDate').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
 
-let mahsulotlar=JSON.parse(localStorage.getItem('mahsulotlar')||'[]');
+let mahsulotlar=[];
+async function initMahsulotlar() {
+  try {
+    const xTRes = await API.get('/xom-turlar');
+    window.GLOBAL_XOM_TURLAR = Array.isArray(xTRes) ? xTRes : [];
+    loadXomTurlarList();
+    mahsulotlar = await API.get('/mahsulotlar');
+    renderMahsulotlar();
+    renderOmbor();
+  } catch(e) { console.error(e); }
+}
 
 const harakatlar=[];
 
+function getXomTurlar() { return window.GLOBAL_XOM_TURLAR || []; }
 const TUR_NOM={granula:'Granula',plyonka:'Plyonka',profil:'Profil',boshqa:'Boshqa',qoldiq:'Qoldiq'};
-function getXOM_NOM() { const t=typeof getXomTurlar==='function'?getXomTurlar():[]; const x={}; t.forEach(k=>x[k.id]=k.nomi); return x; }
+function getXOM_NOM() { const t=getXomTurlar(); const x={}; t.forEach(k=>x[k.id]=k.nomi); return x; }
 function loadXomTurlarList() {
-  const t = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
+  const t = getXomTurlar();
   document.getElementById('pXom').innerHTML = '<option value="">— Tanlang —</option>' + t.map(x=>`<option value="${x.id}">${x.ico} ${x.nomi}</option>`).join('');
 }
-function addYangiXomTur() {
+async function addYangiXomTur() {
   const nomi = prompt("Yangi xom ashyo nomini kiritng (Masalan: Alyumin)");
   if(!nomi) return;
-  if(typeof saveXomTur==='function') { saveXomTur(nomi); loadXomTurlarList(); renderMahsulotlar(); }
+  const id = nomi.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/__+/g,'_') || 'tur_' + Date.now();
+  const t = getXomTurlar();
+  t.push({ id, nomi, ico:'📦', min:500 });
+  window.GLOBAL_XOM_TURLAR = t;
+  await API.post('/xom-turlar', { data: t });
+  loadXomTurlarList();
+  renderMahsulotlar();
 }
 const RANG=['#1a6b3c','#e67e22','#2471a3','#1a1f1a','#8e44ad','#c0392b'];
 let omborEditId=null;
@@ -304,21 +321,22 @@ function openOmborModal(id){
   document.getElementById('omborKg').value=p.ombor;
   openModal('omborModal');
 }
-function saveOmbor(){
+async function saveOmbor(){
   const p=mahsulotlar.find(x=>x.id===omborEditId);if(!p)return;
   const kg=parseFloat(document.getElementById('omborKg').value)||0;
-  p.ombor=kg;localStorage.setItem('mahsulotlar',JSON.stringify(mahsulotlar));
-  closeModal('omborModal');renderMahsulotlar();renderOmbor();
+  await API.put('/mahsulotlar/'+omborEditId, { ...p, ombor: kg });
+  closeModal('omborModal');
+  initMahsulotlar();
 }
 
-function saveProd(){
+async function saveProd(){
   const id=document.getElementById('prodEditId').value;
-  const obj={nomi:document.getElementById('pNomi').value.trim(),xom:document.getElementById('pXom').value,ombor:parseFloat(document.getElementById('pOmbor').value)||0,min:parseFloat(document.getElementById('pMin').value)||100,poterya:parseFloat(document.getElementById('pPoterya').value)||0,icon:document.getElementById('pIcon').value||'🗃️'};
+  const obj={nomi:document.getElementById('pNomi').value.trim(),xom:document.getElementById('pXom').value,ombor:parseFloat(document.getElementById('pOmbor').value)||0,min:parseFloat(document.getElementById('pMin').value)||100,icon:document.getElementById('pIcon').value||'🗃️',poterya:parseFloat(document.getElementById('pPoterya')?.value)||0};
   if(!obj.nomi){alert('Mahsulot nomini kiriting!');return;}
-  if(id){const p=mahsulotlar.find(x=>x.id===id);if(p)Object.assign(p,obj);}
-  else{obj.id='p'+Date.now();mahsulotlar.push(obj);}
-  localStorage.setItem('mahsulotlar',JSON.stringify(mahsulotlar));
-  closeModal('prodModal');renderMahsulotlar();renderOmbor();
+  if(id){ await API.put('/mahsulotlar/'+id, obj); }
+  else { await API.post('/mahsulotlar', obj); }
+  closeModal('prodModal');
+  initMahsulotlar();
 }
 
 function editProd(id){
@@ -332,7 +350,11 @@ function editProd(id){
   document.getElementById('pIcon').value=p.icon||'🗃️';
   openModal('prodModal');
 }
-function deleteProd(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;mahsulotlar=mahsulotlar.filter(p=>p.id!==id);localStorage.setItem('mahsulotlar',JSON.stringify(mahsulotlar));renderMahsulotlar();renderOmbor();}
+async function deleteProd(id){
+  if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;
+  await API.del('/mahsulotlar/'+id);
+  initMahsulotlar();
+}
 
 function exportOmbor(){
   let csv='Mahsulot,Ombordagi kg,Min chegara,Holat\n';
@@ -350,7 +372,7 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='prodModal'){document.getElementById('prodEditId').value='';document.getElementById('prodModalT').textContent='🗃️ Yangi mahsulot';}}
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 loadXomTurlarList();
-renderMahsulotlar();
+initMahsulotlar();
 renderHarakatlar();
 </script>
 

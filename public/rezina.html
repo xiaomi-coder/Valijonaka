@@ -114,7 +114,7 @@
   <div class="content">
     <div class="alert info">🔵 Bu modul asosiy ishlab chiqarish biznesidan <b>alohida</b> ishlaydi. Zavoddan rezina olib, mijozlarga sotish.</div>
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('dashboard',this)">📊 Dashboard</button>
+      <button class="tab active" onclick="switchTab('dashboard',this)">📊 Asosiy oyna</button>
       <button class="tab" onclick="switchTab('kirim',this)">📥 Zavod kirim</button>
       <button class="tab" onclick="switchTab('sotuv',this)">🛒 Sotuv</button>
       <button class="tab" onclick="switchTab('hisobot',this)">📈 Foyda hisobi</button>
@@ -123,10 +123,10 @@
     <!-- DASHBOARD -->
     <div class="page active" id="tab-dashboard">
       <div class="stats-grid">
-        <div class="stat-card g"><div class="lbl">Omboredagi rezina</div><div class="val" id="dOmbor">0</div><div class="ico">📦</div><div class="sub">kg</div></div>
-        <div class="stat-card b"><div class="lbl">2026 sotildi</div><div class="val" id="dSotildi">0</div><div class="ico">🛒</div><div class="sub">kg</div></div>
-        <div class="stat-card a"><div class="lbl">2026 daromad</div><div class="val" id="dDaromad">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
-        <div class="stat-card g"><div class="lbl">2026 sof foyda</div><div class="val" id="dFoyda">0</div><div class="ico">📈</div><div class="sub">so'm</div></div>
+        <div class="stat-card g"><div class="lbl">Ombordagi rezina</div><div class="val" id="dOmbor">0</div><div class="ico">📦</div><div class="sub">dona</div></div>
+        <div class="stat-card b"><div class="lbl"><span class="dynYil">O'tgan</span> yil sotildi</div><div class="val" id="dSotildi">0</div><div class="ico">🛒</div><div class="sub">dona</div></div>
+        <div class="stat-card a"><div class="lbl"><span class="dynYil">O'tgan</span> daromad</div><div class="val" id="dDaromad">0</div><div class="ico">💰</div><div class="sub">so'm</div></div>
+        <div class="stat-card g"><div class="lbl"><span class="dynYil">O'tgan</span> sof foyda</div><div class="val" id="dFoyda">0</div><div class="ico">📈</div><div class="sub">so'm</div></div>
       </div>
       <div class="grid-2">
         <div class="card" style="margin:0;">
@@ -153,14 +153,14 @@
         <button class="btn btn-primary" onclick="openModal('kirimModal')">+ Yangi kirim</button>
       </div>
       <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="stat-card b"><div class="lbl">Jami kirim (kg)</div><div class="val" id="kStKg">0</div></div>
+        <div class="stat-card b"><div class="lbl">Jami kirim (dona)</div><div class="val" id="kStKg">0</div></div>
         <div class="stat-card a"><div class="lbl">Jami xarajat</div><div class="val" id="kStSum">0</div><div class="sub">so'm</div></div>
         <div class="stat-card r"><div class="lbl">Qarz (zavodga)</div><div class="val" id="kStQarz">0</div><div class="sub">so'm</div></div>
       </div>
       <div class="card" style="margin:0;">
         <div class="card-header"><div class="card-title">Kirimlar ro'yxati</div></div>
         <table>
-          <thead><tr><th>#</th><th>Sana</th><th>Zavod</th><th>Rezina turi</th><th>Kg</th><th>Narx/kg</th><th>Jami</th><th>To'lov</th><th>Amal</th></tr></thead>
+          <thead><tr><th>#</th><th>Sana</th><th>Zavod</th><th>Rezina turi</th><th>Dona</th><th>Narx/dona</th><th>Jami</th><th>To'lov</th><th>Amal</th></tr></thead>
           <tbody id="kirimBody"></tbody>
         </table>
       </div>
@@ -173,14 +173,14 @@
         <button class="btn btn-primary" onclick="openModal('sotuvModal')">+ Yangi sotuv</button>
       </div>
       <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="stat-card g"><div class="lbl">2026 sotuv (kg)</div><div class="val" id="sStKg">0</div></div>
-        <div class="stat-card a"><div class="lbl">2026 daromad</div><div class="val" id="sStSum">0</div><div class="sub">so'm</div></div>
+        <div class="stat-card g"><div class="lbl"><span class="dynYilSot">Yil</span> sotuv (dona)</div><div class="val" id="sStKg">0</div></div>
+        <div class="stat-card a"><div class="lbl"><span class="dynYilSot">Yil</span> daromad</div><div class="val" id="sStSum">0</div><div class="sub">so'm</div></div>
         <div class="stat-card r"><div class="lbl">Mijozlar qarzi</div><div class="val" id="sStQarz">0</div><div class="sub">so'm</div></div>
       </div>
       <div class="card" style="margin:0;">
         <div class="card-header"><div class="card-title">Sotuvlar ro'yxati</div></div>
         <table>
-          <thead><tr><th>#</th><th>Sana</th><th>Mijoz</th><th>Rezina turi</th><th>Kg</th><th>Narx/kg</th><th>Jami</th><th>To'lov</th><th>Holat</th><th>Amal</th></tr></thead>
+          <thead><tr><th>#</th><th>Sana</th><th>Mijoz</th><th>Rezina turi</th><th>Dona</th><th>Narx/dona</th><th>Jami</th><th>To'lov</th><th>Holat</th><th>Amal</th></tr></thead>
           <tbody id="sotuvBody"></tbody>
         </table>
       </div>
@@ -191,25 +191,25 @@
       <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;">
         <select id="hisobotOy" onchange="renderHisobot()" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;font-family:'Onest',sans-serif;">
 
-            <option value="12">Dekabr 2026</option>
-            <option value="11">Noyabr 2026</option>
-            <option value="10">Oktabr 2026</option>
-            <option value="9">Sentabr 2026</option>
-            <option value="8">Avgust 2026</option>
-            <option value="7">Iyul 2026</option>
-            <option value="6">Iyun 2026</option>
-            <option value="5">May 2026</option>
-            <option value="4">Aprel 2026</option>
-            <option value="3">Mart 2026</option>
-            <option value="2">Fevral 2026</option>
-            <option value="1">Yanvar 2026</option>
+            <option value="12">Dekabr</option>
+            <option value="11">Noyabr</option>
+            <option value="10">Oktabr</option>
+            <option value="9">Sentabr</option>
+            <option value="8">Avgust</option>
+            <option value="7">Iyul</option>
+            <option value="6">Iyun</option>
+            <option value="5">May</option>
+            <option value="4">Aprel</option>
+            <option value="3">Mart</option>
+            <option value="2">Fevral</option>
+            <option value="1">Yanvar</option>
     
 </select>
         <button class="btn btn-secondary" onclick="exportHisobot()">📥 Eksport</button>
       </div>
       <div class="grid-2">
         <div class="card" style="margin:0;">
-          <div class="card-header"><div class="card-title" id="hisobotTitle">Mart 2026 — Foyda hisobi</div></div>
+          <div class="card-header"><div class="card-title" id="hisobotTitle">Joriy oy — Foyda hisobi</div></div>
           <div class="card-body">
             <div class="foyda-box" id="foydaBox"></div>
           </div>
@@ -245,25 +245,25 @@
         <div class="form-group"><label>Rezina turi</label>
           <div style="display:flex;gap:8px;"><select id="kmTur" style="flex:1;">
 
-            <option value="12">Dekabr 2026</option>
-            <option value="11">Noyabr 2026</option>
-            <option value="10">Oktabr 2026</option>
-            <option value="9">Sentabr 2026</option>
-            <option value="8">Avgust 2026</option>
-            <option value="7">Iyul 2026</option>
-            <option value="6">Iyun 2026</option>
-            <option value="5">May 2026</option>
-            <option value="4">Aprel 2026</option>
-            <option value="3">Mart 2026</option>
-            <option value="2">Fevral 2026</option>
-            <option value="1">Yanvar 2026</option>
+            <option value="12">Dekabr</option>
+            <option value="11">Noyabr</option>
+            <option value="10">Oktabr</option>
+            <option value="9">Sentabr</option>
+            <option value="8">Avgust</option>
+            <option value="7">Iyul</option>
+            <option value="6">Iyun</option>
+            <option value="5">May</option>
+            <option value="4">Aprel</option>
+            <option value="3">Mart</option>
+            <option value="2">Fevral</option>
+            <option value="1">Yanvar</option>
     
 </select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
         </div>
-        <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="kmKg" placeholder="0" oninput="calcKm()"></div>
+        <div class="form-group"><label>Miqdor (dona)</label><input type="number" id="kmKg" placeholder="0" oninput="calcKm()"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Narx (so'm/kg)</label><input type="number" id="kmNarx" placeholder="0" oninput="calcKm()"></div>
+        <div class="form-group"><label>Narx (so'm/dona)</label><input type="text" inputmode="numeric" oninput="fmtSum(this); calcKm()" id="kmNarx" placeholder="0"></div>
         <div class="form-group"><label>Jami summa</label><input id="kmJami" readonly></div>
       </div>
       <div class="form-group"><label>To'lov holati</label><select id="kmTolov"><option value="tolangan">✅ To'langan</option><option value="qarz">📋 Qarzga</option></select></div>
@@ -286,26 +286,26 @@
         <div class="form-group"><label>Rezina turi</label>
           <div style="display:flex;gap:8px;"><select id="smTur" style="flex:1;" onchange="smTurTanlash()">
 
-            <option value="12">Dekabr 2026</option>
-            <option value="11">Noyabr 2026</option>
-            <option value="10">Oktabr 2026</option>
-            <option value="9">Sentabr 2026</option>
-            <option value="8">Avgust 2026</option>
-            <option value="7">Iyul 2026</option>
-            <option value="6">Iyun 2026</option>
-            <option value="5">May 2026</option>
-            <option value="4">Aprel 2026</option>
-            <option value="3">Mart 2026</option>
-            <option value="2">Fevral 2026</option>
-            <option value="1">Yanvar 2026</option>
+            <option value="12">Dekabr</option>
+            <option value="11">Noyabr</option>
+            <option value="10">Oktabr</option>
+            <option value="9">Sentabr</option>
+            <option value="8">Avgust</option>
+            <option value="7">Iyul</option>
+            <option value="6">Iyun</option>
+            <option value="5">May</option>
+            <option value="4">Aprel</option>
+            <option value="3">Mart</option>
+            <option value="2">Fevral</option>
+            <option value="1">Yanvar</option>
     
 </select><button class="btn btn-secondary" style="padding:0 12px; height: 38px;" onclick="addYangiRezinaTur()">+</button></div>
         </div>
         <div class="form-group"><label>Omboredagi miqdor</label><input id="smOmbor" readonly></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="smKg" placeholder="0" oninput="calcSm()"></div>
-        <div class="form-group"><label>Sotuv narxi (so'm/kg)</label><input type="number" id="smNarx" placeholder="0" oninput="calcSm()"></div>
+        <div class="form-group"><label>Miqdor (dona)</label><input type="number" id="smKg" placeholder="0" oninput="calcSm()"></div>
+        <div class="form-group"><label>Sotuv narxi (so'm/dona)</label><input type="text" inputmode="numeric" oninput="fmtSum(this); calcSm()" id="smNarx" placeholder="0"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Jami summa</label><input id="smJami" readonly></div>
@@ -326,23 +326,58 @@ document.getElementById('todayDate').textContent=new Date().toLocaleDateString('
 document.getElementById('kmSana').value=new Date().toISOString().split('T')[0];
 document.getElementById('smSana').value=new Date().toISOString().split('T')[0];
 
-let kirimlar=JSON.parse(localStorage.getItem('rezKirimlar')||'[]');
+let kirimlar=[];
+let sotuvlar=[];
+let rezinaTurlari=[];
+let zavodTurlari=[];
 
-let sotuvlar=JSON.parse(localStorage.getItem('rezSotuvlar')||'[]');
+async function initRezina() {
+  try {
+    rezinaTurlari = await API.get('/kesh/rezinaTurlari') || [];
+    zavodTurlari = await API.get('/kesh/rezZavodTurlari') || [];
+    loadRezinaTurlariSelect();
+    loadZavodlarSelect();
 
-let rezinaTurlari=JSON.parse(localStorage.getItem('rezinaTurlari')||'[]');
+    const [kRes, sRes] = await Promise.all([
+      API.get('/rezina/kirimlar'), API.get('/rezina/sotuvlar')
+    ]);
+    kirimlar = kRes.map(k => ({
+      ...k, sana: k.sana ? k.sana.substring(0, 10) : '',
+      kg: parseFloat(k.kg) || 0, narx: parseFloat(k.narx) || 0, jami: parseFloat(k.jami) || 0
+    }));
+    sotuvlar = sRes.map(s => ({
+      ...s, sana: s.sana ? s.sana.substring(0, 10) : '',
+      kg: parseFloat(s.kg) || 0, narx: parseFloat(s.narx) || 0, jami: parseFloat(s.jami) || 0,
+      kirNarx: parseFloat(s.kir_narx) || 0
+    }));
+    
+    const cm = new Date().getMonth()+1;
+    if(document.getElementById("hisobotOy")) document.getElementById("hisobotOy").value = cm;
+    document.querySelectorAll(".dynYil").forEach(e=>e.innerText=new Date().getFullYear());
+    document.querySelectorAll(".dynYilSot").forEach(e=>e.innerText=new Date().getFullYear());
+    
+    renderDashboard();
+    
+    const act = document.querySelector('.tab.active');
+    if(act) {
+        if(act.textContent.includes('Kirim')) renderKirim();
+        if(act.textContent.includes('Sotuv')) renderSotuv();
+        if(act.textContent.includes('Foyda')) renderHisobot();
+    }
+  } catch(e) { console.error('Rezina err:', e); }
+}
 
 function loadRezinaTurlariSelect(){
   const html = rezinaTurlari.map(t=>`<option value="${t}">${t}</option>`).join('');
   document.getElementById('kmTur').innerHTML = html;
   document.getElementById('smTur').innerHTML = html;
 }
-function addYangiRezinaTur(){
+async function addYangiRezinaTur(){
   const t = prompt("Yangi rezina turini kiriting (masalan: Traktor rezinasi):");
   if(t && t.trim()){
     if(!rezinaTurlari.includes(t.trim())){
       rezinaTurlari.push(t.trim());
-      localStorage.setItem('rezinaTurlari', JSON.stringify(rezinaTurlari));
+      await API.post('/kesh/rezinaTurlari', { data: rezinaTurlari });
       loadRezinaTurlariSelect();
       renderDashboard();
       renderHisobot();
@@ -351,19 +386,17 @@ function addYangiRezinaTur(){
     }
   }
 }
-loadRezinaTurlariSelect();
 
-let zavodTurlari=JSON.parse(localStorage.getItem('rezZavodTurlari')||'[]');
 function loadZavodlarSelect(){
   const html = zavodTurlari.map(z=>`<option value="${z}">${z}</option>`).join('');
   document.getElementById('kmZavod').innerHTML = html;
 }
-function addYangiZavod(){
+async function addYangiZavod(){
   const z = prompt("Yangi Zavod nomini kiriting (masalan: Angren Rezina):");
   if(z && z.trim()){
     if(!zavodTurlari.includes(z.trim())){
       zavodTurlari.push(z.trim());
-      localStorage.setItem('rezZavodTurlari', JSON.stringify(zavodTurlari));
+      await API.post('/kesh/rezZavodTurlari', { data: zavodTurlari });
       loadZavodlarSelect();
     } else {
       alert("Bu zavod allaqachon mavjud!");
@@ -383,9 +416,9 @@ function avgKirNarx(tur){const k=kirimlar.filter(x=>x.tur===tur);return k.length
 
 // DASHBOARD
 function renderDashboard(){
-  const oy=3;const sOy=sotuvlar.filter(s=>s.oy===oy);
-  const sotKg=sOy.reduce((s,x)=>s+x.kg,0);const daromad=sOy.reduce((s,x)=>s+x.jami,0);
-  const xarajat=sOy.reduce((s,x)=>s+x.kg*x.kirNarx,0);const foyda=daromad-xarajat;
+  const sYil = sotuvlar.filter(s=>s.sana && s.sana.startsWith(new Date().getFullYear().toString()));
+  const sotKg=sYil.reduce((s,x)=>s+x.kg,0);const daromad=sYil.reduce((s,x)=>s+x.jami,0);
+  const xarajat=sYil.reduce((s,x)=>s+x.kg*x.kirNarx,0);const foyda=daromad-xarajat;
   document.getElementById('dOmbor').textContent=omborJami().toLocaleString();
   document.getElementById('dSotildi').textContent=sotKg.toLocaleString();
   document.getElementById('dDaromad').textContent=daromad.toLocaleString();
@@ -394,14 +427,14 @@ function renderDashboard(){
   // Ombor panel
   const turlar=rezinaTurlari;
   const jami=omborJami()||1;
-  document.getElementById('rezOmborPanel').innerHTML=`<div style="text-align:center;margin-bottom:12px;"><div style="font-size:36px;font-weight:700;color:var(--primary);">${omborJami().toLocaleString()} kg</div><div style="font-size:13px;color:var(--text-muted);">Jami ombor</div></div>`;
-  document.getElementById('rezTurPanel').innerHTML=turlar.map(t=>{const q=omborBylTur(t);const pct=Math.round(q/jami*100)||0;return q?`<div class="prog-wrap"><div class="prog-label"><span>${t}</span><span style="font-weight:700;">${q.toLocaleString()} kg</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:var(--primary)"></div></div></div>`:''}).join('');
+  document.getElementById('rezOmborPanel').innerHTML=`<div style="text-align:center;margin-bottom:12px;"><div style="font-size:36px;font-weight:700;color:var(--primary);">${omborJami().toLocaleString()} dona</div><div style="font-size:13px;color:var(--text-muted);">Jami ombor</div></div>`;
+  document.getElementById('rezTurPanel').innerHTML=turlar.map(t=>{const q=omborBylTur(t);const pct=Math.round(q/jami*100)||0;return q?`<div class="prog-wrap"><div class="prog-label"><span>${t}</span><span style="font-weight:700;">${q.toLocaleString()} dona</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:var(--primary)"></div></div></div>`:''}).join('');
 
   // So'nggi ops
   const ops=[...kirimlar.map(k=>({...k,tip:'kirim'})),...sotuvlar.map(s=>({...s,tip:'sotuv'}))].sort((a,b)=>b.sana.localeCompare(a.sana)).slice(0,6);
   document.getElementById('lastOps').innerHTML=ops.map(o=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
     <div style="width:32px;height:32px;border-radius:50%;background:${o.tip==='kirim'?'var(--info-light)':'var(--success-light)'};display:flex;align-items:center;justify-content:center;font-size:14px;">${o.tip==='kirim'?'📥':'🛒'}</div>
-    <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${o.tip==='kirim'?o.zavod:o.mijoz}</div><div style="font-size:11px;color:var(--text-muted);">${o.sana} · ${o.tur} · ${o.kg} kg</div></div>
+    <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${o.tip==='kirim'?o.zavod:o.mijoz}</div><div style="font-size:11px;color:var(--text-muted);">${o.sana} · ${o.tur} · ${o.kg} dona</div></div>
     <div style="font-weight:700;color:${o.tip==='kirim'?'var(--danger)':'var(--primary)'};">${o.tip==='kirim'?'-':'+'}${o.jami.toLocaleString()}</div>
   </div>`).join('');
 }
@@ -410,41 +443,63 @@ function renderDashboard(){
 function renderKirim(){
   const jKg=kirimlar.reduce((s,k)=>s+k.kg,0);
   const jSum=kirimlar.reduce((s,k)=>s+k.jami,0);
-  const jQarz=kirimlar.filter(k=>k.tolov==='qarz').reduce((s,k)=>s+k.jami,0);
+  const jQarz=kirimlar.reduce((s,k)=>s+Math.max(0, k.jami-(parseFloat(k.tolangan)||0)),0);
   document.getElementById('kStKg').textContent=jKg.toLocaleString();
   document.getElementById('kStSum').textContent=jSum.toLocaleString();
   document.getElementById('kStQarz').textContent=jQarz.toLocaleString();
-  document.getElementById('kirimBody').innerHTML=[...kirimlar].reverse().map((k,i)=>`<tr>
-    <td>${i+1}</td><td>${k.sana}</td><td>${k.zavod}</td><td>${k.tur}</td>
-    <td><b>${k.kg.toLocaleString()} kg</b></td><td>${k.narx.toLocaleString()}</td>
-    <td><b>${k.jami.toLocaleString()}</b></td>
-    <td>${k.tolov==='tolangan'?'<span class="badge green">✅</span>':'<span class="badge red">📋 Qarz</span>'}</td>
-    <td><button class="btn btn-sm btn-danger" onclick="deleteKirim('${k.id}')">🗑</button></td>
-  </tr>`).join('');
+  document.getElementById('kirimBody').innerHTML=[...kirimlar].reverse().map((k,i)=>{
+    const qarz = Math.max(0, k.jami - (parseFloat(k.tolangan)||0));
+    const isPaid = (k.tolov==='tolangan' || qarz===0);
+    return `<tr>
+      <td>${i+1}</td><td>${k.sana}</td><td>${k.zavod}</td><td>${k.tur}</td>
+      <td><b>${k.kg.toLocaleString()} dona</b></td><td>${k.narx.toLocaleString()}</td>
+      <td><b>${k.jami.toLocaleString()}</b></td>
+      <td>${isPaid?'<span class="badge green">✅ To\'langan</span>':`<span class="badge red">📋 Qarz: ${qarz.toLocaleString()}</span>`}</td>
+      <td style="display:flex;gap:4px">
+        ${!isPaid?`<button class="btn btn-sm btn-primary" onclick="tolovKirim('${k.id}', ${qarz})">💳 To'lash</button>`:''}
+        <button class="btn btn-sm btn-danger" onclick="deleteKirim('${k.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-function calcKm(){const kg=parseFloat(document.getElementById('kmKg').value)||0;const narx=parseFloat(document.getElementById('kmNarx').value)||0;document.getElementById('kmJami').value=kg*narx?(kg*narx).toLocaleString()+' so\'m':'';}
+function calcKm(){const kg=parseFloat(document.getElementById('kmKg').value)||0;const narx=parseSum('kmNarx');document.getElementById('kmJami').value=kg*narx?(kg*narx).toLocaleString()+' so\'m':'';}
 
-function saveKirim(){
+async function saveKirim(){
   const zavod=document.getElementById('kmZavod').value;const tur=document.getElementById('kmTur').value;
-  const kg=parseFloat(document.getElementById('kmKg').value)||0;const narx=parseFloat(document.getElementById('kmNarx').value)||0;
+  const kg=parseFloat(document.getElementById('kmKg').value)||0;const narx=parseSum('kmNarx');
   if(!kg||!narx){alert('Miqdor va narxni kiriting!');return;}
-  const sana=document.getElementById('kmSana').value;const oy=parseInt(sana.split('-')[1])||3;
-  kirimlar.push({id:'rk'+Date.now(),sana,zavod,tur,kg,narx,jami:kg*narx,tolov:document.getElementById('kmTolov').value,izoh:document.getElementById('kmIzoh').value,oy});
-  localStorage.setItem('rezKirimlar',JSON.stringify(kirimlar));
-  closeModal('kirimModal');renderKirim();renderDashboard();
+  const sana=document.getElementById('kmSana').value;const oy=parseInt(sana.split('-')[1])||(new Date().getMonth()+1);
+  await API.post('/rezina/kirimlar', {
+    sana, oy, zavod, tur, kg, narx, jami: kg*narx, tolov: document.getElementById('kmTolov').value, izoh: document.getElementById('kmIzoh').value
+  });
+  closeModal('kirimModal'); initRezina();
 }
-function deleteKirim(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;kirimlar=kirimlar.filter(k=>k.id!==id);localStorage.setItem('rezKirimlar',JSON.stringify(kirimlar));renderKirim();}
+
+async function tolovKirim(id, qarzSumma) {
+  const sum = prompt(`Zavodga to'lanayotgan summani kiriting (Qolgan qarz: ${qarzSumma.toLocaleString()} so'm):`, qarzSumma);
+  if(!sum) return;
+  const miqdor = parseFloat(sum.replace(/,/g, ''));
+  if(isNaN(miqdor) || miqdor <= 0) return alert('Noto\'g\'ri summa kiritildi!');
+  
+  if(!confirm(`Zavodga qarz uchun ${miqdor.toLocaleString()} so'm to'langanini tasdiqlaysizmi?`)) return;
+  try {
+    await API.put('/rezina/kirimlar/' + id, { tolov_summa: miqdor });
+    initRezina();
+  } catch(e) { alert(e.message); }
+}
+
+async function deleteKirim(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return; await API.del('/rezina/kirimlar/'+id); initRezina();}
 
 // SOTUV
 function renderSotuv(){
-  const sOy=sotuvlar.filter(s=>s.oy===3);
-  document.getElementById('sStKg').textContent=sOy.reduce((s,x)=>s+x.kg,0).toLocaleString();
-  document.getElementById('sStSum').textContent=sOy.reduce((s,x)=>s+x.jami,0).toLocaleString();
+  const sYil = sotuvlar.filter(s=>s.sana && s.sana.startsWith(new Date().getFullYear().toString()));
+  document.getElementById('sStKg').textContent=sYil.reduce((s,x)=>s+x.kg,0).toLocaleString();
+  document.getElementById('sStSum').textContent=sYil.reduce((s,x)=>s+x.jami,0).toLocaleString();
   document.getElementById('sStQarz').textContent=sotuvlar.filter(s=>s.holat==='qarz').reduce((s,x)=>s+x.jami,0).toLocaleString();
   document.getElementById('sotuvBody').innerHTML=[...sotuvlar].reverse().map((s,i)=>`<tr>
     <td>${i+1}</td><td>${s.sana}</td><td><b>${s.mijoz}</b></td><td>${s.tur}</td>
-    <td>${s.kg.toLocaleString()} kg</td><td>${s.narx.toLocaleString()}</td>
+    <td>${s.kg.toLocaleString()} dona</td><td>${s.narx.toLocaleString()}</td>
     <td><b>${s.jami.toLocaleString()}</b></td>
     <td>${{naqd:'Naqd',bank:'Bank',qarz:'Qarz'}[s.tolov]}</td>
     <td>${s.holat==='tolandi'?'<span class="badge green">✅ To\'landi</span>':'<span class="badge red">💳 Qarz</span>'}</td>
@@ -453,43 +508,45 @@ function renderSotuv(){
   </tr>`).join('');
 }
 
-function smTurTanlash(){const tur=document.getElementById('smTur').value;const q=omborBylTur(tur);document.getElementById('smOmbor').value=q.toLocaleString()+' kg';calcSm();}
+function smTurTanlash(){const tur=document.getElementById('smTur').value;const q=omborBylTur(tur);document.getElementById('smOmbor').value=q.toLocaleString()+' dona';calcSm();}
 function calcSm(){
-  const kg=parseFloat(document.getElementById('smKg').value)||0;const narx=parseFloat(document.getElementById('smNarx').value)||0;
+  const kg=parseFloat(document.getElementById('smKg').value)||0;const narx=parseSum('smNarx');
   const tur=document.getElementById('smTur').value;const kirNarx=avgKirNarx(tur);
   document.getElementById('smJami').value=kg*narx?(kg*narx).toLocaleString()+' so\'m':'';
   const foyda=(narx-kirNarx)*kg;
   document.getElementById('smFoyda').value=foyda?(foyda>0?'+':'')+foyda.toLocaleString()+' so\'m':'';
 }
 
-function saveSotuv(){
+async function saveSotuv(){
   const mijoz=document.getElementById('smMijoz').value.trim();const tur=document.getElementById('smTur').value;
-  const kg=parseFloat(document.getElementById('smKg').value)||0;const narx=parseFloat(document.getElementById('smNarx').value)||0;
+  const kg=parseFloat(document.getElementById('smKg').value)||0;const narx=parseSum('smNarx');
   if(!mijoz){alert('Mijoz nomini kiriting!');return;}
   if(!kg||!narx){alert('Miqdor va narxni kiriting!');return;}
   if(kg>omborBylTur(tur)){alert('Omborda yetarli rezina yo\'q!');return;}
-  const sana=document.getElementById('smSana').value;const oy=parseInt(sana.split('-')[1])||3;
+  const sana=document.getElementById('smSana').value;const oy=parseInt(sana.split('-')[1])||(new Date().getMonth()+1);
   const tolov=document.getElementById('smTolov').value;
-  sotuvlar.push({id:'rs'+Date.now(),sana,mijoz,tur,kg,narx,jami:kg*narx,tolov,holat:tolov==='qarz'?'qarz':'tolandi',kirNarx:avgKirNarx(tur),oy});
-  localStorage.setItem('rezSotuvlar',JSON.stringify(sotuvlar));
-  closeModal('sotuvModal');renderSotuv();renderDashboard();
+  
+  await API.post('/rezina/sotuvlar', {
+    sana, oy, mijoz, tur, kg, narx, jami: kg*narx, tolov, holat: tolov==='qarz'?'qarz':'tolandi', kir_narx: avgKirNarx(tur)
+  });
+  closeModal('sotuvModal'); initRezina();
 }
-function sotuvTola(id){const s=sotuvlar.find(x=>x.id===id);if(s){s.holat='tolandi';localStorage.setItem('rezSotuvlar',JSON.stringify(sotuvlar));renderSotuv();}}
-function deleteSotuv(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;sotuvlar=sotuvlar.filter(s=>s.id!==id);localStorage.setItem('rezSotuvlar',JSON.stringify(sotuvlar));renderSotuv();}
+async function sotuvTola(id){ await API.put('/rezina/sotuvlar/'+id, { tolov: 'tolandi' }); initRezina();}
+async function deleteSotuv(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return; await API.del('/rezina/sotuvlar/'+id); initRezina();}
 
 // HISOBOT
 function renderHisobot(){
-  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
-  const oyNom={1:'Yanvar',2:'Fevral',3:'Mart'};
-  document.getElementById('hisobotTitle').textContent=`${oyNom[oy]} 2026 — Foyda hisobi`;
+  const oy=parseInt(document.getElementById('hisobotOy').value)||(new Date().getMonth()+1);
+  const oyNom={1:'Yanvar',2:'Fevral',3:'Mart',4:'Aprel',5:'May',6:'Iyun',7:'Iyul',8:'Avgust',9:'Sentabr',10:'Oktabr',11:'Noyabr',12:'Dekabr'};
+  document.getElementById('hisobotTitle').textContent=`${oyNom[oy]} ${new Date().getFullYear()} — Foyda hisobi`;
   const kOy=kirimlar.filter(k=>k.oy===oy);const sOy=sotuvlar.filter(s=>s.oy===oy);
   const xarajat=kOy.reduce((s,k)=>s+k.jami,0);const daromad=sOy.reduce((s,x)=>s+x.jami,0);
   const foyda=sOy.reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0);
   document.getElementById('foydaBox').innerHTML=`
     <div class="foyda-row"><span style="color:var(--text-muted)">Kirim xarajati:</span><span style="color:var(--danger);font-weight:600;">${xarajat.toLocaleString()} so'm</span></div>
     <div class="foyda-row"><span style="color:var(--text-muted)">Sotuv daromadi:</span><span style="color:var(--primary);font-weight:600;">${daromad.toLocaleString()} so'm</span></div>
-    <div class="foyda-row"><span style="color:var(--text-muted)">Kirim kg:</span><span style="font-weight:600;">${kOy.reduce((s,k)=>s+k.kg,0).toLocaleString()} kg</span></div>
-    <div class="foyda-row"><span style="color:var(--text-muted)">Sotuv kg:</span><span style="font-weight:600;">${sOy.reduce((s,x)=>s+x.kg,0).toLocaleString()} kg</span></div>
+    <div class="foyda-row"><span style="color:var(--text-muted)">Kirim dona:</span><span style="font-weight:600;">${kOy.reduce((s,k)=>s+k.kg,0).toLocaleString()} dona</span></div>
+    <div class="foyda-row"><span style="color:var(--text-muted)">Sotuv dona:</span><span style="font-weight:600;">${sOy.reduce((s,x)=>s+x.kg,0).toLocaleString()} dona</span></div>
     <div class="foyda-row total"><span>SOF FOYDA:</span><span style="color:${foyda>=0?'var(--primary)':'var(--danger)'};">${foyda.toLocaleString()} so'm</span></div>
     <div class="foyda-row" style="border:none;padding-top:2px;"><span style="color:var(--text-muted);font-size:12px;">Rentabellik:</span><span style="font-weight:700;color:var(--primary);">${daromad?Math.round(foyda/daromad*100):0}%</span></div>`;
 
@@ -502,8 +559,8 @@ function renderHisobot(){
   }).join('');
 
   const rows=[
-    {nomi:'Kirim (kg)',[1]:kirimlar.filter(k=>k.oy===1).reduce((s,k)=>s+k.kg,0),[2]:kirimlar.filter(k=>k.oy===2).reduce((s,k)=>s+k.kg,0),[3]:kirimlar.filter(k=>k.oy===3).reduce((s,k)=>s+k.kg,0)},
-    {nomi:'Sotuv (kg)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+x.kg,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+x.kg,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+x.kg,0)},
+    {nomi:'Kirim (dona)',[1]:kirimlar.filter(k=>k.oy===1).reduce((s,k)=>s+k.kg,0),[2]:kirimlar.filter(k=>k.oy===2).reduce((s,k)=>s+k.kg,0),[3]:kirimlar.filter(k=>k.oy===3).reduce((s,k)=>s+k.kg,0)},
+    {nomi:'Sotuv (dona)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+x.kg,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+x.kg,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+x.kg,0)},
     {nomi:'Daromad (so\'m)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+x.jami,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+x.jami,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+x.jami,0)},
     {nomi:'Sof foyda (so\'m)',[1]:sotuvlar.filter(s=>s.oy===1).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0),[2]:sotuvlar.filter(s=>s.oy===2).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0),[3]:sotuvlar.filter(s=>s.oy===3).reduce((s,x)=>s+(x.narx-x.kirNarx)*x.kg,0)},
   ];
@@ -511,9 +568,9 @@ function renderHisobot(){
 }
 
 function exportHisobot(){
-  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
+  const oy=parseInt(document.getElementById('hisobotOy').value)||(new Date().getMonth()+1);
   const sOy=sotuvlar.filter(s=>s.oy===oy);
-  let csv='Sana,Mijoz,Tur,Kg,Narx,Jami,Foyda\n';
+  let csv='Sana,Mijoz,Tur,Dona,Narx,Jami,Foyda\n';
   sOy.forEach(s=>{csv+=`${s.sana},"${s.mijoz}",${s.tur},${s.kg},${s.narx},${s.jami},${(s.narx-s.kirNarx)*s.kg}\n`;});
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='RezinaDilerlik.csv';a.click();
 }
@@ -522,12 +579,15 @@ function switchTab(id,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active');
-  if(id==='dashboard')renderDashboard();if(id==='kirim')renderKirim();if(id==='sotuv')renderSotuv();if(id==='hisobot')renderHisobot();
+  if(id==='kirim')renderKirim();if(id==='sotuv')renderSotuv();if(id==='hisobot')renderHisobot();
 }
-function openModal(id){document.getElementById(id).classList.add('open');}
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='sotuvModal') smTurTanlash();
+}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
-renderDashboard();
+initRezina();
 </script>
 
 </body>

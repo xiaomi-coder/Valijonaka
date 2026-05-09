@@ -46,7 +46,7 @@
   .card-title{font-size:14px;font-weight:700;}
   .card-body{padding:18px;}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
   .stat-card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:16px;position:relative;transition:transform .18s;}
   .stat-card:hover{transform:translateY(-2px);}
   .stat-card .lbl{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
@@ -140,7 +140,8 @@
         <div class="stat-card b"><div class="lbl">Jami mijozlar</div><div class="val" id="stJami">0</div><div class="ico">👥</div></div>
         <div class="stat-card g"><div class="lbl">Zavod mijozlar</div><div class="val" id="stZavod">0</div><div class="ico">🏭</div></div>
         <div class="stat-card a"><div class="lbl">Korxona mijozlar</div><div class="val" id="stKorxona">0</div><div class="ico">🏢</div></div>
-        <div class="stat-card r"><div class="lbl">Jami qarz</div><div class="val" id="stQarz">0</div><div class="ico">💳</div><div class="sub">so'm</div></div>
+        <div class="stat-card r"><div class="lbl">Umumiy haqqimiz</div><div class="val" id="stQarz">0</div><div class="ico">💳</div><div class="sub">so'm (Mijoz qarzi)</div></div>
+        <div class="stat-card" style="background:#fee2e2;border:1px solid #ef4444;"><div class="lbl" style="color:#b91c1c;">Umumiy qarzimiz</div><div class="val" id="stQarzimiz" style="color:#991b1b;">0</div><div class="ico">📉</div><div class="sub" style="color:#b91c1c;">so'm (Avans/Haqdorlik)</div></div>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div style="display:flex;gap:8px;">
@@ -149,7 +150,7 @@
         </div>
         <div style="display:flex;gap:12px;">
           <button class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;border:1px solid var(--border);" onclick="openSozrovModal()">💸 To'lov so'rovlari <span class="badge red" id="sBadge" style="display:none;">0</span></button>
-          <button class="btn btn-primary" onclick="openModal('mijozModal')">+ Yangi mijoz</button>
+          <button class="btn btn-primary" onclick="addMijoz()">+ Yangi mijoz</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" id="mijozGrid"></div>
@@ -217,7 +218,7 @@
       <input type="hidden" id="mijozEditId">
       <div class="form-row"><div class="form-group"><label>Korxona nomi</label><input id="mNomi" placeholder="To'liq nomi"></div><div class="form-group"><label>Turi</label><select id="mTuri"><option value="zavod">🏭 Zavod</option><option value="korxona">🏢 Korxona</option><option value="oddiy">👤 Oddiy</option></select></div></div>
       <div class="form-row"><div class="form-group"><label>Telefon</label><input id="mTel" placeholder="+998..."></div><div class="form-group"><label>Mas'ul shaxs</label><input id="mMasul" placeholder="Ism Familiya"></div></div>
-      <div class="form-row"><div class="form-group"><label>Shahar / Viloyat</label><input id="mManzil" placeholder="Toshkent"></div><div class="form-group"><label>Narx turi (default)</label><select id="mNarxTur"><option value="baza">Baza narx</option><option value="standart">Standart</option><option value="vip">VIP (zavod)</option><option value="maxsus">Maxsus (alohida)</option></select></div></div>
+      <div class="form-group"><label>Shahar / Viloyat</label><input id="mManzil" placeholder="Toshkent"><input type="hidden" id="mNarxTur" value="baza"></div>
       <div class="form-row"><div class="form-group"><label>Tizim uchun Login</label><input id="mLogin" autocomplete="off" placeholder="Login"></div><div class="form-group"><label>Tizim uchun Parol</label><input type="text" id="mParol" autocomplete="off" placeholder="Parol"></div></div>
       <div class="form-group"><label>Izoh</label><textarea id="mIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
     </div>
@@ -256,25 +257,28 @@ const user=JSON.parse(localStorage.getItem('erp_user')||'{"name":"admin","role":
 
 document.getElementById('todayDate').textContent=new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
 
-const MAHSULOTLAR=[
-  {id:'qp',nomi:'Qora plastik granula',narxlar:{baza:40000,standart:42000,vip:38000}},
-  {id:'rp',nomi:'Rangli plastik granula',narxlar:{baza:45000,standart:47000,vip:43000}},
-  {id:'rez',nomi:'Rezina granula',narxlar:{baza:55000,standart:58000,vip:52000}},
-  {id:'pot',nomi:'Poterya qoldig\'i',narxlar:{baza:400,standart:420,vip:380}},
-];
+let MAHSULOTLAR = [];
 const RANG=['#1a6b3c','#2471a3','#8e44ad','#e67e22','#c0392b','#16a085'];
 const TUR_BADGE={zavod:'<span class="badge blue">🏭 Zavod</span>',korxona:'<span class="badge green">🏢 Korxona</span>',oddiy:'<span class="badge gray">👤 Oddiy</span>'};
 const NARX_NOM={baza:'Baza',standart:'Standart',vip:'VIP',maxsus:'Maxsus'};
 
-let mijozlar=JSON.parse(localStorage.getItem('mijozlar')||'[]');
+let mijozlar=[];
+async function initMijozlar() {
+  try {
+    mijozlar = await API.get('/mijozlar');
+    const [mRes, sRes] = await Promise.all([
+      API.get('/mahsulotlar'), API.get('/sotuvlar')
+    ]);
+    MAHSULOTLAR = mRes.map(m => ({ id: m.id, nomi: m.nomi, narx: parseFloat(m.narx)||0 }));
+    XARIDLAR = sRes;
+    renderMijozlar();
+    renderNarxMijozList();
+    setupTarixSelect();
+    updateSozrovBadge();
+  } catch(e) { console.error('Mijozlarni yuklashda xatolik:', e); }
+}
 
-const XARIDLAR=[
-  {id:'x1',mijozId:'m1',sana:'2026-03-28',mahsulot:'Qora plastik granula',kg:480,narx:38000,summa:18240000,tolov:'Naqd',oy:3},
-  {id:'x2',mijozId:'m2',sana:'2026-03-27',mahsulot:'Rangli plastik granula',kg:200,narx:47000,summa:9400000,tolov:'Qarz',oy:3},
-  {id:'x3',mijozId:'m3',sana:'2026-03-26',mahsulot:'Rezina granula',kg:150,narx:58000,summa:8700000,tolov:'Bank',oy:3},
-  {id:'x4',mijozId:'m4',sana:'2026-03-25',mahsulot:'Qora plastik granula',kg:320,narx:38000,summa:12160000,tolov:'Qarz',oy:3},
-  {id:'x5',mijozId:'m1',sana:'2026-02-20',mahsulot:'Rangli plastik granula',kg:300,narx:43000,summa:12900000,tolov:'Naqd',oy:2},
-];
+let XARIDLAR=[];
 
 let selectedNarxMijoz=null;
 
@@ -286,7 +290,8 @@ function renderMijozlar(){
   document.getElementById('stJami').textContent=mijozlar.length;
   document.getElementById('stZavod').textContent=mijozlar.filter(m=>m.turi==='zavod').length;
   document.getElementById('stKorxona').textContent=mijozlar.filter(m=>m.turi==='korxona').length;
-  document.getElementById('stQarz').textContent=mijozlar.reduce((s,m)=>s+m.qarz,0).toLocaleString();
+  document.getElementById('stQarz').textContent=mijozlar.reduce((s,m)=>s+(m.qarz > 0 ? parseFloat(m.qarz) : 0),0).toLocaleString();
+  document.getElementById('stQarzimiz').textContent=mijozlar.reduce((s,m)=>s+(m.qarz < 0 ? Math.abs(parseFloat(m.qarz)) : 0),0).toLocaleString();
   if(!fil.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);">Topilmadi</div>';return;}
   grid.innerHTML=fil.map((m,i)=>{
     return `<div class="mijoz-card" onclick="showDetail('${m.id}')">
@@ -307,41 +312,77 @@ function renderMijozlar(){
   }).join('');
 }
 
-function showDetail(id){
+async function showDetail(id){
   const m=mijozlar.find(x=>x.id===id);if(!m)return;
-  const xar=XARIDLAR.filter(x=>x.mijozId===id);
+  const barchaSot=await API.get('/sotuvlar')||[];
+  const mijozSot = barchaSot.filter(s => s.mijoz_id === id);
+  
+  const barchaTol = await API.get('/kesh/tolovSozrovlari') || [];
+  const mijozTol = barchaTol.filter(t => t.mijozId === id && t.holat === 'tasdiqlandi');
+
+  let historyList = [];
+  mijozSot.forEach(s => {
+      historyList.push({ ...s, _tip: 'xarid', _sanaX: new Date(s.sana || s.createdAt || s.created_at || 0) });
+  });
+  mijozTol.forEach(t => {
+      historyList.push({ ...t, _tip: 'tolov', _sanaX: new Date(t.sana || 0) });
+  });
+  historyList.sort((a,b) => b._sanaX - a._sanaX);
+
   document.getElementById('detailTitle').textContent=m.nomi;
   document.getElementById('detailBody').innerHTML=`
     <div class="grid-2" style="margin-bottom:16px;">
       <div><div class="form-group"><label>Turi</label><div>${TUR_BADGE[m.turi]}</div></div><div class="form-group"><label>Telefon</label><div style="font-weight:600;">${m.tel}</div></div><div class="form-group"><label>Mas'ul shaxs</label><div>${m.masul}</div></div><div class="form-group"><label>Manzil</label><div>${m.manzil}</div></div></div>
-      <div><div class="form-group"><label>Narx turi</label><div><span class="badge amber">${NARX_NOM[m.narxTur]}</span></div></div><div class="form-group"><label>Jami xarid</label><div style="font-size:18px;font-weight:700;color:var(--primary);">${m.jami.toLocaleString()} so'm</div></div><div class="form-group"><label>Qarz</label><div style="font-size:16px;font-weight:700;color:${m.qarz?'var(--danger)':'var(--success)'};">${m.qarz?m.qarz.toLocaleString()+' so\'m':'✅ Qarz yo\'q'}</div></div></div>
+      <div><div class="form-group"><label>Narx turi</label><div><span class="badge amber">${NARX_NOM[m.narxTur]}</span></div></div><div class="form-group"><label>Jami xarid</label><div style="font-size:18px;font-weight:700;color:var(--primary);">${(m.jami||0).toLocaleString()} so'm</div></div><div class="form-group"><label>Qarz</label><div style="font-size:16px;font-weight:700;color:${(m.qarz||0)?'var(--danger)':'var(--success)'};">${(m.qarz||0)?m.qarz.toLocaleString()+' so\'m':'✅ Qarz yo\'q'}</div></div></div>
     </div>
-    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Xaridlar tarixi (${xar.length} ta)</div>
-    <table><thead><tr><th>Sana</th><th>Mahsulot</th><th>Kg</th><th>Narx</th><th>Summa</th><th>To'lov</th></tr></thead>
-    <tbody>${xar.map(x=>`<tr><td>${x.sana}</td><td>${x.mahsulot}</td><td>${x.kg}</td><td>${x.narx.toLocaleString()}</td><td><b>${x.summa.toLocaleString()}</b></td><td>${x.tolov}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:12px;">Xarid yo\'q</td></tr>'}</tbody></table>`;
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Hisob-kitob tarixi (${historyList.length} ta operatsiya)</div>
+    <table><thead><tr><th>Sana</th><th>Amal (Mahsulot/To'lov)</th><th>Holat</th><th>Summa (Yechilgan)</th><th>To'lov (Qo'shilgan)</th></tr></thead>
+    <tbody>${historyList.map(x=> {
+      if (x._tip === 'xarid') {
+          return `<tr><td>${x._sanaX.toISOString().substring(0,10)}</td>
+          <td style="font-size:11px;">${(x.cart||[]).map(c=>`${c.nomi} (${c.kg}kg)`).join('<br>')}</td>
+          <td>${x.holat}</td><td style="color:var(--danger)"><b>${parseFloat(x.summa||0).toLocaleString()}</b></td><td style="color:var(--success)">${parseFloat(x.tolangan||0).toLocaleString()}</td></tr>`;
+      } else {
+          return `<tr style="background:var(--success-light)"><td style="color:var(--primary);font-weight:600">${x._sanaX.toISOString().substring(0,10)}</td>
+          <td>💳 To'lov: <i>${x.izoh || 'Tasdiqlandi'}</i></td>
+          <td><span class="badge green">To'lov</span></td><td>0</td><td style="color:var(--primary);font-weight:700">${parseFloat(x.summa||0).toLocaleString()}</td></tr>`;
+      }
+    }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:12px;">Tarix yo\'q</td></tr>'}</tbody></table>`;
   openModal('detailModal');
 }
 
-function saveMijoz(){
+async function saveMijoz(){
   const id=document.getElementById('mijozEditId').value;
-  const obj={nomi:document.getElementById('mNomi').value.trim(),turi:document.getElementById('mTuri').value,tel:document.getElementById('mTel').value,masul:document.getElementById('mMasul').value,manzil:document.getElementById('mManzil').value,narxTur:document.getElementById('mNarxTur').value,izoh:document.getElementById('mIzoh').value,login:document.getElementById('mLogin').value.trim(),parol:document.getElementById('mParol').value.trim()};
+  const obj={nomi:document.getElementById('mNomi').value.trim(),turi:document.getElementById('mTuri').value,tel:document.getElementById('mTel').value,masul:document.getElementById('mMasul').value,manzil:document.getElementById('mManzil').value,narx_tur:document.getElementById('mNarxTur').value,izoh:document.getElementById('mIzoh').value,login:document.getElementById('mLogin').value.trim()||null,parol:document.getElementById('mParol').value.trim()||null};
   if(!obj.nomi){alert('Korxona nomini kiriting!');return;}
-  if(id){const m=mijozlar.find(x=>x.id===id);if(m)Object.assign(m,obj);}
-  else{obj.id='m'+Date.now();obj.maxsusNarxlar={};obj.jami=0;obj.tolangan=0;obj.qarz=0;obj.oxirgi='—';mijozlar.push(obj);}
-  localStorage.setItem('mijozlar',JSON.stringify(mijozlar));
-  closeModal('mijozModal');renderMijozlar();renderNarxMijozList();setupTarixSelect();
+  try {
+    if(id){ await API.put('/mijozlar/'+id, obj); }
+    else { await API.post('/mijozlar', obj); }
+    closeModal('mijozModal');
+    initMijozlar();
+  } catch(e) { alert(e.message); }
+}
+function addMijoz(){
+  document.getElementById('mijozEditId').value='';
+  document.getElementById('mijozModalT').textContent='👥 Yangi mijoz';
+  document.getElementById('mNomi').value='';document.getElementById('mTuri').value='zavod';document.getElementById('mTel').value='';document.getElementById('mMasul').value='';document.getElementById('mManzil').value='';document.getElementById('mNarxTur').value='baza';document.getElementById('mIzoh').value='';document.getElementById('mLogin').value='';document.getElementById('mParol').value='';
+  openModal('mijozModal');
 }
 function editMijoz(id){
   const m=mijozlar.find(x=>x.id===id);if(!m)return;
   document.getElementById('mijozEditId').value=m.id;
   document.getElementById('mijozModalT').textContent='✏️ Mijozni tahrirlash';
-  document.getElementById('mNomi').value=m.nomi;document.getElementById('mTuri').value=m.turi;document.getElementById('mTel').value=m.tel;document.getElementById('mMasul').value=m.masul;document.getElementById('mManzil').value=m.manzil;document.getElementById('mNarxTur').value=m.narxTur;document.getElementById('mIzoh').value=m.izoh||'';document.getElementById('mLogin').value=m.login||'';document.getElementById('mParol').value=m.parol||'';
+  document.getElementById('mNomi').value=m.nomi||'';document.getElementById('mTuri').value=m.turi||'';document.getElementById('mTel').value=m.tel||'';document.getElementById('mMasul').value=m.masul||'';document.getElementById('mManzil').value=m.manzil||'';document.getElementById('mNarxTur').value=m.narx_tur||'baza';document.getElementById('mIzoh').value=m.izoh||'';document.getElementById('mLogin').value=m.login||'';document.getElementById('mParol').value=m.parol||'';
   openModal('mijozModal');
 }
-function deleteMijoz(id){if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;mijozlar=mijozlar.filter(m=>m.id!==id);localStorage.setItem('mijozlar',JSON.stringify(mijozlar));renderMijozlar();}
+async function deleteMijoz(id){
+  if(!confirm('O\'chirishni tasdiqlaysizmi?'))return;
+  await API.del('/mijozlar/'+id);
+  initMijozlar();
+}
 
 // NARX
-function renderNarxMijozList(src=''){
+async function renderNarxMijozList(src=''){
   const list=document.getElementById('narxMijozList');
   const fil=mijozlar.filter(m=>m.nomi.toLowerCase().includes(src.toLowerCase()));
   list.innerHTML=fil.map(m=>`<div onclick="selectNarxMijoz('${m.id}')" style="padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;background:${selectedNarxMijoz===m.id?'var(--primary-light)':'transparent'};border-left:${selectedNarxMijoz===m.id?'3px solid var(--primary)':'3px solid transparent'};" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background='${selectedNarxMijoz===m.id?'var(--primary-light)':'transparent'}'">
@@ -351,36 +392,36 @@ function renderNarxMijozList(src=''){
 }
 function filterNarxMijoz(v){renderNarxMijozList(v);}
 function openNarxFor(id){switchTab('narxlar',document.querySelector('.tab:nth-child(2)'));selectNarxMijoz(id);}
-function selectNarxMijoz(id){
+async function selectNarxMijoz(id){
   selectedNarxMijoz=id;
   const m=mijozlar.find(x=>x.id===id);if(!m)return;
+  const mahsulotlar = await API.get('/mahsulotlar');
   renderNarxMijozList();
   document.getElementById('narxCardTitle').textContent=`💰 ${m.nomi} — Narxlar`;
   document.getElementById('saveNarxBtn').style.display='';
-  const rows=MAHSULOTLAR.map(p=>{
-    const defNarx=p.narxlar[m.narxTur]||p.narxlar.baza;
-    const maxsus=m.maxsusNarxlar?.[p.id]||'';
-    return `<tr>
-      <td>${p.nomi}</td>
-      <td>${p.narxlar.baza.toLocaleString()}</td>
-      <td>${p.narxlar.standart.toLocaleString()}</td>
-      <td>${p.narxlar.vip.toLocaleString()}</td>
-      <td><b style="color:var(--primary)">${defNarx.toLocaleString()}</b></td>
-      <td><input class="narx-input" type="number" id="narx_${p.id}" value="${maxsus}" placeholder="${defNarx}"></td>
-    </tr>`;
-  }).join('');
   document.getElementById('narxCardBody').innerHTML=`
     <div style="margin-bottom:12px;font-size:13px;color:var(--text-muted);">Joriy narx turi: <b style="color:var(--text);">${NARX_NOM[m.narxTur]}</b>. Maxsus narx kiritilsa u qo'llaniladi.</div>
     <table class="narx-table">
-      <thead><tr><th>Mahsulot</th><th>Baza</th><th>Standart</th><th>VIP</th><th>Joriy (avtomatik)</th><th>Maxsus narx</th></tr></thead>
-      <tbody>${rows}</tbody>
+      <thead><tr><th style="text-align:left;">MAHSULOT</th><th style="padding:10px 14px; text-align:right;">BAZA NARX</th><th style="padding:10px 14px; text-align:right;">MAXSUS NARX</th></tr></thead>
+      <tbody>${mahsulotlar.map(p=>{
+        const b = p.narx || 0;
+        const maxsus = (m.maxsus_narxlar||{})[p.id] || '';
+        return `<tr>
+          <td><b>${p.nomi}</b></td>
+          <td style="text-align:right;">${b.toLocaleString()}</td>
+          <td style="text-align:right;"><input class="narx-input" data-pid="${p.id}" value="${maxsus}" placeholder="${b}" type="number"></td>
+        </tr>`;
+      }).join('')}</tbody>
     </table>`;
 }
-function saveNarxlar(){
+async function saveNarxlar(){
   const m=mijozlar.find(x=>x.id===selectedNarxMijoz);if(!m)return;
-  if(!m.maxsusNarxlar)m.maxsusNarxlar={};
-  MAHSULOTLAR.forEach(p=>{const v=parseFloat(document.getElementById('narx_'+p.id)?.value)||0;if(v>0)m.maxsusNarxlar[p.id]=v;else delete m.maxsusNarxlar[p.id];});
-  localStorage.setItem('mijozlar',JSON.stringify(mijozlar));
+  const inputs = document.querySelectorAll('.narx-input');
+  const maxsus_narxlar = {};
+  inputs.forEach(i => { const v = parseFloat(i.value); if(v>0) maxsus_narxlar[i.dataset.pid] = v; });
+  m.maxsus_narxlar = maxsus_narxlar;
+  await API.put('/mijozlar/'+m.id, m);
+  initMijozlar();
   alert('✅ Narxlar saqlandi!');
 }
 
@@ -397,25 +438,57 @@ function renderBalans(){
     <td><button class="btn btn-sm btn-primary" onclick="tolovQabul('${m.id}')">💳 To'lov</button></td>
   </tr>`).join('');
 }
-function tolovQabul(id){
+async function tolovQabul(id){
   const m=mijozlar.find(x=>x.id===id);if(!m||!m.qarz)return;
   const s=prompt(`${m.nomi}\nQarz: ${m.qarz.toLocaleString()} so'm\nQabul qilingan summa:`);
   if(!s)return;
-  const v=parseFloat(s)||0;m.tolangan+=v;m.qarz=Math.max(0,m.qarz-v);
-  localStorage.setItem('mijozlar',JSON.stringify(mijozlar));renderBalans();renderMijozlar();
+  const v=parseFloat(s)||0;
+  if(!v || v<=0) return;
+  m.tolangan = (m.tolangan || 0) + v;
+  m.qarz = Math.max(0, (m.qarz || 0) - v);
+  await API.put('/mijozlar/'+m.id, m);
+
+  // Saqlash tarixga:
+  const arr = await API.get('/kesh/tolovSozrovlari') || [];
+  arr.push({
+      id: 'T-' + Date.now(),
+      mijozId: m.id,
+      mijozNomi: m.nomi,
+      summa: v,
+      izoh: 'Admin qo\'lda kiritdi',
+      sana: new Date().toISOString(),
+      holat: 'tasdiqlandi'
+  });
+  await API.post('/kesh/tolovSozrovlari', { data: arr });
+
+  initMijozlar();
 }
 
 // TARIX
 function setupTarixSelect(){
-  const sel=document.getElementById('tarixMijoz');
-  sel.innerHTML='<option value="">Barcha mijozlar</option>'+mijozlar.map(m=>`<option value="${m.id}">${m.nomi}</option>`).join('');
+  const s=document.getElementById('tarixMijoz');
+  s.innerHTML='<option value="">Barcha mijozlar</option>'+mijozlar.map(m=>`<option value="${m.id}">${m.nomi}</option>`).join('');
 }
-function renderTarix(){
-  const mId=document.getElementById('tarixMijoz').value;
+async function renderTarix(){
+  const mid=document.getElementById('tarixMijoz').value;
   const oy=document.getElementById('tarixOy').value;
-  const list=XARIDLAR.filter(x=>(!mId||x.mijozId===mId)&&(!oy||x.oy===parseInt(oy)));
-  const body=document.getElementById('tarixBody');
-  body.innerHTML=list.length?list.map((x,i)=>{const m=mijozlar.find(mm=>mm.id===x.mijozId);return `<tr><td>${i+1}</td><td>${x.sana}</td><td>${m?m.nomi:'—'}</td><td>${x.mahsulot}</td><td>${x.kg} kg</td><td>${x.narx.toLocaleString()}</td><td><b>${x.summa.toLocaleString()}</b></td><td>${x.tolov}</td></tr>`}).join(''):'<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text-muted);">Xarid yo\'q</td></tr>';
+  const xaridlar = await API.get('/sotuvlar');
+  let fil=xaridlar;
+  if(mid) fil=fil.filter(x=>x.mijoz_id===mid);
+  if(oy) fil=fil.filter(x=>{
+    const sanaOy = parseInt(x.sana.split('-')[1]);
+    return sanaOy === parseInt(oy);
+  });
+  const tbody=document.getElementById('tarixBody');
+  if(!fil.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">Ushbu davrda xaridlar topilmadi</td></tr>';return;}
+  tbody.innerHTML=fil.map((x,i)=>`<tr>
+    <td>${i+1}</td>
+    <td>${x.sana.substring(0,10)}</td>
+    <td><b>${x.mijoz_nomi||'Mijoz'}</b></td>
+    <td style="font-size:11px;">${(x.cart||[]).map(c=>`${c.nomi} (${c.kg}kg)`).join('<br>')}</td>
+    <td><b>${parseFloat(x.summa).toLocaleString()}</b></td>
+    <td>${x.holat}</td>
+  </tr>`).join('');
 }
 
 function switchTab(id,btn){
@@ -428,9 +501,9 @@ function switchTab(id,btn){
   if(id==='balans')renderBalans();
   if(id==='tarix'){setupTarixSelect();renderTarix();}
 }
-function tasdiqlashSozrov(id) {
+async function tasdiqlashSozrov(id) {
   if(!confirm('Mijoz kiritgan ushbu to\'lovni qabul qilib, uning qarzidan shu summani ayirib tashlaysizmi?')) return;
-  const arr = JSON.parse(localStorage.getItem('tolovSozrovlari')||'[]');
+  const arr = await API.get('/kesh/tolovSozrovlari') || [];
   const req = arr.find(x => x.id === id);
   if(!req) return;
 
@@ -438,24 +511,27 @@ function tasdiqlashSozrov(id) {
   if(m) {
      if(m.qarz && m.qarz > 0) m.qarz = Math.max(0, m.qarz - req.summa); 
      m.tolangan = (m.tolangan || 0) + req.summa;
-     localStorage.setItem('mijozlar', JSON.stringify(mijozlar));
+     await API.put('/mijozlar/'+m.id, m);
      renderMijozlar();
   }
   req.holat = 'tasdiqlandi';
-  localStorage.setItem('tolovSozrovlari', JSON.stringify(arr));
+  await API.post('/kesh/tolovSozrovlari', { data: arr });
   renderSozrovlar(); updateSozrovBadge();
 }
 
-function radEtishSozrov(id) {
+async function radEtishSozrov(id) {
   if(!confirm('So\'rovni rad etasizmi (Pul tushmagan bo\'lsa)?')) return;
-  const arr = JSON.parse(localStorage.getItem('tolovSozrovlari')||'[]');
+  const arr = await API.get('/kesh/tolovSozrovlari') || [];
   const req = arr.find(x => x.id === id);
-  if(req) { req.holat = 'rad'; localStorage.setItem('tolovSozrovlari', JSON.stringify(arr)); }
+  if(req) { 
+    req.holat = 'rad'; 
+    await API.post('/kesh/tolovSozrovlari', { data: arr }); 
+  }
   renderSozrovlar(); updateSozrovBadge();
 }
 
-function renderSozrovlar() {
-  const arr = JSON.parse(localStorage.getItem('tolovSozrovlari')||'[]').sort((a,b) => new Date(b.sana) - new Date(a.sana));
+async function renderSozrovlar() {
+  const arr = (await API.get('/kesh/tolovSozrovlari') || []).sort((a,b) => new Date(b.sana) - new Date(a.sana));
   document.getElementById('sozrovBody').innerHTML = arr.length ? arr.map(t => {
     const ds = new Date(t.sana).toLocaleString('uz-UZ', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
     let acts = `<button class="btn btn-sm btn-primary" style="margin-right:4px;" onclick="tasdiqlashSozrov('${t.id}')">✅</button><button class="btn btn-sm btn-danger" onclick="radEtishSozrov('${t.id}')">❌</button>`;
@@ -471,8 +547,8 @@ function renderSozrovlar() {
   }).join('') : '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted);">Hech qanday so\'rovlar mavjud emas.</td></tr>';
 }
 
-function updateSozrovBadge() {
-  const arr = JSON.parse(localStorage.getItem('tolovSozrovlari')||'[]');
+async function updateSozrovBadge() {
+  const arr = await API.get('/kesh/tolovSozrovlari') || [];
   const kutilmoqda = arr.filter(x => x.holat === 'kutilmoqda').length;
   const b = document.getElementById('sBadge');
   if (kutilmoqda > 0) { b.style.display='inline-flex'; b.textContent = kutilmoqda; } else b.style.display='none';
@@ -483,7 +559,7 @@ function openSozrovModal(){ renderSozrovlar(); openModal('sozrovModal'); }
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');if(id==='mijozModal'){document.getElementById('mijozEditId').value='';document.getElementById('mijozModalT').textContent='👥 Yangi mijoz';document.getElementById('mLogin').value='';document.getElementById('mParol').value='';}}
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
-renderMijozlar();renderNarxMijozList();setupTarixSelect();updateSozrovBadge();
+initMijozlar();updateSozrovBadge();
 </script>
 
 </body>

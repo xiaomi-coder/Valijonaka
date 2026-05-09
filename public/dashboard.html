@@ -173,18 +173,18 @@ async function loadDashboard() {
     }).join('');
 
     // Sotuvlar
-    const sotuvlar = await API.get('/sotuvlar');
+    const sotuvlar = await API.get('/sotuvlar') || [];
     document.getElementById('sotuvlarTable').innerHTML = `<table>
       <thead><tr><th>#</th><th>Mijoz</th><th>Summa</th><th>Holat</th></tr></thead>
       <tbody>${sotuvlar.slice(0,5).map(s=>`<tr>
-        <td style="font-size:11px;color:var(--text-muted);">${s._id.slice(-4)}</td>
+        <td style="font-size:11px;color:var(--text-muted);">${(s.id||s._id||'').toString().slice(-4)}</td>
         <td>${s.mijozNomi||'—'}</td>
         <td><b>${(s.summa||0).toLocaleString()}</b></td>
         <td>${s.holat==='tolandi'?'<span class="badge green">✅</span>':s.holat==='qarz'?'<span class="badge red">💳</span>':'<span class="badge amber">⚠️</span>'}</td>
       </tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:16px;">Sotuv yo\'q</td></tr>'}</tbody></table>`;
 
     // Harajatlar
-    const harajatlar = await API.get('/harajatlar');
+    const harajatlar = await API.get('/harajatlar') || [];
     document.getElementById('harajatlarTable').innerHTML = `<table>
       <thead><tr><th>Sana</th><th>Tavsif</th><th>Summa</th></tr></thead>
       <tbody>${harajatlar.slice(0,5).map(h=>`<tr>

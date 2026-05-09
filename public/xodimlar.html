@@ -434,7 +434,7 @@
           <option value="">— Tanlang —</option>
         </select>
       </div>
-      <div class="form-group"><label>Avans miqdori (so'm)</label><input type="number" id="avSumma" placeholder="0" oninput="calcAvansQoldiq()"></div>
+      <div class="form-group"><label>Avans miqdori (so'm)</label><input type="text" inputmode="numeric" oninput="fmtSum(this); calcAvansQoldiq()" id="avSumma" placeholder="0"></div>
       <div class="form-group"><label>Sabab</label><input id="avSabab" placeholder="Masalan: Shaxsiy ehtiyoj"></div>
       <div class="form-group"><label>Sana</label><input type="date" id="avSana"></div>
       <!-- Xodim holati -->
@@ -569,17 +569,58 @@ document.getElementById('todayDate').textContent = new Date().toLocaleDateString
 document.getElementById('avSana').value = new Date().toISOString().split('T')[0];
 document.getElementById('reysSana').value = new Date().toISOString().split('T')[0];
 
-// ===== MA'LUMOTLAR =====
-let xodimlar = JSON.parse(localStorage.getItem('xodimlar')||'[]');
-
-let avanslar = JSON.parse(localStorage.getItem('avanslarAll')||'[]');
-
-let reyslar = JSON.parse(localStorage.getItem('reyslar')||'[]');
-
-let mashinalar = JSON.parse(localStorage.getItem('mashinalar')||'[]');
-
-let tolanganOyliklar = JSON.parse(localStorage.getItem('tolanganOyliklar')||'{}');
+let xodimlar = [];
+let avanslar = [];
+let reyslar = [];
+let mashinalar = [];
+let tolanganOyliklar = {}; // Vaqtincha, lekin DBga /oy_tolovlar ulanadi
 let currentTolaId = null;
+
+async function initHR() {
+  try {
+    const [xRes, aRes, rRes, mRes, oRes] = await Promise.all([
+      API.get('/xodimlar'), API.get('/avanslar'), API.get('/reyslar'), API.get('/mashinalar'), API.get('/oy_tolovlar')
+    ]);
+    // frontend structure format
+    xodimlar = xRes.map(x => ({
+      ...x, 
+      tarif: parseFloat(x.tarif) || 0, 
+      sabit: parseFloat(x.sabit) || 0,
+      oyKg: typeof x.oy_kg === 'string' ? JSON.parse(x.oy_kg) : (x.oy_kg||{}),
+      bonus: typeof x.bonus === 'string' ? JSON.parse(x.bonus) : (x.bonus||{})
+    }));
+    avanslar = aRes.map(a => ({
+      ...a, 
+      summa: parseFloat(a.summa)||0, 
+      xodimId: a.xodim_id, 
+      xodimNomi: xodimlar.find(x=>x.id===a.xodim_id)?.ism+' '+xodimlar.find(x=>x.id===a.xodim_id)?.familiya 
+    }));
+    reyslar = rRes.map(r => ({
+      ...r, 
+      haydovchiId: r.haydovchi_id,
+      haydovchiNomi: xodimlar.find(x=>x.id===r.haydovchi_id)?.ism,
+      masofa: parseFloat(r.masofa_km)||0,
+      haq: parseFloat(r.haq)||0,
+      avans: 0
+    }));
+    mashinalar = mRes.map(m => ({
+      ...m,
+      haydovchi: xodimlar.find(x=>x.id===m.haydovchi_id)?.ism,
+      km: 0
+    }));
+    oRes.forEach(o => { tolanganOyliklar[o.xodim_id + '_' + o.oy] = true; });
+
+    oRes.forEach(o => { tolanganOyliklar[o.xodim_id + '_' + o.oy] = true; });
+
+    renderXodimlar(); renderOylik();
+  } catch(e) { console.error('HR init Error:', e); }
+}
+
+async function deleteXodim(id) {
+  if(!confirm('O\'chirishni tasdiqlaysizmi?')) return;
+  await API.del('/xodimlar/'+id);
+  initHR();
+}
 
 // ===== UTIL =====
 const RANGLAR = ['#1a6b3c','#2471a3','#8e44ad','#e67e22','#c0392b','#16a085'];
@@ -679,12 +720,18 @@ function renderOylik(){
   document.getElementById('oylikJami').textContent = jami.toLocaleString()+' so\'m';
 }
 
-function hammasiniTola(){
+async function hammasiniTola(){
   if(!confirm('Barcha kutilayotgan oyliklarni to\'lashni tasdiqlaysizmi?')) return;
   const oy=parseInt(document.getElementById('oylikOy').value)||3;
-  xodimlar.forEach(x=>{ if(!tolanganOyliklar[x.id+'_'+oy]) tolanganOyliklar[x.id+'_'+oy]=true; });
-  localStorage.setItem('tolanganOyliklar',JSON.stringify(tolanganOyliklar));
-  renderOylik(); renderXodimlar();
+  for(let x of xodimlar) {
+    if(!tolanganOyliklar[x.id+'_'+oy]) {
+      const qoldiq = tolanadigan(x, oy);
+      if(qoldiq > 0) {
+        await API.post('/oy_tolovlar', { xodim_id: x.id, oy, summa: qoldiq });
+      }
+    }
+  }
+  initHR();
   alert('✅ Barcha oyliklar to\'landi deb belgilandi!');
 }
 
@@ -735,20 +782,18 @@ function calcKgOylik(){
   document.getElementById('kgJami').textContent=jami.toLocaleString()+' so\'m';
 }
 
-function saveKg(){
+async function saveKg(){
   const x=xodimlar.find(x=>x.id===kgEditXodimId);
   if(!x) return;
-  [1,2,3].forEach(oy=>{
-    const v=parseFloat(document.getElementById('kgOy'+oy)?.value)||0;
-    if(!x.oyKg) x.oyKg={};
-    x.oyKg[oy]=v;
-  });
+  let oK = {...x.oyKg};
+  let oB = {...x.bonus};
+  [1,2,3].forEach(oy=>{ const v=parseFloat(document.getElementById('kgOy'+oy)?.value)||0; oK[oy]=v; });
   const bonus=parseFloat(document.getElementById('kgBonus').value)||0;
-  if(!x.bonus) x.bonus={};
-  x.bonus[3]=bonus;
-  localStorage.setItem('xodimlar',JSON.stringify(xodimlar));
+  oB[3]=bonus;
+  
+  await API.put('/xodimlar/'+x.id, { oy_kg: oK, oy_bonus: oB });
   closeModal('kgModal');
-  renderXodimlar(); renderOylik();
+  initHR();
 }
 
 // ===== TO'LASH =====
@@ -765,14 +810,16 @@ function openTola(xId){
   openModal('tolaModal');
 }
 
-function confirmTola(){
+async function confirmTola(){
   if(!currentTolaId) return;
-  const oy=3;
-  tolanganOyliklar[currentTolaId+'_'+oy]=true;
-  localStorage.setItem('tolanganOyliklar',JSON.stringify(tolanganOyliklar));
+  const x = xodimlar.find(x=>x.id===currentTolaId);
+  const oy = 3;
+  const qoldiq = tolanadigan(x, oy);
+  const izoh = document.getElementById('tolaIzoh').value;
+  await API.post('/oy_tolovlar', { xodim_id: x.id, oy, summa: qoldiq, izoh });
   closeModal('tolaModal');
-  renderXodimlar(); renderOylik();
   currentTolaId=null;
+  initHR();
 }
 
 // ===== AVANS =====
@@ -792,7 +839,7 @@ document.getElementById('avXodim').addEventListener('change',function(){
   const info=document.getElementById('avXodimInfo');
   if(!x){info.style.display='none';return;}
   info.style.display='block';
-  const hisob=hisoblangan(x,3); const avans=getAvansJami(x); const newAvans=parseFloat(document.getElementById('avSumma').value)||0;
+  const hisob=hisoblangan(x,3); const avans=getAvansJami(x); const newAvans=parseSum('avSumma');
   document.getElementById('avHisoblangan').textContent=hisob.toLocaleString()+' so\'m';
   document.getElementById('avBerilgan').textContent=avans.toLocaleString()+' so\'m';
   document.getElementById('avQoldiq').textContent=Math.max(0,hisob-avans-newAvans).toLocaleString()+' so\'m';
@@ -801,7 +848,7 @@ document.getElementById('avXodim').addEventListener('change',function(){
 function calcAvansQoldiq(){
   const xId=document.getElementById('avXodim').value;
   const x=xodimlar.find(x=>x.id===xId); if(!x) return;
-  const hisob=hisoblangan(x,3); const avans=getAvansJami(x); const newAvans=parseFloat(document.getElementById('avSumma').value)||0;
+  const hisob=hisoblangan(x,3); const avans=getAvansJami(x); const newAvans=parseSum('avSumma');
   document.getElementById('avHisoblangan').textContent=hisob.toLocaleString()+' so\'m';
   document.getElementById('avBerilgan').textContent=avans.toLocaleString()+' so\'m';
   document.getElementById('avQoldiq').textContent=Math.max(0,hisob-avans-newAvans).toLocaleString()+' so\'m';
@@ -814,21 +861,17 @@ function openAvansFor(xId){
   openModal('avansModal');
 }
 
-function saveAvans(){
+async function saveAvans(){
   const xId=document.getElementById('avXodim').value;
-  const summa=parseFloat(document.getElementById('avSumma').value)||0;
+  const summa=parseSum('avSumma');
   const sabab=document.getElementById('avSabab').value.trim();
   const sana=document.getElementById('avSana').value;
   if(!xId){alert('Xodimni tanlang!');return;}
   if(!summa){alert('Summani kiriting!');return;}
-  const x=xodimlar.find(x=>x.id===xId);
-  const newAvans={id:'av'+Date.now(),xodimId:xId,xodimNomi:`${x.ism} ${x.familiya}`,summa,sabab:sabab||'Avans',sana,bergan:user.name,holat:'aktiv'};
-  avanslar.push(newAvans);
-  localStorage.setItem('avanslarAll',JSON.stringify(avanslar));
-  document.getElementById('avSumma').value='';
-  document.getElementById('avSabab').value='';
+  await API.post('/avanslar', { xodim_id: xId, summa, sabab: sabab||'Avans', sana });
+  document.getElementById('avSumma').value=''; document.getElementById('avSabab').value='';
   closeModal('avansModal');
-  renderAvans(); renderXodimlar(); renderOylik();
+  initHR();
 }
 
 function renderAvans(){
@@ -914,52 +957,47 @@ function renderHaydovchi(){
     </tr>`).join('');
 }
 
-function saveReys(){
+async function saveReys(){
   const hId=document.getElementById('reysHaydovchi').value;
-  const hX=xodimlar.find(x=>x.id===hId);
   const moshina=document.getElementById('reysMoshina').value;
   const marshrut=document.getElementById('reysMarshrut').value.trim();
   const masofa=parseFloat(document.getElementById('reysMasofa').value)||0;
   const haq=parseFloat(document.getElementById('reysHaq').value)||0;
   const avans=parseFloat(document.getElementById('reysAvans').value)||0;
+  const sana=document.getElementById('reysSana').value;
   if(!hId||!marshrut||!haq){alert('Barcha maydonlarni to\'ldiring!');return;}
-  const r={id:'r'+Date.now(),haydovchiId:hId,haydovchiNomi:hX?hX.ism+' '+hX.familiya:'—',moshina,sana:document.getElementById('reysSana').value,marshrut,masofa,haq,avans,holat:'kutilmoqda',izoh:document.getElementById('reysIzoh').value};
+  
   if(avans>0){
-    avanslar.push({id:'av'+Date.now(),xodimId:hId,xodimNomi:r.haydovchiNomi,summa:avans,sabab:'Reys avansi: '+marshrut,sana:r.sana,bergan:user.name,holat:'aktiv'});
-    localStorage.setItem('avanslarAll',JSON.stringify(avanslar));
+    await API.post('/avanslar', { xodim_id: hId, summa: avans, sabab: 'Reys avansi: '+marshrut, sana });
   }
-  reyslar.push(r); localStorage.setItem('reyslar',JSON.stringify(reyslar));
-  closeModal('reysModal'); renderHaydovchi();
+  await API.post('/reyslar', { haydovchi_id: hId, mashina_id: null, marshrut, masofa_km: masofa, haq, sana, izoh: document.getElementById('reysIzoh').value });
+  closeModal('reysModal'); initHR();
 }
 
-function reysTolaOrders(id){
+async function reysTolaOrders(id){
   const r=reyslar.find(x=>x.id===id); if(!r) return;
-  r.holat='tolandi'; localStorage.setItem('reyslar',JSON.stringify(reyslar)); renderHaydovchi();
+  await API.put('/reyslar/'+id, { holat: 'tolandi' }); initHR();
 }
-function deleteReys(id){ reyslar=reyslar.filter(r=>r.id!==id); localStorage.setItem('reyslar',JSON.stringify(reyslar)); renderHaydovchi(); }
+async function deleteReys(id){ await API.del('/reyslar/'+id); initHR(); }
 
-function saveMashina(){
+async function saveMashina(){
   const raqam=document.getElementById('mRaqam').value.trim();
   const model=document.getElementById('mModel').value.trim();
   if(!raqam||!model){alert('Raqam va modelni kiriting!');return;}
   const hId=document.getElementById('mHaydovchi').value;
-  const hX=xodimlar.find(x=>x.id===hId);
-  mashinalar.push({id:'m'+Date.now(),raqam,model,haydovchi:hX?hX.ism+' '+hX.familiya:'—',km:0});
-  localStorage.setItem('mashinalar',JSON.stringify(mashinalar));
-  closeModal('mashinaModal'); renderHaydovchi();
+  await API.post('/mashinalar', { haydovchi_id: hId, raqam, model });
+  closeModal('mashinaModal'); initHR();
 }
 
 function calcReysHaq(){ /* avtomat hisoblash logikasi bo'lishi mumkin */ }
 
-// ===== XODIM QO'SHISH =====
-function saveXodim(){
+async function saveXodim(){
   const id=document.getElementById('xodimEditId').value;
   const obj={ism:document.getElementById('xIsm').value.trim(),familiya:document.getElementById('xFamiliya').value.trim(),lavozim:document.getElementById('xLavozim').value.trim(),rol:document.getElementById('xRol').value,tel:document.getElementById('xTel').value,sana:document.getElementById('xSana').value,tarif:parseFloat(document.getElementById('xTarif').value)||0,sabit:parseFloat(document.getElementById('xSabit').value)||0,izoh:document.getElementById('xIzoh').value};
   if(!obj.ism||!obj.familiya){alert('Ism va familiyani kiriting!');return;}
-  if(id){const x=xodimlar.find(x=>x.id===id);if(x)Object.assign(x,obj);}
-  else{obj.id='x'+Date.now();obj.oyKg={};obj.avanslar=[];obj.tolangan=[];obj.bonus={};xodimlar.push(obj);}
-  localStorage.setItem('xodimlar',JSON.stringify(xodimlar));
-  closeModal('xodimModal'); renderXodimlar(); renderAvansOptions(); renderAvans();
+  if(id) { await API.put('/xodimlar/'+id, obj); }
+  else { await API.post('/xodimlar', obj); }
+  closeModal('xodimModal'); initHR();
 }
 
 function editXodim(xId){
@@ -1030,7 +1068,7 @@ function closeModal(id){
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 
 // ===== INIT RENDER =====
-renderXodimlar();
+initHR();
 renderAvansOptions();
 </script>
 

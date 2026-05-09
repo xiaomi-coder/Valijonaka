@@ -16,11 +16,16 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Statik fayllar (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: function (res, path) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  }
+}));
 
-// API yo'llar
-app.use('/api', apiPgRoutes);
+// API yo'llar — NeDB (asosiy, har doim ishlaydi)
 app.use('/api', apiRoutes);
+// PG routes faqat PG ishlasa
+try { app.use('/api/pg', apiPgRoutes); } catch(e) {}
 
 // Barcha boshqa so'rovlar — index.html
 app.get('*', (req, res) => {

@@ -415,17 +415,12 @@
       </div>
       <div class="form-group"><label>Tavsif</label><input id="hTavsif" placeholder="Nima uchun harajat?"></div>
       <div id="moshinaSelectWrap" style="display:none">
-        <div class="form-group"><label>Moshina tanlang</label>
-          <select id="hMoshina">
-            <option value="">— Tanlang —</option>
-            <option>01 A 234 BC — Nexia</option>
-            <option>01 B 567 DE — Damas</option>
-            <option>78 C 890 FG — Yuk mashinasi</option>
-          </select>
+        <div class="form-group"><label>Moshina raqami</label>
+          <input id="hMoshina" placeholder="Masalan: 01 A 123 BC">
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Summa (so'm)</label><input type="number" id="hSumma" placeholder="0"></div>
+        <div class="form-group"><label>Summa (so'm)</label><input type="text" inputmode="numeric" oninput="fmtSum(this)" id="hSumma" placeholder="0"></div>
         <div class="form-group"><label>To'lov usuli</label>
           <select id="hTolov"><option value="naqd">💵 Naqd</option><option value="bank">🏦 Bank</option><option value="qarz">📋 Qarz</option></select>
         </div>
@@ -480,9 +475,41 @@ document.getElementById('todayDate').textContent=new Date().toLocaleDateString('
 document.getElementById('hSana').value=new Date().toISOString().split('T')[0];
 
 // ===== MA'LUMOTLAR =====
-let kategoriyalar=JSON.parse(localStorage.getItem('kategoriyalar')||'[]');
+let kategoriyalar=[];
 
-let harajatlar=JSON.parse(localStorage.getItem('harajatlar')||'[]');
+let harajatlar=[];
+async function initHarajatlar() {
+  try {
+    kategoriyalar = await API.get('/kesh/harajat_kat') || [];
+    if(kategoriyalar.length === 0) {
+      kategoriyalar = [
+        {id:'k1', nomi:'Ishchilar oyligi', icon:'👷', rang:'#1a6b3c', moshina:0},
+        {id:'k2', nomi:'Yoqilg\'i', icon:'⛽', rang:'#e67e22', moshina:1},
+        {id:'k3', nomi:'Tushlik/Ovqat', icon:'🍽', rang:'#f1c40f', moshina:0},
+        {id:'k4', nomi:'Zapchast', icon:'⚙️', rang:'#2471a3', moshina:1}
+      ];
+      await API.post('/kesh/harajat_kat', { data: kategoriyalar });
+    }
+    const data = await API.get('/harajatlar');
+    harajatlar = data.map(h => ({
+      id: h.id,
+      katId: h.tur,
+      sana: h.sana.substring(0, 10),
+      tavsif: h.izoh,
+      moshina: '',
+      summa: parseFloat(h.summa) || 0,
+      tolov: 'Naqd',
+      oy: h.oy,
+      qoshgan: h.qoshgan
+    }));
+    setupKatSelect();
+    const curMonth = (new Date().getMonth() + 1).toString();
+    document.getElementById('hFilterOy').value = curMonth;
+    if(document.getElementById('hisobotOy')) document.getElementById('hisobotOy').value = curMonth;
+    renderHarajatlar();
+    renderHisobot();
+  } catch(e) { console.error('API Error:', e); }
+}
 
 // Demo daromadlar (sotuvlardan)
 const DAROMADLAR={
@@ -491,7 +518,7 @@ const DAROMADLAR={
   3:{plastik:41000000,rezina:11000000,poterya:3000000},
 };
 const OYLIK_FOND={1:5800000,2:6200000,3:7444000};
-const OY_NOMI={1:'Yanvar',2:'Fevral',3:'Mart'};
+const OY_NOMI={1:'Yanvar',2:'Fevral',3:'Mart',4:'Aprel',5:'May',6:'Iyun',7:'Iyul',8:'Avgust',9:'Sentabr',10:'Oktabr',11:'Noyabr',12:'Dekabr'};
 let selectedRang='#1a6b3c';
 let activeKatFilter='';
 
@@ -582,28 +609,31 @@ function filterHarajat(q){
   document.getElementById('harajatJami').textContent=sumHarajat(list).toLocaleString()+' so\'m';
 }
 
-function saveHarajat(){
+async function saveHarajat(){
   const katId=document.getElementById('hKat').value;
-  const summa=parseFloat(document.getElementById('hSumma').value)||0;
+  const summa=parseSum('hSumma');
   const tavsif=document.getElementById('hTavsif').value.trim();
   const sana=document.getElementById('hSana').value;
   if(!katId){alert('Kategoriyani tanlang!');return;}
   if(!summa){alert('Summani kiriting!');return;}
   if(!tavsif){alert('Tavsifni kiriting!');return;}
-  const oy=parseInt(sana.split('-')[1])||3;
-  const h={id:'h'+Date.now(),katId,sana,tavsif,moshina:document.getElementById('hMoshina').value,summa,tolov:document.getElementById('hTolov').value,izoh:document.getElementById('hIzoh').value,oy,qoshgan:user.name};
-  harajatlar.push(h);
-  localStorage.setItem('harajatlar',JSON.stringify(harajatlar));
-  document.getElementById('hTavsif').value='';document.getElementById('hSumma').value='';document.getElementById('hIzoh').value='';document.getElementById('hKat').value='';document.getElementById('moshinaSelectWrap').style.display='none';
-  closeModal('harajatModal');
-  renderHarajatlar();
+  const oy=document.getElementById('monthFilter') ? parseInt(document.getElementById('monthFilter').value) || parseInt(sana.split('-')[1]) : parseInt(sana.split('-')[1]);
+  const izohStr = tavsif + (document.getElementById('hIzoh').value ? ' - ' + document.getElementById('hIzoh').value : '') + (document.getElementById('hMoshina').value ? ' - Moshina: ' + document.getElementById('hMoshina').value : '');
+  
+  try {
+    await API.post('/harajatlar', {
+      sana, oy, tur: katId, summa, izoh: izohStr, qoshgan: user.name || 'Admin'
+    });
+    document.getElementById('hTavsif').value='';document.getElementById('hSumma').value='';document.getElementById('hIzoh').value='';document.getElementById('hKat').value='';document.getElementById('moshinaSelectWrap').style.display='none';
+    closeModal('harajatModal');
+    initHarajatlar();
+  } catch(e) { alert(e.message); }
 }
 
-function deleteHarajat(id){
+async function deleteHarajat(id){
   if(!confirm('Harajatni o\'chirishni tasdiqlaysizmi?'))return;
-  harajatlar=harajatlar.filter(h=>h.id!==id);
-  localStorage.setItem('harajatlar',JSON.stringify(harajatlar));
-  renderHarajatlar();
+  await API.del('/harajatlar/'+id);
+  initHarajatlar();
 }
 
 function exportHarajat(){
@@ -641,19 +671,19 @@ function renderKategoriyalar(){
   }).join('');
 }
 
-function saveKat(){
+async function saveKat(){
   const nomi=document.getElementById('katNomi').value.trim();
-  const icon=document.getElementById('katIcon').value||'📌';
+  const icon=document.getElementById('katIcon').value.trim()||'📌';
   if(!nomi){alert('Kategoriya nomini kiriting!');return;}
   kategoriyalar.push({id:'k'+Date.now(),nomi,icon,rang:selectedRang,moshina:parseInt(document.getElementById('katMoshina').value)});
-  localStorage.setItem('kategoriyalar',JSON.stringify(kategoriyalar));
+  await API.post('/kesh/harajat_kat', { data: kategoriyalar });
   closeModal('katModal');
   setupKatSelect(); renderKategoriyalar(); renderHarajatlar();
 }
-function deleteKat(id){
+async function deleteKat(id){
   if(!confirm('Kategoriyani o\'chirmoqchimisiz? Undagi harajatlar saqlanib qoladi.'))return;
   kategoriyalar=kategoriyalar.filter(k=>k.id!==id);
-  localStorage.setItem('kategoriyalar',JSON.stringify(kategoriyalar));
+  await API.post('/kesh/harajat_kat', { data: kategoriyalar });
   renderKategoriyalar(); setupKatSelect();
 }
 function selRang(el,rang){
@@ -663,59 +693,157 @@ function selRang(el,rang){
   el.style.border='3px solid #333';
 }
 
-// ===== MOSHINA =====
-function renderMoshina(){
-  const moshinalar=[];
-  document.getElementById('daromadChart').innerHTML=dItems.map(item=>{const pct=Math.round(item.val/jDaromad*100);return `<div class="prog-wrap"><div class="prog-label"><span>${item.nomi}</span><span style="font-weight:700">${pct}% &nbsp; ${(item.val/1000000).toFixed(1)}M</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${item.rang}"></div></div></div>`;}).join('');
+function renderMoshina() {
+  const moshinaCards = document.getElementById('moshinaCards');
+  const tbody = document.getElementById('moshinaHarajatBody');
+  const moshinaFilter = document.getElementById('moshinaFilter');
+  
+  // Extract unique moshina names
+  const mList = [...new Set(harajatlar.filter(h=>h.moshina).map(h=>h.moshina))];
+  if(moshinaFilter.children.length === 1 && mList.length > 0) {
+    moshinaFilter.innerHTML = '<option value="">Barcha moshinalar</option>' + mList.map(m=>`<option value="${m}">${m}</option>`).join('');
+  }
 
-  const jHar=sumHarajat(hList)||1;
-  document.getElementById('harajatChart').innerHTML=kategoriyalar.map(k=>{const s=katSum(k.id,oy);const pct=Math.round(s/jHar*100);return s?`<div class="prog-wrap"><div class="prog-label"><span>${k.icon} ${k.nomi}</span><span style="font-weight:700">${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${k.rang}"></div></div></div>`:''}).join('');
+  const selectedM = moshinaFilter.value;
+  const hList = harajatlar.filter(h => h.moshina && (!selectedM || h.moshina === selectedM));
 
-  // 3 oylik
-  const rows=[
-    {nomi:'Jami daromad',vals:[1,2,3].map(o=>{const dd=DAROMADLAR[o];return dd.plastik+dd.rezina+dd.poterya;}),green:true},
-    {nomi:'Jami harajat',vals:[1,2,3].map(o=>sumHarajat(harajatlar.filter(h=>h.oy===o))+OYLIK_FOND[o]),green:false},
-    {nomi:'Sof foyda',vals:[1,2,3].map(o=>{const dd=DAROMADLAR[o];const ttl=dd.plastik+dd.rezina+dd.poterya;const hh=sumHarajat(harajatlar.filter(h=>h.oy===o))+OYLIK_FOND[o];return ttl-hh;}),green:true},
-    {nomi:'Rentabellik %',vals:[1,2,3].map(o=>{const dd=DAROMADLAR[o];const ttl=dd.plastik+dd.rezina+dd.poterya;const hh=sumHarajat(harajatlar.filter(h=>h.oy===o))+OYLIK_FOND[o];return Math.round((ttl-hh)/ttl*100)+'%';}),green:true},
-  ];
-  document.getElementById('oyTaqqosBody').innerHTML=rows.map(r=>{
-    const [v1,v2,v3]=r.vals;
-    const farq=typeof v3==='string'?'—':(v3-v2);
+  if(!mList.length) {
+    moshinaCards.innerHTML = '';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-muted);">Moshina harajatlari yo\'q</td></tr>';
+    return;
+  }
+
+  // Cards
+  moshinaCards.innerHTML = mList.map(m => {
+    const s = sumHarajat(harajatlar.filter(h => h.moshina === m));
+    const kount = harajatlar.filter(h => h.moshina === m).length;
+    return `<div class="card p-3" style="border-left:4px solid var(--primary);margin:0">
+      <div style="font-weight:700;font-size:15px;margin-bottom:8px;">🚗 ${m}</div>
+      <div style="font-size:12px;color:var(--text-muted)">Jami harajat: <span style="font-weight:700;color:var(--danger)">${s.toLocaleString()}</span> so'm</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Yozuvlar: ${kount} ta</div>
+    </div>`;
+  }).join('');
+
+  if(!hList.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-muted);">Topilmadi</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = hList.map(h => {
+    const k = katById(h.katId);
     return `<tr>
-      <td><b>${r.nomi}</b></td>
-      <td>${typeof v1==='number'?v1.toLocaleString():v1}</td>
-      <td>${typeof v2==='number'?v2.toLocaleString():v2}</td>
-      <td style="font-weight:700;color:var(--primary)">${typeof v3==='number'?v3.toLocaleString():v3}</td>
-      <td style="font-weight:700;color:${typeof farq==='number'&&farq>0?(r.green?'var(--primary)':'var(--danger)'):(r.green?'var(--danger)':'var(--primary)')}">${typeof farq==='number'?(farq>0?'↑ +':'↓ ')+Math.abs(farq).toLocaleString():'—'}</td>
+      <td>${h.sana}</td>
+      <td><b>${h.moshina}</b></td>
+      <td><span style="font-size:11px;font-weight:600;background:${k.rang}18;color:${k.rang};padding:2px 8px;border-radius:12px;">${k.icon} ${k.nomi}</span></td>
+      <td style="font-size:12px">${h.tavsif}</td>
+      <td style="font-weight:700;color:var(--danger)">${h.summa.toLocaleString()}</td>
     </tr>`;
   }).join('');
 }
 
-function exportHisobot(){
-  const oy=parseInt(document.getElementById('hisobotOy').value)||3;
-  const d=DAROMADLAR[oy];
+function renderMoshinaTable() {
+  renderMoshina();
+}
+
+function renderHisobot() {
+  const oy=parseInt(document.getElementById('hisobotOy')?.value || document.getElementById('hFilterOy')?.value)||3;
+  const d=DAROMADLAR[oy] || {plastik:0, rezina:0, poterya:0};
   const jDaromad=d.plastik+d.rezina+d.poterya;
-  const jHarajat=sumHarajat(harajatlar.filter(h=>h.oy===oy))+OYLIK_FOND[oy];
+  
+  const dItems=[
+    {nomi:'Plastik granula',val:d.plastik,rang:'#3b82f6'},
+    {nomi:'Rezina dilerlik',val:d.rezina,rang:'#10b981'},
+    {nomi:'Poterya',val:d.poterya,rang:'#8b5cf6'}
+  ];
+  
+  if(document.getElementById('daromadChart')) {
+    document.getElementById('daromadChart').innerHTML=dItems.map(item=>{const pct=Math.round(item.val/jDaromad*100);return `<div class="prog-wrap"><div class="prog-label"><span>${item.nomi}</span><span style="font-weight:700">${pct}% &nbsp; ${(item.val/1000000).toFixed(1)}M</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${item.rang}"></div></div></div>`;}).join('');
+  }
+
+  const hList=harajatlar.filter(h=>h.oy===oy);
+  const jHar=sumHarajat(hList)||1;
+  if(document.getElementById('harajatChart')) {
+    document.getElementById('harajatChart').innerHTML=kategoriyalar.map(k=>{const s=katSum(k.id,oy);const pct=Math.round(s/jHar*100);return s?`<div class="prog-wrap"><div class="prog-label"><span>${k.icon} ${k.nomi}</span><span style="font-weight:700">${pct}%</span></div><div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${k.rang}"></div></div></div>`:''}).join('');
+  }
+
+  // P&L Table updates
+  if(document.getElementById('hPlastik')){
+    document.getElementById('hisobotOyNom').textContent = OY_NOMI[oy] || oy;
+    document.getElementById('hPlastik').textContent = d.plastik.toLocaleString() + " so'm";
+    document.getElementById('hRezina').textContent = d.rezina.toLocaleString() + " so'm";
+    document.getElementById('hPoterya').textContent = d.poterya.toLocaleString() + " so'm";
+    document.getElementById('hDaromad').textContent = jDaromad.toLocaleString() + " so'm";
+
+    document.getElementById('hKatRows').innerHTML = kategoriyalar.map(k=>{
+      const s = katSum(k.id, oy);
+      return s ? `<div class="hb-row"><span class="hb-label">${k.icon} ${k.nomi}</span><span class="hb-val">${s.toLocaleString()} so'm</span></div>` : '';
+    }).join('');
+
+    const jHarajat = sumHarajat(hList) + (OYLIK_FOND[oy] || 0);
+    document.getElementById('hOylik').textContent = (OYLIK_FOND[oy] || 0).toLocaleString() + " so'm";
+    document.getElementById('hHarajat').textContent = jHarajat.toLocaleString() + " so'm";
+    
+    document.getElementById('hSof').textContent = (jDaromad - jHarajat).toLocaleString() + " so'm";
+    document.getElementById('hRent').textContent = jDaromad > 0 ? Math.round((jDaromad - jHarajat) / jDaromad * 100) + "%" : "0%";
+  }
+}
+
+function printHisobot() {
+  renderHisobot();
+  window.print();
+}
+
+function exportHisobot(){
+  const oy=parseInt(document.getElementById('hisobotOy')?.value)||new Date().getMonth()+1;
+  const d=DAROMADLAR[oy] || {plastik:0, rezina:0, poterya:0};
+  const jDaromad=d.plastik+d.rezina+d.poterya;
+  const jHarajat=sumHarajat(harajatlar.filter(h=>h.oy===oy)) + (OYLIK_FOND[oy] || 0);
   const foyda=jDaromad-jHarajat;
   let csv=`Valijon ERP — Moliyaviy hisobot\n${OY_NOMI[oy]} 2026\n\n`;
   csv+=`DAROMADLAR\nPlastik granula,${d.plastik}\nRezina dilerlik,${d.rezina}\nPoterya sotuvi,${d.poterya}\nJami daromad,${jDaromad}\n\n`;
   csv+=`HARAJATLAR\n`;
   kategoriyalar.forEach(k=>{ csv+=`${k.nomi},${katSum(k.id,oy)}\n`; });
-  csv+=`Oylik fond,${OYLIK_FOND[oy]}\nJami harajat,${jHarajat}\n\nSOF FOYDA,${foyda}\n`;
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Hisobot_${OY_NOMI[oy]}_2026.csv`;a.click();
+  csv+=`Oylik fond,${(OYLIK_FOND[oy]||0)}\nJami harajat,${jHarajat}\n\nSOF FOYDA,${foyda}\n`;
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`Hisobot_${OY_NOMI[oy]||oy}_2026.csv`;a.click();
+}
+
+function renderTaqqos() {
+  const oyList = [1, 2, 3];
+  const tGrid = document.getElementById('taqqosGrid');
+  tGrid.innerHTML = oyList.map(oy => {
+    const s = sumHarajat(harajatlar.filter(h => h.oy === oy));
+    return `<div class="taqqos-card">
+      <div class="tc-header"><div class="tc-oy">${OY_NOMI[oy]}</div><div class="tc-jami">${s.toLocaleString()} so'm</div></div>
+    </div>`;
+  }).join('');
+
+  const body = document.getElementById('taqqosBody');
+  body.innerHTML = kategoriyalar.map(k => {
+    const sums = oyList.map(oy => katSum(k.id, oy));
+    return `<tr>
+      <td>${k.icon} <b>${k.nomi}</b></td>
+      <td>${sums[0] ? sums[0].toLocaleString() : '-'}</td>
+      <td>${sums[1] ? sums[1].toLocaleString() : '-'}</td>
+      <td>${sums[2] ? sums[2].toLocaleString() : '-'}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ===== TABS =====
 function switchTab(id,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-'+id).classList.add('active');
-  if(id==='harajat') renderHarajatlar();
-  if(id==='kategoriya') renderKategoriyalar();
-  if(id==='moshina') renderMoshina();
-  if(id==='taqqos') renderTaqqos();
-  if(id==='hisobot') renderHisobot();
+  try {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+id).classList.add('active');
+    if(id==='harajat') renderHarajatlar();
+    if(id==='kategoriya') renderKategoriyalar();
+    if(id==='moshina') renderMoshina();
+    if(id==='taqqos') renderTaqqos();
+    if(id==='hisobot') renderHisobot();
+  } catch(e) {
+    alert("Xatolik ("+id+"): "+e.message);
+  }
 }
 
 // ===== MODAL =====
@@ -725,7 +853,7 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 
 // ===== INIT =====
 setupKatSelect();
-renderHarajatlar();
+initHarajatlar();
 </script>
 
 </body>

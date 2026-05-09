@@ -241,11 +241,7 @@
               <div class="form-group" style="margin-top:14px;">
                 <label>Ishtirok etgan xodimlar</label>
                 <div class="xodim-chips" id="xodimChips">
-                  <div class="xodim-chip" onclick="toggleXodim(this,'Karimov J.')">👷 Karimov J.</div>
-                  <div class="xodim-chip" onclick="toggleXodim(this,'Rahimov O.')">👷 Rahimov O.</div>
-                  <div class="xodim-chip" onclick="toggleXodim(this,'Toshmatov B.')">👷 Toshmatov B.</div>
-                  <div class="xodim-chip" onclick="toggleXodim(this,'Hasanov F.')">👷 Hasanov F.</div>
-                  <div class="xodim-chip" onclick="toggleXodim(this,'Yusupov A.')">👷 Yusupov A.</div>
+                  <div style="font-size:12px;color:var(--text-muted);padding:8px 0;">Yuklanmoqda...</div>
                 </div>
               </div>
 
@@ -328,16 +324,58 @@
 document.getElementById('todayDate').textContent = new Date().toLocaleDateString('uz-UZ',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
 document.getElementById('eSana').value = new Date().toISOString().split('T')[0];
 
-function getXOM_NOM() { const t=typeof getXomTurlar==='function'?getXomTurlar():[]; const x={}; t.forEach(k=>x[k.id]=k.nomi); return x; }
-function getXOM_ICO() { const t=typeof getXomTurlar==='function'?getXomTurlar():[]; const x={}; t.forEach(k=>x[k.id]=k.ico); return x; }
+function getXomTurlar() { return window.GLOBAL_XOM_TURLAR || []; }
+function getXOM_NOM() { const t=getXomTurlar(); const x={}; t.forEach(k=>x[(k.id||'').toLowerCase()]=k.nomi); return x; }
+function getXOM_ICO() { const t=getXomTurlar(); const x={}; t.forEach(k=>x[(k.id||'').toLowerCase()]=k.ico); return x; }
 
-let mahsulotlar = JSON.parse(localStorage.getItem('mahsulotlar')||'[]');
-let partiyalar = JSON.parse(localStorage.getItem('partiyalar')||'[]');
-let xomOmbor = JSON.parse(localStorage.getItem('xomOmbor')||JSON.stringify({
-  qora:{kirgan:5000,sarflangan:2400},
-  rangli:{kirgan:3000,sarflangan:1800},
-  rezina:{kirgan:2000,sarflangan:1020},
-}));
+let mahsulotlar = [];
+let partiyalar = [];
+let xomOmbor = {};
+let allXodimlar = [];
+
+async function initIshlab() {
+  try {
+    const [mRes, pRes, xKirimRes, xodimRes, xTRes] = await Promise.all([
+      API.get('/mahsulotlar'), API.get('/partiyalar'), API.get('/xom-ashyo'), API.get('/xodimlar'), API.get('/xom-turlar')
+    ]);
+    window.GLOBAL_XOM_TURLAR = Array.isArray(xTRes) ? xTRes : [];
+    allXodimlar = Array.isArray(xodimRes) ? xodimRes : [];
+    
+    // Render dynamic xodimlar
+    const xList = allXodimlar;
+    const chipsHTML = xList.length > 0 
+      ? xList.map(x => `<div class="xodim-chip" onclick="toggleXodim(this,'${x.ism || x.nomi}')">👷 ${x.ism || x.nomi}</div>`).join('')
+      : '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">Hali xodimlar kiritilmagan. Avval "Xodimlar" bo\'limidan xodim qo\'shing.</div>';
+    document.getElementById('xodimChips').innerHTML = chipsHTML;
+
+    mahsulotlar = mRes;
+    partiyalar = pRes.map(p => ({
+      id: p.id,
+      sana: p.sana ? p.sana.substring(0, 10) : '',
+      xomAshyoTuri: p.xom_ashyo_turi,
+      mahsulotId: p.mahsulot_id,
+      mahsulotNomi: p.mahsulot_nomi,
+      kirganKg: parseFloat(p.kirgan_kg) || 0,
+      chiqganKg: parseFloat(p.chiqgan_kg) || 0,
+      poteryaKg: parseFloat(p.poterya_kg) || 0,
+      poteryaPct: parseFloat(p.poterya_pct) || 0,
+      xodimlar: typeof p.xodimlar === 'string' ? JSON.parse(p.xodimlar) : (p.xodimlar || []),
+      izoh: p.izoh
+    }));
+    let xKirimlar = Array.isArray(xKirimRes) ? xKirimRes : [];
+    
+    // Turlar bo'yicha dinamik hisoblash
+    xomOmbor = {};
+    if(typeof getXomTurlar === 'function') {
+        getXomTurlar().forEach(t => {
+            let kirgan = xKirimlar.filter(x => (x.tur||'').toLowerCase() === (t.id||'').toLowerCase()).reduce((s,k) => s + (parseFloat(k.kg)||0), 0);
+            let sarflangan = partiyalar.filter(p => (p.xomAshyoTuri||'').toLowerCase() === (t.id||'').toLowerCase()).reduce((s,p) => s + (p.kirganKg||0), 0);
+            xomOmbor[t.id] = { kirgan, sarflangan };
+        });
+    }
+    setupP(); renderLastEritmalar(); renderJurnal(); renderOmbor();
+  } catch(e) { console.error('Init error:', e); }
+}
 
 function setupP(){
   document.getElementById('eMahsulot').innerHTML='<option value="">— Mahsulot tanlang —</option>'+mahsulotlar.map(m=>`<option value="${m.id}">${m.nomi} (${getXOM_NOM()[m.xom]||m.xom})</option>`).join('');
@@ -369,7 +407,7 @@ function calcEritish(){
 function toggleXodim(el, nomi){ el.classList.toggle('selected'); }
 function getSelectedXodimlar(){ return [...document.querySelectorAll('.xodim-chip.selected')].map(e=>e.textContent.replace('👷 ','')); }
 
-function saveEritish(){
+async function saveEritish(){
   const id=document.getElementById('eMahsulot').value;
   const kir=parseFloat(document.getElementById('eKirgan').value)||0;
   if(!id) return alert('Mahsulotni tanlang!');
@@ -386,23 +424,42 @@ function saveEritish(){
   }
 
   const p = {
-    id: 'E-'+Date.now().toString().slice(-6),
     sana: document.getElementById('eSana').value,
-    xomAshyoTuri: m.xom, mahsulotId: m.id, mahsulotNomi: m.nomi,
-    kirganKg: kir, chiqganKg: chiq, poteryaKg: potKg, poteryaPct: potFoiz,
-    xodimlar: getSelectedXodimlar(), izoh: document.getElementById('eIzoh').value
+    xom_ashyo_turi: m.xom, mahsulot_id: m.id, mahsulot_nomi: m.nomi,
+    kirgan_kg: kir, chiqgan_kg: chiq, poterya_kg: potKg, poterya_pct: potFoiz,
+    xodimlar: getSelectedXodimlar(),
+    izoh: document.getElementById('eIzoh').value
   };
 
-  if(!xomOmbor[m.xom]) xomOmbor[m.xom] = {kirgan:0, sarflangan:0};
-  xomOmbor[m.xom].sarflangan += kir;
-  localStorage.setItem('xomOmbor', JSON.stringify(xomOmbor));
-  m.ombor += chiq; localStorage.setItem('mahsulotlar', JSON.stringify(mahsulotlar));
+  try {
+    if(!xomOmbor[m.xom]) xomOmbor[m.xom] = {kirgan:0, sarflangan:0};
+    xomOmbor[m.xom].sarflangan += kir;
+    
+    // ishhaqi avtomat qo'shish
+    const sXodims = getSelectedXodimlar();
+    if (sXodims.length > 0 && chiq > 0) {
+      const perWorkerKg = chiq / sXodims.length;
+      const joriyOy = parseInt(p.sana.split('-')[1], 10);
+      for (let xName of sXodims) {
+        let xr = allXodimlar.find(x => (x.ism||x.nomi) === xName);
+        if (xr && !isNaN(joriyOy)) {
+          let oK = typeof xr.oy_kg === 'string' ? JSON.parse(xr.oy_kg) : (xr.oy_kg||{});
+          oK[joriyOy] = (parseFloat(oK[joriyOy])||0) + perWorkerKg;
+          await API.put('/xodimlar/'+xr.id, { oy_kg: oK });
+        }
+      }
+    }
 
-  partiyalar.push(p); localStorage.setItem('partiyalar', JSON.stringify(partiyalar));
+    m.ombor = (parseFloat(m.ombor)||0) + parseFloat(chiq); 
+    await API.put('/mahsulotlar/'+m.id, m);
+    await API.post('/partiyalar', p);
 
-  document.getElementById('succMsg').textContent = `${m.nomi} · ${chiq.toLocaleString()} kg tayyor · ${potFoiz}% poterya`;
-  document.getElementById('successOverlay').classList.add('open');
-  mahsulotTanlash(); renderJurnal(); renderLastEritmalar(); renderOmbor();
+    document.getElementById('succMsg').textContent = `${m.nomi} · ${chiq.toLocaleString()} kg tayyor · ${potFoiz}% poterya`;
+    document.getElementById('successOverlay').classList.add('open');
+    initIshlab();
+  } catch (e) {
+    alert("Saqlashda xatolik: " + e.message);
+  }
 }
 
 function resetForm(){
@@ -427,25 +484,26 @@ function renderLastEritmalar(){
   const body = document.getElementById('lastEritmalar');
   const last = [...partiyalar].reverse().slice(0,5);
   if(!last.length){ body.innerHTML='<tr><td colspan="3" style="text-align:center;padding:12px;color:var(--text-muted)">Hali jarayon yo\'q</td></tr>'; return; }
-  body.innerHTML = last.map(p=>`<tr><td>${getXOM_NOM()[p.xomAshyoTuri]||p.xomAshyoTuri}</td><td>${p.chiqganKg}kg</td><td><span class="badge gray">${p.poteryaPct}%</span></td></tr>`).join('');
+  body.innerHTML = last.map(p=>`<tr><td>${getXOM_NOM()[(p.xomAshyoTuri||'').toLowerCase()]||p.xomAshyoTuri}</td><td>${p.chiqganKg}kg</td><td><span class="badge gray">${p.poteryaPct}%</span></td></tr>`).join('');
 }
 
 function renderJurnal(){
   const f=document.getElementById('jFilter')?document.getElementById('jFilter').value:'';
-  const data=[...partiyalar].reverse().filter(p=>!f||p.xomAshyoTuri===f);
+  const data=[...partiyalar].reverse().filter(p=>!f||(p.xomAshyoTuri||'').toLowerCase()===f.toLowerCase());
   document.getElementById('jStatTayyor').textContent = data.reduce((a,b)=>a+b.chiqganKg,0).toLocaleString()+' kg';
   document.getElementById('jStatPoterya').textContent = data.reduce((a,b)=>a+b.poteryaKg,0).toFixed(1)+' kg';
   document.getElementById('jStatSoni').textContent = data.length;
   document.getElementById('jurnalBody').innerHTML = data.length ? data.map((p,i)=>`<tr>
-    <td><b>${p.id||'E'}</b></td><td>${p.sana}</td><td>${getXOM_NOM()[p.xomAshyoTuri]||p.xomAshyoTuri}</td><td>${p.mahsulotNomi}</td>
+    <td><b>${p.id?p.id.split('-')[0]:'E'}</b></td><td>${p.sana}</td><td>${getXOM_NOM()[(p.xomAshyoTuri||'').toLowerCase()]||p.xomAshyoTuri}</td><td>${p.mahsulotNomi}</td>
     <td>${p.kirganKg} kg</td><td><b style="color:var(--primary)">${p.chiqganKg} kg</b></td><td>${p.poteryaKg} kg</td>
     <td style="font-size:11px;color:var(--text-muted)">${p.xodimlar?p.xodimlar.join(', '):'—'}</td>
     <td><button class="btn btn-sm btn-danger" onclick="delE('${p.id}')">🗑</button></td></tr>`).join('') : '<tr><td colspan="9" style="text-align:center;padding:16px;">Jarayon yo\'q</td></tr>';
 }
 
-function delE(id){
+async function delE(id){
   if(!confirm('O\'chirishni tasdiqlaysizmi?')) return;
-  partiyalar=partiyalar.filter(p=>p.id!==id); localStorage.setItem('partiyalar',JSON.stringify(partiyalar)); renderJurnal(); renderLastEritmalar();
+  await API.del('/partiyalar/'+id);
+  initIshlab();
 }
 
 function exportJurnal(){
@@ -455,7 +513,7 @@ function exportJurnal(){
 }
 
 function renderOmbor(){
-  let html='';
+  let html=`<h4 style="margin-bottom:12px;color:var(--text);font-family:'Onest',sans-serif">📦 Xom ashyo (keltirilgan materiallar) qoldiqlari</h4><div class="ombor-grid" style="margin-bottom:24px">`;
   Object.entries(xomOmbor).forEach(([k,v])=>{
     const qoldiq=v.kirgan-v.sarflangan;
     const pct=v.kirgan>0?Math.min(100,qoldiq/v.kirgan*100):0;
@@ -466,6 +524,17 @@ function renderOmbor(){
       <div style="margin-top:8px;"><div class="prog-bg"><div class="prog-fill ${qoldiq/v.kirgan>0.4?'green':'amber'}" style="width:${pct}%"></div></div></div>
     </div>`;
   });
+  html+=`</div><h4 style="margin-bottom:12px;color:var(--text);font-family:'Onest',sans-serif">🏭 Tayyor mahsulot (Chiqarilgan tovarlar) holati</h4><div class="ombor-grid" style="margin-bottom:20px;">`;
+  mahsulotlar.forEach(m => {
+    const holat = m.ombor<m.min?'red':m.ombor<m.min*2?'amber':'green';
+    const omborKg = (m.ombor||0);
+    html+=`<div class="ombor-card">
+      <div class="oc-header"><div class="oc-name">${m.icon||'🗃️'} ${m.nomi}</div><span class="badge ${holat==="green"?'green':holat==="amber"?'amber':'red'}">${holat==="green"?'Yetarli':holat==="amber"?'Kam':'Kritik!'}</span></div>
+      <div class="oc-kg" style="color:${holat==='red'?'var(--danger)':'var(--primary)'}">${omborKg.toLocaleString()} kg</div>
+      <div class="oc-meta">Turi: ${getXOM_NOM()[m.xom]||m.xom}</div>
+    </div>`;
+  });
+  html+=`</div>`;
   document.getElementById('omborGrid').innerHTML=html;
   const harakatlar = partiyalar.map(p=>({sana:p.sana,tur:p.xomAshyoTuri,harakat:'Sarflandi',miqdor:`-${p.kirganKg}`,uchun:`Eritish (Tayyor ${p.mahsulotNomi})`,rang:'var(--warning)'}));
   // Xom ashyo kirimlarni ham qo'shamiz (localStorage kirimlar orqali bo'lsa)
@@ -475,7 +544,7 @@ function renderOmbor(){
   document.getElementById('omborTarix').innerHTML = harakatlar.map(t=>`<tr><td>${t.sana}</td><td>${XOM_NOM[t.tur]||t.tur}</td><td><span class="badge ${t.miqdor.includes('+')?'green':'amber'}">${t.harakat}</span></td><td style="color:${t.rang};font-weight:700">${t.miqdor} kg</td><td>${t.uchun}</td><td>—</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:16px;">Harakat yo\'q</td></tr>';
 }
 
-setupP(); renderLastEritmalar();
+initIshlab();
 </script>
 </body>
 </html>

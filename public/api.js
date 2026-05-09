@@ -15,7 +15,7 @@ const API = {
     };
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(this.BASE + url, opts);
-    if (res.status === 401) { localStorage.clear(); window.location.href = '/'; return; }
+    if (res.status === 401) { localStorage.removeItem('erp_token'); localStorage.removeItem('erp_user'); window.location.href = '/'; return; }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Xatolik');
     return data;
@@ -59,6 +59,17 @@ function logout() {
   window.location.href = '/';
 }
 
+// Input formatter
+function fmtSum(inp) {
+  let v = (inp.value||'').toString().replace(/[^0-9]/g, '');
+  inp.value = v ? parseInt(v, 10).toLocaleString('de-DE').replace(/,/g, '.') : '';
+}
+function parseSum(id) {
+  let val = '';
+  if(document.getElementById(id)) val = document.getElementById(id).value;
+  return parseFloat((val||'').replace(/\./g, '')) || 0;
+}
+
 // Auto init layout details if elements exist
 showUser();
 setDate();
@@ -77,22 +88,13 @@ document.head.appendChild(styleEl);
 // XOM ASHYO TURLARI (Dinamik ro'yxat)
 // ============================================
 function getXomTurlar() {
-  const dflt = [];
-  return JSON.parse(localStorage.getItem('xomTurlar') || JSON.stringify(dflt));
-}
-
-function saveXomTur(nomi) {
-  const t = getXomTurlar();
-  const id = 'xt_' + Date.now();
-  t.push({ id, nomi, ico: '📦' });
-  localStorage.setItem('xomTurlar', JSON.stringify(t));
-  return id;
+  return window.GLOBAL_XOM_TURLAR || [];
 }
 
 (function() {
-  const version = "1.2";
+  const version = "1.3";
   if (localStorage.getItem('erp_clean_version') !== version) {
-    const keysToClear = ['mahsulotlar', 'xodimlar', 'harajatlar', 'avanslarAll', 'reyslar', 'mashinalar', 'kategoriyalar', 'mijozlar', 'rezKirimlar', 'rezSotuvlar', 'xomTurlar', 'rezinaTurlari'];
+    const keysToClear = ['mahsulotlar', 'xodimlar', 'harajatlar', 'avanslarAll', 'reyslar', 'mashinalar', 'kategoriyalar', 'mijozlar', 'rezKirimlar', 'rezSotuvlar', 'rezinaTurlari'];
     keysToClear.forEach(k => localStorage.removeItem(k));
     localStorage.setItem('erp_clean_version', version);
     console.log("Local storage cleaned for production!");

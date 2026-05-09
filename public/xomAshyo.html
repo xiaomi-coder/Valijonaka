@@ -117,7 +117,8 @@
       <button class="tab active" onclick="switchTab('ombor',this)">🏠 Ombor holati</button>
       <button class="tab" onclick="switchTab('kirim',this)">📥 Kirim qilish</button>
       <button class="tab" onclick="switchTab('jurnal',this)">📋 Kirim jurnali</button>
-      <button class="tab" onclick="switchTab('yetkazuvchi',this)">🚚 Yetkazuvchilar</button>
+      <button class="tab" onclick="switchTab('kategoriya',this)">⚙️ Kategoriyalar</button>
+      <button class="tab" onclick="switchTab('yetkazuvchi',this)">👥 Mijozlar</button>
     </div>
 
     <!-- OMBOR -->
@@ -126,7 +127,7 @@
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;" id="omborKartalar"></div>
       <div class="card" style="margin:0;">
         <div class="card-header"><div class="card-title">📋 Ombor harakatlari</div>
-          <select id="omborTurFilter" onchange="renderOmborTarix()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barchasi</option><option value="qora">Qora plastik</option><option value="rangli">Rangli plastik</option><option value="rezina">Rezina</option></select>
+          <select id="omborTurFilter" onchange="renderOmborTarix()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barchasi</option></select>
         </div>
         <table>
           <thead><tr><th>Sana</th><th>Tur</th><th>Harakat</th><th>Miqdor</th><th>Kimdan/Nima uchun</th><th>Narx</th><th>Qoldiq</th></tr></thead>
@@ -144,7 +145,7 @@
             <div class="card-body">
               <div class="form-row">
                 <div class="form-group"><label>Sana</label><input type="date" id="kSana"></div>
-                <div class="form-group"><label>Yetkazuvchi (kimdan olingan)</label>
+                <div class="form-group"><label>Mijoz (kimdan olingan)</label>
                   <select id="kYetkazuvchi">
                     <option value="">— Tanlang yoki yangi —</option>
                   </select>
@@ -153,26 +154,25 @@
               <div class="form-row">
                 <div class="form-group"><label>Xom ashyo turi</label>
                   <div style="display:flex;gap:8px;">
-                    <select id="kTur" onchange="turTanlash()" style="flex:1;"><option value="">— Tanlang —</option></select>
-                    <button class="btn btn-secondary" style="padding:0 12px;" onclick="addYangiTur()">+</button>
+                    <select id="kTur" onchange="turTanlash()" style="flex:1;"></select>
+                    <button class="btn btn-secondary" style="padding:0 12px;font-size:16px;" onclick="switchTab('kategoriya', document.querySelector('.tab:last-child'))" title="Kategoriyalarni boshqarish">⚙️</button>
                   </div>
                 </div>
                 <div class="form-group"><label>Ombordagi joriy qoldiq</label><input id="kQoldiq" readonly placeholder="—"></div>
               </div>
               <div class="form-row-3">
                 <div class="form-group"><label>Miqdor (kg)</label><input type="number" id="kKg" placeholder="0" oninput="calcKirim()"></div>
-                <div class="form-group"><label>Narx (so’m/kg)</label><input type="number" id="kNarx" placeholder="0" oninput="calcKirim()"></div>
+                <div class="form-group"><label>Narx (so’m/kg)</label><input type="text" inputmode="numeric" oninput="fmtSum(this); calcKirim()" id="kNarx" placeholder="0"></div>
                 <div class="form-group"><label>Jami summa</label><input id="kJami" readonly placeholder="0"></div>
               </div>
-              <div class="form-row">
-                <div class="form-group"><label>To'lov holati</label>
-                  <select id="kTolov"><option value="tolangan">✅ To’langan</option><option value="qarz">📋 Qarzga</option><option value="qisman">⚠️ Qisman</option></select>
-                </div>
-                <div class="form-group"><label>Moshina / Transport</label><input id="kMoshina" placeholder="01 A 234 BC"></div>
+              <div class="form-group" style="margin-bottom:16px;">
+                <label>To'lov holati</label>
+                <select id="kTolov"><option value="tolangan">✅ To’langan</option><option value="qarz">📋 Qarzga</option><option value="qisman">⚠️ Qisman</option></select>
+                <input type="hidden" id="kMoshina" value="">
               </div>
               <div class="form-group"><label>Izoh</label><textarea id="kIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
               <div style="display:flex;gap:10px;margin-top:4px;">
-                <button class="btn btn-primary" style="flex:1;" onclick="saveKirim()" id="btnSaveKirim">✅ Kirimni saqlash</button>
+                <button class="btn btn-primary"  onclick="saveKirim()" id="btnSaveKirim">✅ Kirimni saqlash</button>
                 <button class="btn btn-secondary" onclick="resetKirim()">🔄 Tozalash</button>
               </div>
             </div>
@@ -198,34 +198,61 @@
         <div class="stat-card g"><div class="lbl">Bu oy kirim (kg)</div><div class="val" id="jStKg">0</div><div class="ico">📥</div></div>
         <div class="stat-card a"><div class="lbl">Bu oy summa</div><div class="val" id="jStSum">0</div><div class="ico">💰</div><div class="sub">so’m</div></div>
         <div class="stat-card b"><div class="lbl">Kirimlar soni</div><div class="val" id="jStSon">0</div><div class="ico">📋</div></div>
-        <div class="stat-card r"><div class="lbl">Qarz (yetkazuvchiga)</div><div class="val" id="jStQarz">0</div><div class="ico">💳</div><div class="sub">so’m</div></div>
+        <div class="stat-card r"><div class="lbl">Qarz (mijozga)</div><div class="val" id="jStQarz">0</div><div class="ico">💳</div><div class="sub">so’m</div></div>
       </div>
       <div class="card" style="margin:0;">
         <div class="card-header">
           <div class="card-title">Kirimlar jurnali</div>
           <div style="display:flex;gap:8px;">
-            <select id="jFilterTur" onchange="renderJurnal()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barcha turlar</option><option value="qora">Qora plastik</option><option value="rangli">Rangli plastik</option><option value="rezina">Rezina</option></select>
-            <select id="jFilterTolov" onchange="renderJurnal()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barcha to'lovlar</option><option value="tolangan">To’langan</option><option value="qarz">Qarz</option></select>
+            <select id="jFilterTur" onchange="renderJurnal()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barcha turlar</option></select>
+            <select id="jFilterTolov" onchange="renderJurnal()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;outline:none;font-family:'Onest',sans-serif;"><option value="">Barcha to'lovlar</option><option value="tolangan">To'langan</option><option value="qarz">Qarz</option></select>
             <button class="btn btn-sm btn-secondary" onclick="exportJurnal()">📥 Eksport</button>
           </div>
         </div>
         <table>
-          <thead><tr><th>#</th><th>Sana</th><th>Yetkazuvchi</th><th>Tur</th><th>Kg</th><th>Narx/kg</th><th>Jami</th><th>To'lov</th><th>Amal</th></tr></thead>
+          <thead><tr><th>#</th><th>Sana</th><th>Mijoz</th><th>Tur</th><th>Kg</th><th>Narx/kg</th><th>Jami</th><th>To'lov</th><th>Amal</th></tr></thead>
           <tbody id="jurnalBody"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- YETKAZUVCHILAR -->
+    <!-- YETKAZUVCHILAR -> MIJOZLAR -->
     <div class="page" id="tab-yetkazuvchi">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:16px;font-weight:700;">🚚 Yetkazuvchilar</div>
-        <button class="btn btn-primary" onclick="openModal('yetkazuvchiModal')">+ Yangi yetkazuvchi</button>
+        <div style="font-size:16px;font-weight:700;">👥 Mijozlar</div>
+        <button class="btn btn-primary" onclick="openModal('yetkazuvchiModal')">+ Yangi mijoz</button>
+      </div>
+
+      <div class="stats-mini" style="margin-bottom: 20px;">
+        <div class="stat-mini g">
+          <div class="lbl">Umumiy bizning haqqimiz</div>
+          <div class="val" id="xomUmumiyHaq" style="color:var(--primary)">0</div>
+          <div class="sub">so'm (Mijozlar qarzi)</div>
+        </div>
+        <div class="stat-mini r">
+          <div class="lbl">Umumiy bizning qarzimiz</div>
+          <div class="val" id="xomUmumiyQarz" style="color:var(--danger)">0</div>
+          <div class="sub">so'm (Mijozlardan qarzimiz)</div>
+        </div>
       </div>
       <div class="card" style="margin:0;">
         <table>
-          <thead><tr><th>Nomi</th><th>Manzil</th><th>Telefon</th><th>Xom ashyo turi</th><th>Jami yuborgan (summa)</th><th>Amal</th></tr></thead>
+          <thead><tr><th>Mijoz</th><th>Telefon</th><th>Tur</th><th>Jami kirim (so'm)</th><th>QARZ HOLATI</th><th>Amal</th></tr></thead>
           <tbody id="yetkazuvchiBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KATEGORIYALAR -->
+    <div class="page" id="tab-kategoriya">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:700;">⚙️ Xom ashyo kategoriyalari</div>
+        <button class="btn btn-primary" onclick="openAddKategoriya()">+ Yangi kategoriya</button>
+      </div>
+      <div class="card" style="margin:0;">
+        <table>
+          <thead><tr><th>#</th><th>Ikonka</th><th>Nomi</th><th>Min. qoldiq (kg)</th><th>Amal</th></tr></thead>
+          <tbody id="kategoriyaBody"></tbody>
         </table>
       </div>
     </div>
@@ -249,12 +276,12 @@
 
 <!-- YETKAZUVCHI MODAL -->
 <div class="modal-overlay" id="yetkazuvchiModal">
-  <div class="modal" style="width:460px;">
-    <div class="modal-header"><h3>🚚 Yangi yetkazuvchi</h3><button class="modal-close" onclick="closeModal('yetkazuvchiModal')">✕</button></div>
+  <div class="modal" style="width:400px">
+    <div class="modal-header"><h3>👥 Yangi mijoz</h3><button class="modal-close" onclick="closeModal('yetkazuvchiModal')">✕</button></div>
     <div class="modal-body">
-      <div class="form-row"><div class="form-group"><label>Nomi</label><input id="yNomi" placeholder="Korxona nomi"></div><div class="form-group"><label>Manzil</label><input id="yManzil" placeholder="Shahar"></div></div>
-      <div class="form-row"><div class="form-group"><label>Telefon</label><input id="yTel" placeholder="+998"></div><div class="form-group"><label>Xom ashyo turi</label><select id="yTur"><option value="barchasi">Barchasi</option><option value="qora">Qora plastik</option><option value="rangli">Rangli plastik</option><option value="rezina">Rezina</option></select></div></div>
-      <div class="form-group"><label>Izoh</label><textarea id="yIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
+      <div class="form-row"><div class="form-group"><label>Nomi</label><input id="yNomi" placeholder="Korxona nomi"></div><div class="form-group"><label>Telefon</label><input id="yTel" placeholder="+998"></div></div>
+      <div class="form-group"><label>Xom ashyo turi</label><select id="yTur"></select></div>
+      <div class="form-group"><label>Izoh (ixtiyoriy)</label><textarea id="yIzoh" rows="2" placeholder="Qo'shimcha..."></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('yetkazuvchiModal')">Bekor</button><button class="btn btn-primary" onclick="saveYetkazuvchi()">Saqlash</button></div>
   </div>
@@ -267,12 +294,30 @@ document.getElementById('kSana').value = new Date().toISOString().split('T')[0];
 
 let kirimlar = [];
 let yetkazuvchilar = [];
+let xomTolovlar = [];
 let partiyalar = [];
 const OMBOR_BOSHL = { qora: 0, rangli: 0, rezina: 0 };
 
+function getXomTurlar() {
+  return window.GLOBAL_XOM_TURLAR || [];
+}
+
 async function initData() {
   try {
+    let xRes = await API.get('/xom-turlar');
+    if (!xRes || xRes.length === 0) {
+      xRes = [
+        {"id":"qora","nomi":"Qora plastik","ico":"🖤","min":500},
+        {"id":"rangli","nomi":"Rangli plastik","ico":"💙","min":300},
+        {"id":"qogoz","nomi":"Qog'oz / Karton","ico":"📄","min":200},
+        {"id":"rezina","nomi":"Rezina","ico":"⚫","min":1000}
+      ];
+      await API.post('/xom-turlar', { data: xRes });
+    }
+    window.GLOBAL_XOM_TURLAR = xRes;
+    
     kirimlar = await API.get('/xom-ashyo') || [];
+    xomTolovlar = await API.get('/xom-tolovlar') || [];
     yetkazuvchilar = await API.get('/yetkazuvchilar') || [];
     partiyalar = await API.get('/partiyalar') || [];
 
@@ -282,48 +327,45 @@ async function initData() {
     renderKirimOmborPanel();
     renderLastKirimlar();
   } catch (e) {
-    if(typeof toast==='function') toast(e.message, 'error');
+    if(typeof toast==='function') toast(e.message + ' ' + (e.stack || ''), 'error');
   }
 }
 
 function loadKirimTurlari() {
   const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
+  const opts = turlar.map(t => `<option value="${t.id}">${t.ico} ${t.nomi}</option>`).join('');
+
+  // Kirim select
   const sel = document.getElementById('kTur');
-  if(sel) {
-    sel.innerHTML = '<option value="">— Tanlang —</option>' + 
-      turlar.map(t => `<option value="${t.id}">${t.ico} ${t.nomi}</option>`).join('');
-  }
+  if(sel) sel.innerHTML = '<option value="">— Tanlang —</option>' + opts;
+
+  // Ombor filter
+  const oFil = document.getElementById('omborTurFilter');
+  if(oFil) oFil.innerHTML = '<option value="">Barchasi</option>' + opts;
+
+  // Jurnal filter
+  const jFil = document.getElementById('jFilterTur');
+  if(jFil) jFil.innerHTML = '<option value="">Barcha turlar</option>' + opts;
+
+  // Yetkazuvchi modal select
+  const yTur = document.getElementById('yTur');
+  if(yTur) yTur.innerHTML = '<option value="barchasi">Barchasi</option>' + opts;
 }
 
 function omborQoldiq(tur) {
-  const kirdi = kirimlar.filter(k => k.tur === tur).reduce((s, k) => s + k.kg, 0);
-  const sarflandi = partiyalar.filter(p => p.xomAshyoTuri === tur).reduce((s, p) => s + p.kirganKg, 0);
+  const kirdi = kirimlar.filter(k => (k.tur||'').toLowerCase() === (tur||'').toLowerCase()).reduce((s, k) => s + k.kg, 0);
+  const sarflandi = partiyalar.filter(p => ((p.xom_ashyo_turi || p.xomAshyoTuri)||'').toLowerCase() === (tur||'').toLowerCase()).reduce((s, p) => s + (parseFloat(p.kirgan_kg || p.kirganKg) || 0), 0);
   return (OMBOR_BOSHL[tur] || 0) + kirdi - sarflandi;
-}
-
-function addYangiTur() {
-  const nomi = prompt("Yangi xom ashyo nomini kiriting (masalan: Oq plastik):");
-  if (!nomi) return;
-  const id = nomi.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
-  if (turlar.find(t => t.id === id)) return alert('Bu tur allaqachon mavjud!');
-  turlar.push({ id, nomi, ico: '📦' });
-  OMBOR_BOSHL[id] = 0;
-  if(typeof saveXomTur === 'function') saveXomTur(turlar); else localStorage.setItem('xomTurlar', JSON.stringify(turlar));
-  loadKirimTurlari();
-  renderKirimOmborPanel();
-  renderOmbor();
-  document.getElementById('kTur').value = id;
-  turTanlash();
 }
 
 
 
 function setupYetkazuvchiSelect() {
   const sel = document.getElementById('kYetkazuvchi');
+  if(!sel) return;
   sel.innerHTML = '<option value="">— Tanlang yoki yangi —</option>' + 
     yetkazuvchilar.map(y => `<option value="${y.nomi}">${y.nomi}</option>`).join('') + 
-    '<option value="yangi">+ Yangi yetkazuvchi qo’shish</option>';
+    '<option value="yangi">+ Yangi mijoz qo’shish</option>';
 }
 
 document.getElementById('kYetkazuvchi').addEventListener('change', function() {
@@ -338,19 +380,21 @@ function turTanlash() {
 
 function calcKirim() {
   const kg = parseFloat(document.getElementById('kKg').value) || 0;
-  const narx = parseFloat(document.getElementById('kNarx').value) || 0;
+  const narx = parseSum('kNarx') || 0;
   document.getElementById('kJami').value = kg && narx ? (kg * narx).toLocaleString() + ' so’m' : '';
 }
 
+let isSavingKirim = false;
 async function saveKirim() {
+  if (isSavingKirim) return;
   const tur = document.getElementById('kTur').value;
   const yetkazuvchi = document.getElementById('kYetkazuvchi').value;
   const kg = parseFloat(document.getElementById('kKg').value) || 0;
-  const narx = parseFloat(document.getElementById('kNarx').value) || 0;
+  const narx = parseSum('kNarx') || 0;
   const sana = document.getElementById('kSana').value;
   
   if (!tur) return alert('Xom ashyo turini tanlang!');
-  if (!yetkazuvchi || yetkazuvchi === 'yangi') return alert('Yetkazuvchini tanlang!');
+  if (!yetkazuvchi || yetkazuvchi === 'yangi') return alert('Mijozni tanlang!');
   if (!kg) return alert('Miqdorni kiriting!');
   if (!narx) return alert('Narxni kiriting!');
   
@@ -361,6 +405,10 @@ async function saveKirim() {
     moshina: document.getElementById('kMoshina').value, 
     izoh: document.getElementById('kIzoh').value, oy
   };
+
+  isSavingKirim = true;
+  const btn = document.getElementById('btnSaveKirim');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saqlanmoqda...'; }
 
   try {
     const k = await API.post('/xom-ashyo', payload);
@@ -373,6 +421,9 @@ async function saveKirim() {
     turTanlash(); // update local qoldiq view
   } catch (e) {
     alert(e.message);
+  } finally {
+    isSavingKirim = false;
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Kirimni saqlash'; }
   }
 }
 
@@ -401,7 +452,7 @@ function renderKirimOmborPanel() {
 function renderLastKirimlar() {
   const last = kirimlar.slice(0, 5);
   const TN = { qora: 'Qora', rangli: 'Rangli', rezina: 'Rezina', boshqa: 'Boshqa' };
-  document.getElementById('lastKirimlar').innerHTML = last.length ? last.map(k => `<tr><td>${TN[k.tur] || k.tur}</td><td>${k.kg.toLocaleString()} kg</td><td style="font-size:11px;color:var(--text-muted);">${k.yetkazuvchi.split(' ').slice(0, 2).join(' ')}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:8px;">Kirim yo’q</td></tr>';
+  document.getElementById('lastKirimlar').innerHTML = last.length ? last.map(k => `<tr><td>${TN[k.tur] || k.tur}</td><td>${k.kg.toLocaleString()} kg</td><td style="font-size:11px;color:var(--text-muted);">${(k.yetkazuvchi || 'N/A').split(' ').slice(0, 2).join(' ')}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:8px;">Kirim yo’q</td></tr>';
 }
 
 // OMBOR
@@ -410,8 +461,8 @@ function renderOmbor() {
   let alerts = '';
   document.getElementById('omborKartalar').innerHTML = turlar.map(t => {
     const q = omborQoldiq(t.id);
-    const kirdi = kirimlar.filter(k => k.tur === t.id).reduce((s, k) => s + k.kg, 0);
-    const sarflandi = partiyalar.filter(p => p.xomAshyoTuri === t.id).reduce((s, p) => s + p.kirganKg, 0);
+    const kirdi = kirimlar.filter(k => (k.tur||'').toLowerCase() === t.id.toLowerCase()).reduce((s, k) => s + k.kg, 0);
+    const sarflandi = partiyalar.filter(p => ((p.xom_ashyo_turi || p.xomAshyoTuri)||'').toLowerCase() === t.id.toLowerCase()).reduce((s, p) => s + (parseFloat(p.kirgan_kg || p.kirganKg)||0), 0);
     const holat = q < t.min ? 'red' : q < t.min * 2 ? 'amber' : 'green';
     if (q < t.min) alerts += `<div class="alert warning">⚠️ ${t.ico || '📦'} ${t.nomi}: ${q.toLocaleString()} kg — minimal darajadan (${t.min} kg) past!</div>`;
     const max = (OMBOR_BOSHL[t.id] || 0) + kirdi;
@@ -432,9 +483,9 @@ function renderOmborTarix() {
   const fil = document.getElementById('omborTurFilter').value;
   const TN = { qora: 'Qora plastik', rangli: 'Rangli plastik', rezina: 'Rezina', boshqa: 'Boshqa' };
   let harakatlar = [];
-  kirimlar.forEach(k => { if (!fil || k.tur === fil) harakatlar.push({ sana: k.sana, tur: k.tur, harakat: 'Kirim', miqdor: '+' + k.kg.toLocaleString(), kimdan: k.yetkazuvchi, narx: k.narx.toLocaleString(), rang: 'var(--primary)' }); });
-  partiyalar.forEach(p => { if (!fil || p.xomAshyoTuri === fil) harakatlar.push({ sana: p.sana, tur: p.xomAshyoTuri, harakat: 'Sarflandi', miqdor: '-' + p.kirganKg.toLocaleString(), kimdan: 'Eritishga sarflandi', narx: '—', rang: 'var(--warning)' }); });
-  harakatlar.sort((a, b) => b.sana.localeCompare(a.sana));
+  kirimlar.forEach(k => { if (!fil || (k.tur||'').toLowerCase() === fil.toLowerCase()) harakatlar.push({ sana: k.sana, tur: k.tur, harakat: 'Kirim', miqdor: '+' + (parseFloat(k.kg)||0).toLocaleString(), kimdan: k.yetkazuvchi, narx: (parseFloat(k.narx)||0).toLocaleString(), rang: 'var(--primary)' }); });
+  partiyalar.forEach(p => { const xTur = p.xom_ashyo_turi || p.xomAshyoTuri; const kirKg = parseFloat(p.kirgan_kg || p.kirganKg) || 0; if (!fil || (xTur||'').toLowerCase() === fil.toLowerCase()) harakatlar.push({ sana: p.sana, tur: xTur, harakat: 'Sarflandi', miqdor: '-' + kirKg.toLocaleString(), kimdan: 'Eritishga sarflandi', narx: '—', rang: 'var(--warning)' }); });
+  harakatlar.sort((a, b) => (b.sana||'').localeCompare(a.sana||''));
   const tList = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
   document.getElementById('omborTarixBody').innerHTML = harakatlar.length ? harakatlar.map(h => {
     const n = tList.find(x => x.id === h.tur) || {nomi:h.tur};
@@ -453,7 +504,7 @@ function renderJurnal() {
   document.getElementById('jStKg').textContent = oyList.reduce((s, k) => s + k.kg, 0).toLocaleString();
   document.getElementById('jStSum').textContent = oyList.reduce((s, k) => s + k.jami, 0).toLocaleString();
   document.getElementById('jStSon').textContent = oyList.length;
-  document.getElementById('jStQarz').textContent = kirimlar.filter(k => k.tolov === 'qarz').reduce((s, k) => s + k.jami, 0).toLocaleString();
+  document.getElementById('jStQarz').textContent = kirimlar.filter(k => k.tolov === 'qarz').reduce((s, k) => s + (k.qarz_sum !== undefined ? k.qarz_sum : k.jami), 0).toLocaleString();
   
   const tList = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
   
@@ -493,18 +544,106 @@ function exportJurnal() {
 // YETKAZUVCHILAR
 function renderYetkazuvchilar() {
   const TN = { qora: 'Qora plastik', rangli: 'Rangli plastik', rezina: 'Rezina', barchasi: 'Barchasi' };
-  document.getElementById('yetkazuvchiBody').innerHTML = yetkazuvchilar.map(y => `<tr>
-    <td><b>${y.nomi}</b></td><td>${y.manzil}</td><td>${y.tel}</td>
-    <td>${TN[y.tur] || y.tur}</td>
-    <td>Mavjud emas</td>
-    <td><button class="btn btn-sm btn-danger" onclick="deleteYetkazuvchi('${y._id}')">🗑</button></td>
-  </tr>`).join('');
+  
+  // Hisoblash
+  const stats = {};
+  yetkazuvchilar.forEach(y => {
+    stats[y.nomi] = { jami: 0, qarz: 0 };
+  });
+  
+  kirimlar.forEach(k => {
+    const n = k.yetkazuvchi || "Noma'lum";
+    if (!stats[n]) stats[n] = { jami: 0, qarz: 0 };
+    stats[n].jami += (k.jami || 0);
+    // xom ashyoda qarz faqat k.tolov==='qarz' bo'lsa yoki partial bo'lsa k.qarz_sum
+    let q = 0;
+    if (k.tolov === 'qarz') q = (k.qarz_sum !== undefined ? k.qarz_sum : (k.jami||0));
+    stats[n].qarz += q;
+  });
+
+  let totalHaqqimiz = 0;
+  let totalQarzimiz = 0;
+
+  document.getElementById('yetkazuvchiBody').innerHTML = yetkazuvchilar.map(y => {
+    const s = stats[y.nomi] || { jami:0, qarz:0 };
+    let qarzHTML = '';
+    if (s.qarz > 0) {
+      totalQarzimiz += s.qarz;
+      qarzHTML = `<div style="color:var(--danger);font-weight:700">Qarz: ${s.qarz.toLocaleString()} so'm</div>`;
+    } else if (s.qarz < 0) {
+      totalHaqqimiz += Math.abs(s.qarz);
+      qarzHTML = `<div style="color:var(--primary);font-weight:700">Haqqimiz: ${Math.abs(s.qarz).toLocaleString()} so'm</div>`;
+    } else {
+      qarzHTML = `<span class="badge green">Qarz yo'q</span>`;
+    }
+    qarzHTML += `<br><button class="btn btn-sm btn-primary" style="margin-top:4px" onclick="tolovQilishXom('${y.nomi}')">💳 To'lov</button>`;
+    return `<tr>
+      <td><b>${y.nomi}</b></td>
+      <td>${y.telefon || y.tel || '—'}</td>
+      <td>${TN[y.tur] || y.tur || 'Barchasi'}</td>
+      <td>${s.jami.toLocaleString()} so'm</td>
+      <td>${qarzHTML}</td>
+      <td style="min-width: 130px;">
+        <button class="btn btn-sm btn-secondary" onclick="showXomSverka('${y.nomi}')">📊</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteYetkazuvchi('${y._id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  if (document.getElementById('xomUmumiyHaq')) {
+    document.getElementById('xomUmumiyHaq').textContent = totalHaqqimiz.toLocaleString();
+    document.getElementById('xomUmumiyQarz').textContent = totalQarzimiz.toLocaleString();
+  }
+}
+
+function showXomSverka(nomi) {
+  const TN = { qora: 'Qora plastik', rangli: 'Rangli plastik', rezina: 'Rezina', barchasi: 'Barchasi' };
+  const kList = kirimlar.filter(k => k.yetkazuvchi === nomi).map(k => ({
+    sana: k.sana,
+    izoh: `Kirim: ${k.kg} kg ` + (TN[k.tur] || k.tur || ''),
+    tolov: 0,
+    qarz: parseFloat(k.jami) || 0,
+    timestamp: new Date(k.createdAt || k.sana || 0).getTime()
+  }));
+
+  const tList = xomTolovlar.filter(t => t.mijoz === nomi).map(t => ({
+    sana: t.sana ? t.sana.split('T')[0] : '',
+    izoh: t.izoh || "To'lov",
+    tolov: parseFloat(t.summa) || 0,
+    qarz: 0,
+    timestamp: new Date(t.created_at || t.sana || 0).getTime()
+  }));
+
+  const history = [...kList, ...tList].sort((a,b) => a.timestamp - b.timestamp);
+  
+  let qoldiq = 0;
+  let html = '';
+  for(const h of history) {
+    qoldiq += h.qarz;
+    qoldiq -= h.tolov;
+    html += `<tr>
+      <td>${h.sana}</td>
+      <td>${h.izoh}</td>
+      <td style="color:var(--danger)">${h.qarz > 0 ? h.qarz.toLocaleString() : ''}</td>
+      <td style="color:var(--primary)">${h.tolov > 0 ? h.tolov.toLocaleString() : ''}</td>
+      <td style="font-weight:700">${qoldiq.toLocaleString()}</td>
+    </tr>`;
+  }
+
+  if(!history.length) {
+    html = `<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-muted)">Ma'lumot yo'q</td></tr>`;
+  }
+
+  document.getElementById('sverkaModalT').textContent = `📊 Sverka – ${nomi}`;
+  document.getElementById('sverkaBody').innerHTML = html;
+  document.getElementById('sverkaYakuniy').innerHTML = `Yakuniy qarz: <span style="color:${qoldiq > 0 ? 'var(--danger)' : 'var(--primary)'}">${qoldiq.toLocaleString()} so'm</span>`;
+  openModal('sverkaModal');
 }
 
 async function saveYetkazuvchi() {
   const nomi = document.getElementById('yNomi').value.trim();
   if (!nomi) return alert('Nomini kiriting!');
-  const payload = { nomi, manzil: document.getElementById('yManzil').value, tel: document.getElementById('yTel').value, tur: document.getElementById('yTur').value, izoh: document.getElementById('yIzoh').value };
+  const payload = { nomi, tel: document.getElementById('yTel').value, izoh: document.getElementById('yIzoh').value };
   try {
     const y = await API.post('/yetkazuvchilar', payload);
     yetkazuvchilar.push(y);
@@ -526,6 +665,78 @@ async function deleteYetkazuvchi(id) {
   } catch(e) { alert(e.message); }
 }
 
+let tolovMijozTemp = '';
+let tolovQarzTemp = 0;
+
+function tolovQilishXom(nomi) {
+  tolovMijozTemp = nomi;
+  const s = kirimlar.filter(k => k.yetkazuvchi === nomi && k.tolov === 'qarz' && (k.qarz_sum === undefined || k.qarz_sum !== 0));
+  tolovQarzTemp = s.reduce((a,k) => a + (k.qarz_sum !== undefined ? k.qarz_sum : (k.jami||0)), 0);
+  
+  document.getElementById('xomTolovModalMijoz').textContent = nomi;
+  document.getElementById('xomTolovModalUmumiy').textContent = tolovQarzTemp.toLocaleString();
+  document.getElementById('xomTolovMiqdor').value = '';
+  openModal('xomTolovModal');
+}
+
+let isSavingTolov = false;
+async function tasdiqlashXomTolov() {
+  if (isSavingTolov) return;
+  const pStr = document.getElementById('xomTolovMiqdor').value.replace(/[^0-9]/g, '');
+  if(!pStr) return;
+  let qoldiqP = parseFloat(pStr) || 0;
+  if(qoldiqP <= 0) return;
+  
+  isSavingTolov = true;
+  const btn = document.querySelector('#xomTolovModal .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Kuting...'; }
+
+  // Oynani darhol yopish
+  closeModal('xomTolovModal');
+
+  try {
+    const tolandiSumma = qoldiqP;
+    const nomi = tolovMijozTemp;
+    const s = kirimlar.filter(k => k.yetkazuvchi === nomi && k.tolov === 'qarz' && (k.qarz_sum === undefined || k.qarz_sum > 0));
+
+    for (const k of s) {
+      if(qoldiqP <= 0) break;
+      let kQarz = (k.qarz_sum !== undefined ? k.qarz_sum : k.jami);
+      let tolandi = Math.min(kQarz, qoldiqP);
+      kQarz -= tolandi;
+      qoldiqP -= tolandi;
+      
+      k.qarz_sum = kQarz;
+      if(kQarz === 0) k.tolov = 'tolangan';
+      
+      try {
+        await API.put('/xom-ashyo/' + k._id, { qarz_sum: k.qarz_sum, tolov: k.tolov });
+      } catch(e) {}
+    }
+    
+    // Ortiqcha to'lov bo'lsa (haqqimiz yuzaga kelsa) salbiy kirim yozamiz
+    if (qoldiqP > 0) {
+      try {
+        const qPay = { yetkazuvchi: nomi, sana: new Date().toISOString().split('T')[0], oy: new Date().getMonth()+1, tur: 'ortiqcha', kg: 0, narx: 0, jami: -qoldiqP, tolov: 'qarz', qarz_sum: -qoldiqP, izoh: "Ortiqcha to'lov (Haqqimiz)" };
+        const nk = await API.post('/xom-ashyo', qPay);
+        if(nk) kirimlar.push(nk);
+      } catch(e) {}
+    }
+
+    // Sverka jadvali uchun yozib qoyamiz
+    try {
+      const yTolov = await API.post('/xom-tolovlar', { sana: new Date().toISOString().split('T')[0], mijoz: nomi, summa: tolandiSumma, izoh: "Mijozga to'lov" });
+      if(yTolov) xomTolovlar.push(yTolov);
+    } catch(e) {}
+
+    renderYetkazuvchilar();
+    renderKirimOmborPanel();
+  } finally {
+    isSavingTolov = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Saqlash'; }
+  }
+}
+
 function switchTab(id, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -534,12 +745,114 @@ function switchTab(id, btn) {
   if (id === 'ombor') renderOmbor();
   if (id === 'jurnal') renderJurnal();
   if (id === 'yetkazuvchi') renderYetkazuvchilar();
+  if (id === 'kategoriya') renderKategoriyalar();
+}
+
+async function openAddKategoriya() {
+  const nomi = prompt("Yangi kategoriya nomini kiriting (masalan: Qora plastik):");
+  if (!nomi || !nomi.trim()) return;
+  const id = nomi.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/__+/g,'_') || 'tur_' + Date.now();
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
+  if (turlar.find(t => t.id === id)) return alert('Bu kategoriya allaqachon mavjud!');
+  const ico = prompt("Ikonka kiriting (emoji, masalan: 📦 🔵 🟡 ⚪):") || '📦';
+  const minStr = prompt("Minimal ombor qoldig'i (kg, bo'sh = 500):");
+  const min = parseInt(minStr) || 500;
+  turlar.push({ id, nomi: nomi.trim(), ico, min });
+  window.GLOBAL_XOM_TURLAR = turlar;
+  await API.post('/xom-turlar', { data: turlar });
+  loadKirimTurlari();
+  renderKirimOmborPanel();
+  renderOmbor();
+  renderKategoriyalar();
+}
+
+async function deleteKategoriya(id) {
+  if (!confirm('Bu kategoriyani o\'chiramanmi?')) return;
+  let turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
+  turlar = turlar.filter(t => t.id !== id);
+  window.GLOBAL_XOM_TURLAR = turlar;
+  await API.post('/xom-turlar', { data: turlar });
+  loadKirimTurlari();
+  renderKirimOmborPanel();
+  renderOmbor();
+  renderKategoriyalar();
+}
+
+function renderKategoriyalar() {
+  const turlar = typeof getXomTurlar === 'function' ? getXomTurlar() : [];
+  const tbody = document.getElementById('kategoriyaBody');
+  if (!tbody) return;
+  tbody.innerHTML = turlar.length ? turlar.map((t, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td style="font-size:22px;">${t.ico || '📦'}</td>
+      <td><b>${t.nomi}</b></td>
+      <td>${(t.min || 500).toLocaleString()} kg</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteKategoriya('${t.id}')">🗑 O'chirish</button></td>
+    </tr>
+  `).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Kategoriya yo\'q. "+ Yangi kategoriya" tugmasini bosing.</td></tr>';
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+</script>
 
+<!-- Tolov Modal -->
+<div id="xomTolovModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>💸 To'lov qilish</h3>
+      <button class="modal-close" onclick="closeModal('xomTolovModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:14px; margin-bottom:16px;">
+        Mijoz: <b id="xomTolovModalMijoz"></b><br>
+        Umumiy qarz holati: <b id="xomTolovModalUmumiy" style="color:var(--danger)">0</b> so'm
+      </div>
+      <div class="form-group">
+        <label>To'lov miqdorini kiriting (so'm)</label>
+        <input type="text" id="xomTolovMiqdor" inputmode="numeric" oninput="fmtSum(this)" placeholder="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('xomTolovModal')">Bekor qilish</button>
+      <button class="btn btn-primary" onclick="tasdiqlashXomTolov()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sverka Modal -->
+<div id="sverkaModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="sverkaModalT">📊 Mijoz Sverkasi</h3>
+      <button class="btn btn-secondary" onclick="closeModal('sverkaModal')" style="padding:0;width:32px;height:32px;">✕</button>
+    </div>
+    <div class="modal-body" style="max-height:60vh;overflow-y:auto;padding:0">
+      <table class="table" style="margin:0">
+        <thead>
+          <tr>
+            <th>Sana</th>
+            <th>Ma'lumot</th>
+            <th style="color:var(--danger)">Kirim (Qarz +)</th>
+            <th style="color:var(--primary)">O'tkazma (To'lov -)</th>
+            <th>Qoldiq</th>
+          </tr>
+        </thead>
+        <tbody id="sverkaBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <div id="sverkaYakuniy" style="font-weight:700;font-size:16px;"></div>
+      <button class="btn btn-primary" onclick="closeModal('sverkaModal')">Yopish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 initData();
 </script>
 </body>

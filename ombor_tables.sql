@@ -1,0 +1,32 @@
+CREATE TABLE IF NOT EXISTS ombor_mijozlar (
+  id SERIAL PRIMARY KEY,
+  nomi VARCHAR(255) NOT NULL,
+  tel VARCHAR(50),
+  qarz NUMERIC DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ombor_kirimlar (
+  id SERIAL PRIMARY KEY,
+  sana VARCHAR(20),
+  oy INTEGER,
+  mijoz VARCHAR(255),
+  tur VARCHAR(255),
+  kg NUMERIC,
+  narx NUMERIC,
+  jami NUMERIC,
+  tolov VARCHAR(50),
+  "naqdSumma" NUMERIC DEFAULT 0,
+  qoshgan VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ombor_tolovlar (
+  id SERIAL PRIMARY KEY,
+  sana VARCHAR(20) DEFAULT to_char(CURRENT_DATE, 'YYYY-MM-DD'),
+  mijoz VARCHAR(255),
+  summa NUMERIC,
+  izoh TEXT,
+  qoshgan VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

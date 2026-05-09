@@ -19,6 +19,9 @@ const db = {
   rezSotuvlar:      new Datastore({ filename: `${DB_DIR}/rezSotuvlar.db`,      autoload: true }),
   reyslar:          new Datastore({ filename: `${DB_DIR}/reyslar.db`,          autoload: true }),
   yetkazuvchilar:   new Datastore({ filename: `${DB_DIR}/yetkazuvchilar.db`,   autoload: true }),
+  omborKirimlar:    new Datastore({ filename: `${DB_DIR}/omborKirimlar.db`,    autoload: true }),
+  omborTolovlar:    new Datastore({ filename: `${DB_DIR}/omborTolovlar.db`,    autoload: true }),
+  omborMijozlar:    new Datastore({ filename: `${DB_DIR}/omborMijozlar.db`,    autoload: true }),
 };
 
 async function initDB() {

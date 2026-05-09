@@ -69,6 +69,16 @@ router.put('/mijozlar/:id', authMiddleware, async (req, res) => {
   await db.mijozlar.update({ _id: req.params.id }, { $set: req.body });
   res.json({ ok: true });
 });
+router.put('/mijozlar/:id/tolov', authMiddleware, async (req, res) => {
+  try {
+    const mijoz = await db.mijozlar.findOne({ _id: req.params.id });
+    if (!mijoz) return res.status(404).json({ error: 'Topilmadi' });
+    const qarz = (mijoz.qarz || 0) - (req.body.summa || 0);
+    const tolangan = (mijoz.tolangan || 0) + (req.body.summa || 0);
+    await db.mijozlar.update({ _id: req.params.id }, { $set: { qarz, tolangan } });
+    res.json({ ok: true, qarz });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 router.delete('/mijozlar/:id', authMiddleware, roleCheck('admin', 'menejer'), async (req, res) => {
   await db.mijozlar.remove({ _id: req.params.id });
   res.json({ ok: true });
@@ -129,6 +139,12 @@ router.post('/xom-ashyo', authMiddleware, async (req, res) => {
     res.json(doc);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+router.put('/xom-ashyo/:id', authMiddleware, async (req, res) => {
+  await db.kirimlar.update({ _id: req.params.id }, { $set: req.body });
+  res.json({ ok: true });
+});
+
 router.delete('/xom-ashyo/:id', authMiddleware, roleCheck('admin', 'menejer'), async (req, res) => {
   await db.kirimlar.remove({ _id: req.params.id });
   res.json({ ok: true });
@@ -336,6 +352,41 @@ router.get('/dashboard/stats', authMiddleware, async (req, res) => {
       mahsulotlarSoni: mahsulotlar.length,
       kamOmbor: mahsulotlar.filter(m => m.ombor < m.min).length,
     });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// OMBOR (MAHSULOT KIRIMI VA MIJOZDAN XARID)
+// ============================================================
+router.get('/ombor_kirimlar', authMiddleware, async (req, res) => {
+  const list = await db.omborKirimlar.find({}).sort({ sana: -1 });
+  res.json(list);
+});
+router.post('/ombor_kirimlar', authMiddleware, async (req, res) => {
+  try {
+    const doc = await db.omborKirimlar.insert({ ...req.body, createdAt: new Date(), qoshgan: req.user.ism });
+    res.json(doc);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.get('/ombor_tolovlar', authMiddleware, async (req, res) => {
+  const list = await db.omborTolovlar.find({}).sort({ sana: -1 });
+  res.json(list);
+});
+router.post('/ombor_tolovlar', authMiddleware, async (req, res) => {
+  try {
+    const doc = await db.omborTolovlar.insert({ ...req.body, createdAt: new Date(), qoshgan: req.user.ism });
+    res.json(doc);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.get('/ombor_mijozlar', authMiddleware, async (req, res) => {
+  const list = await db.omborMijozlar.find({}).sort({ nomi: 1 });
+  res.json(list);
+});
+router.post('/ombor_mijozlar', authMiddleware, async (req, res) => {
+  try {
+    const doc = await db.omborMijozlar.insert({ ...req.body, qarz: 0, createdAt: new Date() });
+    res.json(doc);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
