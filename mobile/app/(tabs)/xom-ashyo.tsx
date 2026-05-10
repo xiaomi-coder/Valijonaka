@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, FlatList, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, FlatList, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { API } from '@/utils/api';
@@ -305,7 +305,7 @@ export default function XomAshyoScreen() {
 
       {/* Yangi yetkazuvchi modal */}
       <Modal visible={yetModal} animationType="slide" transparent>
-        <View style={s.modalBg}><View style={s.modalCard}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} style={s.modalBg}><View style={s.modalCard}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
             <Text style={s.cardTitle}>Yangi yetkazuvchi</Text>
             <TouchableOpacity onPress={() => setYetModal(false)}><Ionicons name="close" size={24} color="#94A3B8" /></TouchableOpacity>
@@ -317,12 +317,12 @@ export default function XomAshyoScreen() {
           <TouchableOpacity style={[s.saveBtn, yetSaving && { opacity: 0.6 }]} onPress={handleAddYet} disabled={yetSaving}>
             {yetSaving ? <ActivityIndicator color="#FFF" /> : <Text style={s.saveBtnText}>Qo'shish</Text>}
           </TouchableOpacity>
-        </View></View>
+        </View></KeyboardAvoidingView>
       </Modal>
 
       {/* To'lov modal */}
       <Modal visible={tolovModal} animationType="slide" transparent>
-        <View style={s.modalBg}><View style={s.modalCard}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} style={s.modalBg}><View style={s.modalCard}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
             <View>
               <Text style={s.cardTitle}>To'lov qilish</Text>
@@ -337,7 +337,7 @@ export default function XomAshyoScreen() {
           <TouchableOpacity style={[s.saveBtn, { backgroundColor: '#10B981' }, tSaving && { opacity: 0.6 }]} onPress={handleTolov} disabled={tSaving}>
             {tSaving ? <ActivityIndicator color="#FFF" /> : <Text style={s.saveBtnText}>To'lovni tasdiqlash</Text>}
           </TouchableOpacity>
-        </View></View>
+        </View></KeyboardAvoidingView>
       </Modal>
 
       {/* Sverka Modal */}

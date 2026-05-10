@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, FlatList, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert, FlatList, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { API } from '@/utils/api';
@@ -572,7 +572,7 @@ export default function SalesScreen() {
 
       {/* To'lov modal */}
       <Modal visible={tolovModal} animationType="slide" transparent>
-        <View style={st.modalBg}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} style={st.modalBg}>
           <View style={st.modalCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <Text style={st.cardTitle}>Qarz to'lash</Text>
@@ -585,12 +585,12 @@ export default function SalesScreen() {
               <Text style={st.saveBtnText}>To'lovni saqlash</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Yangi mijoz modal */}
       <Modal visible={mijozModal} animationType="slide" transparent>
-        <View style={st.modalBg}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} style={st.modalBg}>
           <View style={st.modalCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
               <Text style={st.cardTitle}>Yangi mijoz</Text>
@@ -604,12 +604,12 @@ export default function SalesScreen() {
               {mSaving ? <ActivityIndicator color="#FFF" /> : <Text style={st.saveBtnText}>Qo'shish</Text>}
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Yangi mahsulot modal */}
       <Modal visible={mahModal} animationType="slide" transparent>
-        <View style={st.modalBg}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} style={st.modalBg}>
           <View style={st.modalCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
               <Text style={st.cardTitle}>Yangi mahsulot</Text>
@@ -623,11 +623,10 @@ export default function SalesScreen() {
               {mahSaving ? <ActivityIndicator color="#FFF" /> : <Text style={st.saveBtnText}>Qo'shish</Text>}
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
-      {/* Mijozga to'lov qilish modal */}
       <Modal visible={mTolovModal} animationType="slide" transparent>
-        <View style={st.modalBg}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} style={st.modalBg}>
           <View style={st.modalCard}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
               <View>
@@ -642,7 +641,7 @@ export default function SalesScreen() {
               {mTSaving ? <ActivityIndicator color="#FFF" /> : <Text style={st.saveBtnText}>To'lovni tasdiqlash</Text>}
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
     </View>
