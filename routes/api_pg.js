@@ -807,6 +807,53 @@ router.post('/xom-tolovlar', authMiddleware, async (req, res) => {
 // ADMIN: Test ma'lumotlarni tozalash (faqat admin uchun)
 // Foydalanuvchilar va tizim saqlanadi!
 // ============================================================
+// DASHBOARD STATS
+// ============================================================
+router.get('/dashboard/stats', authMiddleware, async (req, res) => {
+  try {
+    const bugun = new Date().toISOString().split('T')[0];
+    const oyNo = new Date().getMonth() + 1;
+
+    const [
+      { rows: bugunSotuvlar },
+      { rows: harajatlar },
+      { rows: mijozlarQarz },
+      { rows: xodimSoni },
+      { rows: mijozSoni },
+      { rows: mahsulotSoni },
+      { rows: kamOmbor }
+    ] = await Promise.all([
+      query('SELECT SUM(summa) as jami FROM sotuvlar WHERE sana=$1', [bugun]),
+      query('SELECT SUM(summa) as jami FROM harajatlar WHERE oy=$1', [oyNo]),
+      query('SELECT SUM(qarz) as jami FROM mijozlar'),
+      query('SELECT COUNT(*) as soni FROM xodimlar'),
+      query('SELECT COUNT(*) as soni FROM mijozlar'),
+      query('SELECT COUNT(*) as soni FROM mahsulotlar'),
+      query('SELECT COUNT(*) as soni FROM mahsulotlar WHERE ombor < min')
+    ]);
+
+    // oyTayyorKg using exact string manipulation or simple JS filter if needed
+    const { rows: pRows } = await query('SELECT sana, chiqgan_kg FROM ishlab_partiyalar');
+    const oyTayyorKg = pRows.reduce((acc, p) => {
+      const pOy = p.sana ? parseInt(p.sana.split('-')[1]) : 0;
+      if (pOy === oyNo) return acc + (Number(p.chiqgan_kg) || 0);
+      return acc;
+    }, 0);
+
+    res.json({
+      bugunSotuv: Number(bugunSotuvlar[0]?.jami) || 0,
+      oyHarajat: Number(harajatlar[0]?.jami) || 0,
+      jamilQarz: Number(mijozlarQarz[0]?.jami) || 0,
+      oyTayyorKg,
+      xodimlarSoni: Number(xodimSoni[0]?.soni) || 0,
+      mijozlarSoni: Number(mijozSoni[0]?.soni) || 0,
+      mahsulotlarSoni: Number(mahsulotSoni[0]?.soni) || 0,
+      kamOmbor: Number(kamOmbor[0]?.soni) || 0,
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ============================================================
 router.post('/admin/reset-data', authMiddleware, roleCheck('admin'), async (req, res) => {
   try {
     const { tasdiqlash } = req.body;
