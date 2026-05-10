@@ -58,8 +58,8 @@ export const API = {
       }
 
       if (!res.ok) {
-        // Token eskirgan yoki noto'g'ri — avtomatik logout
-        if (res.status === 401) {
+        // Token eskirgan yoki noto'g'ri — avtomatik logout (faqat login emas)
+        if (res.status === 401 && !url.includes('/auth/login')) {
           this.token = null;
           await AsyncStorage.multiRemove(['userToken', 'userData']);
           // Login sahifasiga tashlash
