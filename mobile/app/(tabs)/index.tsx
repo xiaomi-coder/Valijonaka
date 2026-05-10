@@ -15,23 +15,26 @@ export default function DashboardScreen() {
   const [kirimlar, setKirimlar] = useState<any[]>([]);
   const [yetkazuvchilar, setYetkazuvchilar] = useState<any[]>([]);
   const [xomTolovlar, setXomTolovlar] = useState<any[]>([]);
+  const [omborMijozlar, setOmborMijozlar] = useState<any[]>([]);
 
   const load = async () => {
     try {
       const ud = await AsyncStorage.getItem('userData');
       if (ud) setUserName(JSON.parse(ud).ism || 'Admin');
-      const [mRes, sRes, kRes, yRes, tRes] = await Promise.all([
+      const [mRes, sRes, kRes, yRes, tRes, oMRes] = await Promise.all([
         API.get('/mijozlar').catch(() => []),
         API.get('/sotuvlar').catch(() => []),
         API.get('/xom-ashyo').catch(() => []),
         API.get('/yetkazuvchilar').catch(() => []),
         API.get('/xom-tolovlar').catch(() => []),
+        API.get('/ombor_mijozlar').catch(() => []),
       ]);
       setMijozlar(Array.isArray(mRes) ? mRes : []);
       setSotuvlar(Array.isArray(sRes) ? sRes : []);
       setKirimlar(Array.isArray(kRes) ? kRes : []);
       setYetkazuvchilar(Array.isArray(yRes) ? yRes : []);
       setXomTolovlar(Array.isArray(tRes) ? tRes : []);
+      setOmborMijozlar(Array.isArray(oMRes) ? oMRes : []);
     } catch (e) {
       console.log('Dashboard error', e);
     } finally {
@@ -60,12 +63,13 @@ export default function DashboardScreen() {
   const jamiMijozQarz = mijozlar.reduce((s, m) => s + (Number(m.qarz) || 0), 0);
   const qarzdorMijozlar = mijozlar.filter(m => (Number(m.qarz) || 0) > 0);
 
-  // Yetkazuvchilarga mening qarzim
+  // Yetkazuvchilarga mening qarzim (Xom ashyo)
   const getYetQarz = (nomi: string) => {
     const kirim = kirimlar.filter(k => k.yetkazuvchi === nomi).reduce((s, k) => s + (Number(k.jami) || 0), 0);
     const naqd = kirimlar.filter(k => k.yetkazuvchi === nomi && k.tolov === 'naqd').reduce((s, k) => s + (Number(k.jami) || 0), 0);
+    const aralashTolov = kirimlar.filter(k => k.yetkazuvchi === nomi && k.tolov === 'aralash').reduce((s, k) => s + (Number(k.naqdSumma) || 0), 0);
     const tolov = xomTolovlar.filter(t => t.mijoz === nomi).reduce((s, t) => s + (Number(t.summa) || 0), 0);
-    return kirim - naqd - tolov;
+    return kirim - naqd - aralashTolov - tolov;
   };
   const jamiYetQarz = yetkazuvchilar.reduce((s, y) => s + Math.max(0, getYetQarz(y.nomi)), 0);
 

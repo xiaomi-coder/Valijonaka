@@ -181,10 +181,10 @@ export default function SalesScreen() {
     <View style={st.container}>
       {/* Tabs */}
       <View style={st.tabs}>
-        {(['asosiy', 'yangi', 'mijozlar', 'tarix', 'qarz'] as const).map(t => (
+        {(['asosiy', 'yangi', 'mijozlar', 'tarix'] as const).map(t => (
           <TouchableOpacity key={t} style={[st.tab, tab === t && st.tabActive]} onPress={() => setTab(t)}>
             <Text style={[st.tabText, tab === t && st.tabTextActive]}>
-              {t === 'asosiy' ? '📊' : t === 'yangi' ? '🛒' : t === 'mijozlar' ? '👥' : t === 'tarix' ? '📋' : '💳'}
+              {t === 'asosiy' ? '📊' : t === 'yangi' ? '🛒' : t === 'mijozlar' ? '👥' : '📋'}
             </Text>
           </TouchableOpacity>
         ))}
@@ -391,26 +391,7 @@ export default function SalesScreen() {
         />
       )}
 
-      {tab === 'qarz' && (
-        <FlatList
-          data={sotuvlar.filter(s => (s.qarz || 0) > 0)}
-          keyExtractor={(item, i) => String(item.id || i)}
-          contentContainerStyle={st.pad}
-          renderItem={({ item }) => (
-            <View style={[st.listItem, { borderLeftWidth: 3, borderLeftColor: '#EF4444' }]}>
-              <View style={{ flex: 1 }}>
-                <Text style={st.listTitle}>{item.mijoz_nomi || 'Mijoz'}</Text>
-                <Text style={st.listSub}>{fmtSana(item.sana)} • Jami: {fmt(item.summa)}</Text>
-              </View>
-              <TouchableOpacity onPress={() => { setTolovSotuv(item); setTolovModal(true); }}>
-                <Text style={{ color: '#EF4444', fontSize: 18, fontWeight: '800' }}>{fmt(item.qarz)}</Text>
-                <Text style={{ color: '#3B82F6', fontSize: 12, fontWeight: '600', textAlign: 'right' }}>To'lash →</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          ListEmptyComponent={<View style={st.empty}><Text style={st.emptyText}>Qarzlar yo'q 🎉</Text></View>}
-        />
-      )}
+
 
       {/* MIJOZLAR */}
       {tab === 'mijozlar' && (
@@ -497,23 +478,32 @@ export default function SalesScreen() {
               const filtered = allSales.filter(s => isInDateRange(s.sana || '', svFrom, svTo));
               const jamiSumma = filtered.reduce((s, x) => s + (Number(x.summa) || 0), 0);
               const jamiTolangan = filtered.reduce((s, x) => s + (Number(x.tolangan) || 0), 0);
-              const jamiQarz = filtered.reduce((s, x) => s + (Number(x.qarz) || 0), 0);
+              const currentQarz = Math.max(0, Number(svMijoz.qarz) || 0);
+              const currentHaq = Math.max(0, -(Number(svMijoz.qarz) || 0));
 
               return (
                 <>
                   {/* Statistikalar */}
-                  <View style={{ flexDirection: 'row', padding: 16, gap: 8 }}>
-                    <View style={[st.svStatCard, { borderLeftColor: '#3B82F6' }]}>
-                      <Text style={st.svStatLabel}>Jami</Text>
-                      <Text style={[st.svStatVal, { color: '#3B82F6' }]}>{fmt(jamiSumma)}</Text>
+                  <View style={{ padding: 16, gap: 8 }}>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <View style={[st.svStatCard, { borderLeftColor: '#3B82F6', flex: 1 }]}>
+                        <Text style={st.svStatLabel}>Umumiy xarid summasi</Text>
+                        <Text style={[st.svStatVal, { color: '#3B82F6' }]}>{fmt(jamiSumma)}</Text>
+                      </View>
+                      <View style={[st.svStatCard, { borderLeftColor: '#10B981', flex: 1 }]}>
+                        <Text style={st.svStatLabel}>Naqd to'lagan summasi</Text>
+                        <Text style={[st.svStatVal, { color: '#10B981' }]}>{fmt(jamiTolangan)}</Text>
+                      </View>
                     </View>
-                    <View style={[st.svStatCard, { borderLeftColor: '#10B981' }]}>
-                      <Text style={st.svStatLabel}>To'lagan</Text>
-                      <Text style={[st.svStatVal, { color: '#10B981' }]}>{fmt(jamiTolangan)}</Text>
-                    </View>
-                    <View style={[st.svStatCard, { borderLeftColor: '#EF4444' }]}>
-                      <Text style={st.svStatLabel}>Qarz</Text>
-                      <Text style={[st.svStatVal, { color: '#EF4444' }]}>{fmt(jamiQarz)}</Text>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <View style={[st.svStatCard, { borderLeftColor: '#EF4444', flex: 1 }]}>
+                        <Text style={st.svStatLabel}>Joriy qarzi</Text>
+                        <Text style={[st.svStatVal, { color: '#EF4444' }]}>{fmt(currentQarz)}</Text>
+                      </View>
+                      <View style={[st.svStatCard, { borderLeftColor: '#F59E0B', flex: 1 }]}>
+                        <Text style={st.svStatLabel}>Joriy haqi (Avans)</Text>
+                        <Text style={[st.svStatVal, { color: '#F59E0B' }]}>{fmt(currentHaq)}</Text>
+                      </View>
                     </View>
                   </View>
 
@@ -555,7 +545,7 @@ export default function SalesScreen() {
                       return (
                         <View style={[st.listItem, isDebt && { borderLeftWidth: 3, borderLeftColor: '#EF4444' }]}>
                           <View style={{ flex: 1 }}>
-                            <Text style={{ color: '#E2E8F0', fontWeight: '600' }}>{fmtSana(item.sana)}</Text>
+                            <Text style={{ color: '#E2E8F0', fontWeight: '600' }}>{fmtSana(item.sana)} • {item.mahsulot_nomi || item.mahsulot || 'Mahsulot'}</Text>
                             <Text style={{ color: '#64748B', fontSize: 12 }}>{item.totalKg || item.total_kg || 0} kg</Text>
                           </View>
                           <View style={{ alignItems: 'flex-end' }}>
