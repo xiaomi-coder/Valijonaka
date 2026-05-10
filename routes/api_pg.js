@@ -711,6 +711,69 @@ router.delete('/rezina/sotuvlar/:id', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ============================================================
+// YETKAZUVCHILAR
+// ============================================================
+router.get('/yetkazuvchilar', authMiddleware, async (req, res) => {
+  try {
+    const data = await query('SELECT * FROM yetkazuvchilar ORDER BY nomi ASC');
+    res.json(data.rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.post('/yetkazuvchilar', authMiddleware, async (req, res) => {
+  try {
+    const { nomi, tel } = req.body;
+    const doc = await query('INSERT INTO yetkazuvchilar (nomi, tel) VALUES ($1,$2) RETURNING *', [nomi, tel]);
+    res.json(doc.rows[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.put('/yetkazuvchilar/:id', authMiddleware, async (req, res) => {
+  try {
+    const { nomi, tel } = req.body;
+    await query('UPDATE yetkazuvchilar SET nomi=$1, tel=$2 WHERE id=$3', [nomi, tel, req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.delete('/yetkazuvchilar/:id', authMiddleware, async (req, res) => {
+  try {
+    await query('DELETE FROM yetkazuvchilar WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ============================================================
+// XOM ASHYO KIRIMI
+// ============================================================
+router.get('/xom-ashyo', authMiddleware, async (req, res) => {
+  try {
+    const data = await query('SELECT * FROM xom_ashyo ORDER BY sana DESC, created_at DESC');
+    res.json(data.rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.post('/xom-ashyo', authMiddleware, async (req, res) => {
+  try {
+    const { sana, yetkazuvchi, nomi, narx, kg, summa, qarz_sum, tolov } = req.body;
+    const doc = await query(
+      'INSERT INTO xom_ashyo (sana, yetkazuvchi, nomi, narx, kg, summa, qarz_sum, tolov) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+      [sana, yetkazuvchi, nomi, narx, kg, summa, qarz_sum, tolov]
+    );
+    res.json(doc.rows[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.put('/xom-ashyo/:id', authMiddleware, async (req, res) => {
+  try {
+    const { qarz_sum, tolov } = req.body;
+    await query('UPDATE xom_ashyo SET qarz_sum=$1, tolov=$2 WHERE id=$3', [qarz_sum, tolov, req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+router.delete('/xom-ashyo/:id', authMiddleware, async (req, res) => {
+  try {
+    await query('DELETE FROM xom_ashyo WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 router.get('/xom-tolovlar', authMiddleware, async (req, res) => {
   try {
     const data = await query('SELECT * FROM xom_tolovlar ORDER BY sana ASC, created_at ASC');
