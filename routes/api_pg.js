@@ -752,18 +752,29 @@ router.get('/xom-ashyo', authMiddleware, async (req, res) => {
 });
 router.post('/xom-ashyo', authMiddleware, async (req, res) => {
   try {
-    const { sana, yetkazuvchi, nomi, narx, kg, summa, qarz_sum, tolov } = req.body;
+    const { sana, oy, yetkazuvchi, tur, kg, narx, jami, tolov, naqdSumma, moshina, izoh, qarz_sum, tolov_sum } = req.body;
     const doc = await query(
-      'INSERT INTO xom_ashyo (sana, yetkazuvchi, nomi, narx, kg, summa, qarz_sum, tolov) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-      [sana, yetkazuvchi, nomi, narx, kg, summa, qarz_sum, tolov]
+      'INSERT INTO xom_ashyo (sana, oy, yetkazuvchi, tur, kg, narx, jami, tolov, "naqdSumma", moshina, izoh, qarz_sum, tolov_sum) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *',
+      [sana, oy, yetkazuvchi, tur, kg, narx, jami, tolov, naqdSumma || 0, moshina, izoh, qarz_sum || 0, tolov_sum || 0]
     );
     res.json(doc.rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 router.put('/xom-ashyo/:id', authMiddleware, async (req, res) => {
   try {
-    const { qarz_sum, tolov } = req.body;
-    await query('UPDATE xom_ashyo SET qarz_sum=$1, tolov=$2 WHERE id=$3', [qarz_sum, tolov, req.params.id]);
+    const { qarz_sum, tolov, tolov_sum } = req.body;
+    // We update whichever fields are provided
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    if (qarz_sum !== undefined) { fields.push(`qarz_sum=$${idx++}`); values.push(qarz_sum); }
+    if (tolov !== undefined) { fields.push(`tolov=$${idx++}`); values.push(tolov); }
+    if (tolov_sum !== undefined) { fields.push(`tolov_sum=$${idx++}`); values.push(tolov_sum); }
+    
+    values.push(req.params.id);
+    if (fields.length > 0) {
+      await query(`UPDATE xom_ashyo SET ${fields.join(', ')} WHERE id=$${idx}`, values);
+    }
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
