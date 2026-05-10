@@ -22,10 +22,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
   }
 }));
 
-// API yo'llar — NeDB (asosiy, har doim ishlaydi)
-app.use('/api', apiRoutes);
-// PG routes faqat PG ishlasa
-try { app.use('/api/pg', apiPgRoutes); } catch(e) {}
+// API yo'llar
+app.use('/api', apiPgRoutes);
 
 // Barcha boshqa so'rovlar — index.html
 app.get('*', (req, res) => {
