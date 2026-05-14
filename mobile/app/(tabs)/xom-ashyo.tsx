@@ -29,6 +29,7 @@ export default function XomAshyoScreen() {
 
   // Yetkazuvchilar filtri
   const [yetFilter, setYetFilter] = useState<'barchasi' | 'qarz' | 'haq'>('barchasi');
+  const [yetSearch, setYetSearch] = useState('');
 
   // To'lov modal
   const [tolovModal, setTolovModal] = useState(false);
@@ -253,7 +254,24 @@ export default function XomAshyoScreen() {
 
       {tab === 'yetkazuvchilar' && (
         <>
-          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, paddingBottom: 0, gap: 10 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E293B', borderRadius: 12, paddingHorizontal: 12, borderWidth: 1, borderColor: '#334155' }}>
+              <Ionicons name="search" size={20} color="#64748B" />
+              <TextInput 
+                style={{ flex: 1, height: 44, color: '#F1F5F9', marginLeft: 8 }}
+                placeholder="Yetkazuvchini izlash..."
+                placeholderTextColor="#64748B"
+                value={yetSearch}
+                onChangeText={setYetSearch}
+              />
+              {yetSearch.length > 0 && (
+                <TouchableOpacity onPress={() => setYetSearch('')}>
+                  <Ionicons name="close-circle" size={20} color="#64748B" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, paddingBottom: 0, paddingTop: 12, gap: 10 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               <TouchableOpacity style={[s.filterBtn, yetFilter === 'barchasi' && s.filterBtnActive]} onPress={() => setYetFilter('barchasi')}>
                 <Text style={[s.filterText, yetFilter === 'barchasi' && s.filterTextActive]}>Barchasi{'\n'}<Text style={{ fontSize: 11, fontWeight: 'normal' }}>{yetkazuvchilar.length} ta</Text></Text>
@@ -273,6 +291,7 @@ export default function XomAshyoScreen() {
           <FlatList 
             data={yetkazuvchilar.filter(y => {
               const q = getYetQarz(y.nomi);
+              if (yetSearch && !y.nomi?.toLowerCase().includes(yetSearch.toLowerCase())) return false;
               if (yetFilter === 'qarz') return q > 0;
               if (yetFilter === 'haq') return q < 0;
               return true;

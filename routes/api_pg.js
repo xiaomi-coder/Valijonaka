@@ -31,7 +31,7 @@ router.post('/auth/login', async (req, res) => {
       if (resMijoz.rowCount > 0) {
         const mijoz = resMijoz.rows[0];
         if (mijoz.parol === parol) {
-          const token = jwt.sign({ id: mijoz.id, ism: mijoz.nomi, login: mijoz.login, rol: 'mijoz' }, SECRET, { expiresIn: '8h' });
+          const token = jwt.sign({ id: mijoz.id, ism: mijoz.nomi, login: mijoz.login, rol: 'mijoz' }, SECRET, { expiresIn: '365d' });
           return res.json({ token, user: { id: mijoz.id, ism: mijoz.nomi, login: mijoz.login, rol: 'mijoz' } });
         }
       }
@@ -43,7 +43,7 @@ router.post('/auth/login', async (req, res) => {
     
     if (!ok) return res.status(401).json({ error: 'Login yoki parol noto\'g\'ri' });
     
-    const token = jwt.sign({ id: user.id, ism: user.ism, login: user.login, rol: user.rol }, SECRET, { expiresIn: '8h' });
+    const token = jwt.sign({ id: user.id, ism: user.ism, login: user.login, rol: user.rol }, SECRET, { expiresIn: '365d' });
     res.json({ token, user: { id: user.id, ism: user.ism, login: user.login, rol: user.rol } });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

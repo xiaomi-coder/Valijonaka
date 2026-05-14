@@ -47,6 +47,7 @@ export default function SalesScreen() {
 
   // Mijozlar bo'limi filtri va tolov
   const [mFilter, setMFilter] = useState<'barchasi' | 'qarz' | 'haq'>('barchasi');
+  const [mijozSearch, setMijozSearch] = useState('');
   const [mTolovModal, setMTolovModal] = useState(false);
   const [mTolovMijoz, setMTolovMijoz] = useState<any>(null);
   const [mTolovSumma, setMTolovSumma] = useState('');
@@ -396,7 +397,24 @@ export default function SalesScreen() {
       {/* MIJOZLAR */}
       {tab === 'mijozlar' && (
         <>
-          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, paddingBottom: 0, gap: 10 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E293B', borderRadius: 12, paddingHorizontal: 12, borderWidth: 1, borderColor: '#334155' }}>
+              <Ionicons name="search" size={20} color="#64748B" />
+              <TextInput 
+                style={{ flex: 1, height: 44, color: '#F1F5F9', marginLeft: 8 }}
+                placeholder="Mijozni izlash..."
+                placeholderTextColor="#64748B"
+                value={mijozSearch}
+                onChangeText={setMijozSearch}
+              />
+              {mijozSearch.length > 0 && (
+                <TouchableOpacity onPress={() => setMijozSearch('')}>
+                  <Ionicons name="close-circle" size={20} color="#64748B" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, paddingBottom: 0, paddingTop: 12, gap: 10 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               <TouchableOpacity style={[st.filterBtn, mFilter === 'barchasi' && st.filterBtnActive]} onPress={() => setMFilter('barchasi')}>
                 <Text style={[st.filterText, mFilter === 'barchasi' && st.filterTextActive]}>Barchasi{'\n'}<Text style={{ fontSize: 11, fontWeight: 'normal' }}>{mijozlar.length} ta</Text></Text>
@@ -416,6 +434,7 @@ export default function SalesScreen() {
           <FlatList
             data={mijozlar.filter(m => {
               const q = Number(m.qarz) || 0;
+              if (mijozSearch && !m.nomi?.toLowerCase().includes(mijozSearch.toLowerCase())) return false;
               if (mFilter === 'qarz') return q > 0;
               if (mFilter === 'haq') return q < 0;
               return true;
